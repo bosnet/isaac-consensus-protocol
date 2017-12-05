@@ -4,6 +4,7 @@ import collections
 import sys
 import logging
 import json
+import uuid
 import colorlog
 import configparser
 from pathlib import Path
@@ -35,21 +36,38 @@ logging.root.handlers = [log_handler]
 log = logging.getLogger(__name__)
 
 if __name__ == '__main__':
+	options = collections.namedtuple(
+		'Options',
+		('id', 'port', 'validators'),
+	)(uuid.uuid1().hex, 8001, [])
+
 	if len(sys.argv) != 2:
-		error_message = "usage: " + __file__ + " input.ini "
+		error_message = 'usage: ' + __file__ + ' conf.ini '
 		print(error_message)
 		log.error(error_message)
 		exit(2)
 	input_ini_path = sys.argv[1].strip('"\'')
-	ini_file = Path(input_ini_path)
-	if not ini_file.is_file():
+	if not Path(input_ini_path).is_file():
 		error_message = 'File "' + input_ini_path + '" not exists!'
 		print(error_message)
 		log.error(error_message)
 		exit(2)
 	log.info('Ini file path: "' + input_ini_path + '"')
+	log.root.setLevel(logging.DEBUG)
 	conf.read(input_ini_path)
-	id = conf['NODE']['ID']
-	validators = conf['NODE']['VALIDATOR_LIST']
-	print(id)
-	print(validators)
+	options = options._replace(id=conf['NODE']['ID'])
+	log.debug('Node ID: %s' % options.id)
+
+	options = options._replace(port=conf['NODE']['PORT'])
+	log.debug('Node PORT: %s' % options.port)
+
+
+	validator_list = []
+	for i in filter(lambda x: len(x.strip()) > 0, conf['NODE']['VALIDATOR_LIST'].split(',')):
+		validator_list.append(i.strip())
+	options = options._replace(validators=validator_list)
+	log.debug('Validators: %s' % options.validators)
+
+
+
+
