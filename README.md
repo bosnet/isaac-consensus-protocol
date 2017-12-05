@@ -11,7 +11,7 @@ Python
 - Performance
   - Scale-up
 - User Experience
-  - Congiguration Simple
+  - Simple Configuration
 - Code Quality
   - TDD
 - Logging System
