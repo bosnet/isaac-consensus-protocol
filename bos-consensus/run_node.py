@@ -67,12 +67,12 @@ if __name__ == '__main__':
     conf.read(options.conf)
     log.info('conf file, `%s` was loaded', options.conf)
 
-    config = config._replace(node_id=conf['NODE']['ID'])
-    config = config._replace(port=int(conf['NODE']['PORT']))
+    config = config._replace(node_id=conf['node']['id'])
+    config = config._replace(port=int(conf['node']['port']))
     log.debug('loaded conf: %s', config)
 
     validator_list = []
-    for i in filter(lambda x: len(x.strip()) > 0, conf['NODE']['VALIDATOR_LIST'].split(',')):
+    for i in filter(lambda x: len(x.strip()) > 0, conf['node']['validator_list'].split(',')):
         validator_list.append(i.strip())
 
     config = config._replace(validators=validator_list)
