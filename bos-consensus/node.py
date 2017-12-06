@@ -1,9 +1,9 @@
 import logging
 import json
-import urllib
-import requests
+
 
 log = logging.getLogger(__name__)
+
 
 class Node:
     id = None
@@ -21,8 +21,8 @@ class Node:
 
     def to_json(self):
         return json.dumps(dict(
-            id = self.id,
-            url = self.url
+            id=self.id,
+            url=self.url
         ))
 
     def __repr(self):
@@ -32,12 +32,12 @@ class Node:
         rhs_url = rhs.url
         lhs_url = self.url
 
-        t_str = '//localhost:' # target_string
-        r_str = '//127.0.0.1:' # replace_string
+        t_str = '//localhost:'  # target_string
+        r_str = '//127.0.0.1:'  # replace_string
         if t_str in rhs_url:
             rhs_url.replace(t_str, r_str)
 
         if t_str in lhs_url:
             lhs_url.replace(t_str, r_str)
-        
+
         return lhs_url == rhs_url
