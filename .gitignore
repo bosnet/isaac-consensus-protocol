@@ -1,1 +1,4 @@
-*.pyc
+*.py?
+.*.sw?
+.sw?
+.DS_Store
