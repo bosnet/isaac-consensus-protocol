@@ -6,9 +6,13 @@ import logging
 import json
 import uuid
 import colorlog
+from urllib.parse import urlparse
 import configparser
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+import handler
+import node
 
 conf = configparser.ConfigParser()
 logging.basicConfig(
@@ -35,6 +39,64 @@ logging.root.handlers = [log_handler]
 
 log = logging.getLogger(__name__)
 
+class BosNetHTTPServer(HTTPServer):
+	id = None
+	validators = None
+
+	def __init__(self, id, validators, *a, **kw):
+		super(BosNetHTTPServer, self).__init__(*a, **kw)
+
+		self.id = id
+		self.validators = validators
+	
+	def finish_request(self, request, client_address):
+		self.RequestHandlerClass(self.id, self.validators, request, client_address, self)
+
+		return
+
+
+class BosNetHTTPServer_RequestHandler(BaseHTTPRequestHandler):
+	id = None
+	validators = None
+
+	def __init__(self, id, validators, *a, **kw):
+		super(BosNetHTTPServer_RequestHandler, self).__init__(*a, **kw)
+
+		self.id = id
+		self.validators = validators
+
+	def do_GET(self):
+		log.debug('> start request: %s', self.path)
+		parsed = urlparse(self.path)
+		func = handler.HTTP_HANDLERS.get(parsed.path[1:].split('/')[0], handler.not_found_handler)
+		r = func(self, parsed)
+
+		log.debug('< finished request: %s', self.path)
+		return r
+
+	do_POST = do_GET
+
+	def response(self, status_code, message, **headers):
+		self.send_response(status_code)
+		for k, v in headers.items():
+			self.send_header(k, v)
+		
+		self.end_headers()
+
+		if message is not None:
+			self.wfile.write(bytes(message + ('\n' if message[-1] != '\n' else ''), "utf8"))
+
+		return
+	
+	def json_response(self, status_code, message, **headers):
+		if type(message) not in (str,):
+			message = json.dumps(message)
+
+		headers['Content-Type'] = 'application/json'
+
+		return self.response(status_code, message, **headers)
+
+
 if __name__ == '__main__':
 	options = collections.namedtuple(
 		'Options',
@@ -58,7 +120,7 @@ if __name__ == '__main__':
 	options = options._replace(id=conf['NODE']['ID'])
 	log.debug('Node ID: %s' % options.id)
 
-	options = options._replace(port=conf['NODE']['PORT'])
+	options = options._replace(port=int(conf['NODE']['PORT']))
 	log.debug('Node PORT: %s' % options.port)
 
 
@@ -68,6 +130,12 @@ if __name__ == '__main__':
 	options = options._replace(validators=validator_list)
 	log.debug('Validators: %s' % options.validators)
 
+	node_address = ('0.0.0.0', options.port)
+	httpd = BosNetHTTPServer(
+		options.id,
+		options.validators,
+		node_address,
+		BosNetHTTPServer_RequestHandler,
+	)
 
-
-
+	httpd.serve_forever()
