@@ -11,6 +11,8 @@ from network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
+from node import Node
+from util import get_local_ipaddress
 
 
 logging.basicConfig(
@@ -78,12 +80,12 @@ if __name__ == '__main__':
     config = config._replace(validators=validator_list)
     log.debug('Validators: %s' % config.validators)
 
-    node_address = ('0.0.0.0', config.port)
-    httpd = BOSNetHTTPServer(
+    nd = Node(
         config.node_id,
+        (get_local_ipaddress(), config.port),
         config.validators,
-        node_address,
-        BOSNetHTTPServerRequestHandler,
     )
+
+    httpd = BOSNetHTTPServer(nd, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
 
     httpd.serve_forever()
