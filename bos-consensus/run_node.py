@@ -38,12 +38,12 @@ logging.root.handlers = [log_handler]
 log = logging.getLogger(__name__)
 
 
-class BosNetHTTPServer(HTTPServer):
+class BOSNetHTTPServer(HTTPServer):
     id = None
     validators = None
 
     def __init__(self, id, validators, *a, **kw):
-        super(BosNetHTTPServer, self).__init__(*a, **kw)
+        super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
         self.id = id
         self.validators = validators
@@ -54,12 +54,12 @@ class BosNetHTTPServer(HTTPServer):
         return
 
 
-class BosNetHTTPServer_RequestHandler(BaseHTTPRequestHandler):
+class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
     id = None
     validators = None
 
     def __init__(self, id, validators, *a, **kw):
-        super(BosNetHTTPServer_RequestHandler, self).__init__(*a, **kw)
+        super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
 
         self.id = id
         self.validators = validators
@@ -129,11 +129,11 @@ if __name__ == '__main__':
     log.debug('Validators: %s' % options.validators)
 
     node_address = ('0.0.0.0', options.port)
-    httpd = BosNetHTTPServer(
+    httpd = BOSNetHTTPServer(
         options.id,
         options.validators,
         node_address,
-        BosNetHTTPServer_RequestHandler,
+        BOSNetHTTPServerRequestHandler,
     )
 
     httpd.serve_forever()
