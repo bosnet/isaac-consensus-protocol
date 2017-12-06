@@ -1,8 +1,8 @@
-from pathlib import Path
 import collections
 import colorlog
 import configparser
 import logging
+import pathlib
 import sys
 import uuid
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         log.error(error_message)
         exit(2)
     input_ini_path = sys.argv[1].strip('"\'')
-    if not Path(input_ini_path).is_file():
+    if not pathlib.Path(input_ini_path).is_file():
         error_message = 'File "' + input_ini_path + '" not exists!'
         print(error_message)
         log.error(error_message)
