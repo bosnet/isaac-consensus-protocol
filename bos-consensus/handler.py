@@ -28,7 +28,7 @@ def handle_ping(server, parsed):
 
     host, port = server.request.getsockname()
     info = dict(
-        id=server.id,
+        node_id=server.node_id,
         endpoint='http://%s:%s' % (host, port)
     )
     server.json_response(200, info)

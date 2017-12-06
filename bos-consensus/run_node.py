@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     config = collections.namedtuple(
         'Config',
-        ('id', 'port', 'validators'),
+        ('node_id', 'port', 'validators'),
     )(uuid.uuid1().hex, 8001, [])
 
     if not pathlib.Path(options.conf).exists():
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     conf.read(options.conf)
     log.info('conf file, `%s` was loaded', options.conf)
 
-    config = config._replace(id=conf['NODE']['ID'])
+    config = config._replace(node_id=conf['NODE']['ID'])
     config = config._replace(port=int(conf['NODE']['PORT']))
     log.debug('loaded conf: %s', config)
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     node_address = ('0.0.0.0', config.port)
     httpd = BOSNetHTTPServer(
-        config.id,
+        config.node_id,
         config.validators,
         node_address,
         BOSNetHTTPServerRequestHandler,

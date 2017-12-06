@@ -10,29 +10,29 @@ log = logging.getLogger(__name__)
 
 
 class BOSNetHTTPServer(HTTPServer):
-    id = None
+    node_id = None
     validators = None
 
-    def __init__(self, id, validators, *a, **kw):
+    def __init__(self, node_id, validators, *a, **kw):
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
-        self.id = id
+        self.node_id = node_id
         self.validators = validators
 
     def finish_request(self, request, client_address):
-        self.RequestHandlerClass(self.id, self.validators, request, client_address, self)
+        self.RequestHandlerClass(self.node_id, self.validators, request, client_address, self)
 
         return
 
 
 class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
-    id = None
+    node_id = None
     validators = None
 
-    def __init__(self, id, validators, *a, **kw):
+    def __init__(self, node_id, validators, *a, **kw):
         super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
 
-        self.id = id
+        self.node_id = node_id
         self.validators = validators
 
     def do_GET(self):

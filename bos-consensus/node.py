@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 
 class Node:
-    id = None
+    node_id = None
     url = None
 
     # @classmethod
@@ -15,18 +15,18 @@ class Node:
 
     #     return cls(**d)
 
-    def __init__(self, id, url):
-        self.id = id
+    def __init__(self, node_id, url):
+        self.node_id = node_id
         self.url = url
 
     def to_json(self):
         return json.dumps(dict(
-            id=self.id,
+            node_id=self.node_id,
             url=self.url
         ))
 
     def __repr(self):
-        return '<Node: %s(%s)>' % (self.id, self.url)
+        return '<Node: %s(%s)>' % (self.node_id, self.url)
 
     def __eq__(self, rhs):
         rhs_url = rhs.url
