@@ -44,6 +44,8 @@ $ source bin/activate
 $ mkdir src/
 $ cd src
 $ git clone git@github.com:owlchain/bosnet-prototype-fba.git
+$ cd bosnet-prototype-fba
+$ pip install -r requirements.txt
 ```
 
 ## Deployment
