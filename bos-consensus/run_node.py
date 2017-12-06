@@ -1,15 +1,15 @@
-import collections
-import sys
-import logging
-import json
-import uuid
-import colorlog
-from urllib.parse import urlparse
-import configparser
 from pathlib import Path
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import collections
+import colorlog
+import configparser
+import logging
+import sys
+import uuid
 
-import handler
+from network import (
+    BOSNetHTTPServer,
+    BOSNetHTTPServerRequestHandler,
+)
 
 
 conf = configparser.ConfigParser()
@@ -36,64 +36,6 @@ log_handler.setFormatter(
 logging.root.handlers = [log_handler]
 
 log = logging.getLogger(__name__)
-
-
-class BOSNetHTTPServer(HTTPServer):
-    id = None
-    validators = None
-
-    def __init__(self, id, validators, *a, **kw):
-        super(BOSNetHTTPServer, self).__init__(*a, **kw)
-
-        self.id = id
-        self.validators = validators
-
-    def finish_request(self, request, client_address):
-        self.RequestHandlerClass(self.id, self.validators, request, client_address, self)
-
-        return
-
-
-class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
-    id = None
-    validators = None
-
-    def __init__(self, id, validators, *a, **kw):
-        super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
-
-        self.id = id
-        self.validators = validators
-
-    def do_GET(self):
-        log.debug('> start request: %s', self.path)
-        parsed = urlparse(self.path)
-        func = handler.HTTP_HANDLERS.get(parsed.path[1:].split('/')[0], handler.not_found_handler)
-        r = func(self, parsed)
-
-        log.debug('< finished request: %s', self.path)
-        return r
-
-    do_POST = do_GET
-
-    def response(self, status_code, message, **headers):
-        self.send_response(status_code)
-        for k, v in headers.items():
-            self.send_header(k, v)
-
-        self.end_headers()
-
-        if message is not None:
-            self.wfile.write(bytes(message + ('\n' if message[-1] != '\n' else ''), "utf8"))
-
-        return
-
-    def json_response(self, status_code, message, **headers):
-        if type(message) not in (str,):
-            message = json.dumps(message)
-
-        headers['Content-Type'] = 'application/json'
-
-        return self.response(status_code, message, **headers)
 
 
 if __name__ == '__main__':
