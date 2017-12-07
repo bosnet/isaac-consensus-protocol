@@ -1,4 +1,9 @@
 import logging
+from state import State
+from state import InitState
+from state import SignState
+from state import AcceptState
+from state import AllConfirmState
 
 
 log = logging.getLogger(__name__)
@@ -8,6 +13,14 @@ class Node:
     node_id = None
     address = None
     validators = None
+    
+    node_state = None
+
+    state_init = None
+    state_sign = None
+    state_accept = None
+    state_all_confirm = None
+
 
     def __init__(self, node_id, address, validators):
         assert type(address) in (list, tuple) and len(address) == 2 and type(address[0]) in (str,) and type(address[1]) in (int,)
@@ -16,8 +29,18 @@ class Node:
         self.address = address
         self.validators = validators
 
+        self.state_init = InitState(self)
+        self.state_sign = SignState(self)
+        self.state_accept = AcceptState(self)
+        self.state_all_confirm = AllConfirmState(self)
+
+        self.node_state = self.state_init
+
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
+
+    def __str__(self):
+        return '<Node[%s]: %s(%s)>' % (self.node_state.__str__(), self.node_id, self.endpoint)
 
     @property
     def endpoint(self):
