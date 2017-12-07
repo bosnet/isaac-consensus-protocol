@@ -15,7 +15,7 @@ class Node:
     threshold = None
     validators = None
     validator_ballots = {}
-    
+
     node_state = None
 
     state_init = None
@@ -24,7 +24,8 @@ class Node:
     state_all_confirm = None
 
     def __init__(self, node_id, address, threshold, validators):
-        assert type(address) in (list, tuple) and len(address) == 2 and type(address[0]) in (str,) and type(address[1]) in (int,)
+        assert type(address) in (list, tuple) and len(address) == 2 and
+        type(address[0]) in (str,) and type(address[1]) in (int,)
 
         self.node_id = node_id
         self.address = address
@@ -72,14 +73,14 @@ class Node:
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
         self.node_state.handle_ballot(ballot)
-    
+
     def get_validator_ballots(self):
         return self.validator_ballots
 
     def store(self, ballot):
         assert isinstance(ballot, Ballot)
         self.validator_ballots[ballot.node_id] = ballot
-        return 
-    
+        return
+
     def get_validator_th(self):
         return len(self.validators) * self.threshold // 100

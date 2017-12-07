@@ -10,7 +10,7 @@ class Ballot:
     message = None
     node_state = None
 
-    def __init__(self, num, node_id, message, node_state = None):
+    def __init__(self, num, node_id, message, node_state=None):
         self.ballot_num = num
         self.node_id = node_id
         self.message = message

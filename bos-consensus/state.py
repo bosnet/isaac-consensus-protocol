@@ -4,6 +4,7 @@ from ballot import Ballot
 
 log = logging.getLogger(__name__)
 
+
 class State:
     def handle_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
@@ -22,7 +23,6 @@ class InitState(State):
 
     def __str__(self):
         return 'INIT'
-    
 
 
 class SignState(State):
@@ -50,6 +50,7 @@ class SignState(State):
     def __str__(self):
         return 'SIGN'
 
+
 class AcceptState(State):
     node = None
 
@@ -74,6 +75,7 @@ class AcceptState(State):
 
     def __str__(self):
         return 'ACCEPT'
+
 
 class AllConfirmState(State):
     node = None

@@ -5,9 +5,11 @@ from state import SignState
 from state import AcceptState
 from state import AllConfirmState
 
+
 def test_state_init():
     node = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
     assert str(node) == '<Node[INIT]: 1(http://localhost:5001)>'
+
 
 def test_state_init_to_sign():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
@@ -20,6 +22,7 @@ def test_state_init_to_sign():
     node1.receive(ballot2)
     node1.receive(ballot3)
     assert str(node1) == '<Node[SIGN]: 1(http://localhost:5001)>'
+
 
 def test_state_init_to_all_confirm():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
@@ -37,7 +40,7 @@ def test_state_init_to_all_confirm():
     assert isinstance(node1.node_state, SignState)
     assert isinstance(node2.node_state, SignState)
     assert isinstance(node3.node_state, SignState)
-    
+
     ballot_sign_1 = Ballot(1, 1, 'message', node1.node_state)
     ballot_sign_2 = Ballot(1, 2, 'message', node2.node_state)
     ballot_sign_3 = Ballot(1, 3, 'message', node3.node_state)
@@ -77,5 +80,3 @@ def test_state_init_to_all_confirm():
     assert isinstance(node1.node_state, AllConfirmState)
     assert isinstance(node2.node_state, AllConfirmState)
     assert isinstance(node3.node_state, AllConfirmState)
-
-
