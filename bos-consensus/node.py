@@ -4,7 +4,7 @@ from state import InitState
 from state import SignState
 from state import AcceptState
 from state import AllConfirmState
-
+from ballot import Ballot
 
 log = logging.getLogger(__name__)
 
@@ -12,7 +12,9 @@ log = logging.getLogger(__name__)
 class Node:
     node_id = None
     address = None
+    threshold = None
     validators = None
+    validator_ballots = {}
     
     node_state = None
 
@@ -21,13 +23,13 @@ class Node:
     state_accept = None
     state_all_confirm = None
 
-
-    def __init__(self, node_id, address, validators):
+    def __init__(self, node_id, address, threshold, validators):
         assert type(address) in (list, tuple) and len(address) == 2 and type(address[0]) in (str,) and type(address[1]) in (int,)
 
         self.node_id = node_id
         self.address = address
         self.validators = validators
+        self.threshold = threshold
 
         self.state_init = InitState(self)
         self.state_sign = SignState(self)
@@ -66,3 +68,18 @@ class Node:
             lhs_endpoint.replace(t_str, r_str)
 
         return lhs_endpoint == rhs_endpoint
+
+    def receive(self, ballot):
+        assert isinstance(ballot, Ballot)
+        self.node_state.handle_ballot(ballot)
+    
+    def get_validator_ballots(self):
+        return self.validator_ballots
+
+    def store(self, ballot):
+        assert isinstance(ballot, Ballot)
+        self.validator_ballots[ballot.node_id] = ballot
+        return 
+    
+    def get_validator_th(self):
+        return len(self.validators) * self.threshold // 100
