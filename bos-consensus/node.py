@@ -24,8 +24,8 @@ class Node:
     state_all_confirm = None
 
     def __init__(self, node_id, address, threshold, validators):
-        assert type(address) in (list, tuple) and len(address) == 2 and
-        type(address[0]) in (str,) and type(address[1]) in (int,)
+        assert type(address) in (list, tuple) and len(address) == 2
+        assert type(address[0]) in (str,) and type(address[1]) in (int,)
 
         self.node_id = node_id
         self.address = address
