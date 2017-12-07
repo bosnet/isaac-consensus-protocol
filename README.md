@@ -52,7 +52,7 @@ $ pip install -r requirements.txt
 
 ```
 $ cd bosnet-prototype-fba/bos-consensus
-$ python node.py node5001.ini
+$ python run_node.py node5001.ini
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node ID: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node PORT: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Validators: ['localhost:5002', 'localhost:5003']
@@ -60,6 +60,6 @@ $ python node.py node5001.ini
 
 Run the other nodes like this.
 ```
-$ python node.py node5002.ini
-$ python node.py node5003.ini
+$ python run_node.py node5002.ini
+$ python run_node.py node5003.ini
 ```
