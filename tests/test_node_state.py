@@ -17,7 +17,7 @@ def test_state_init_to_sign():
     node3 = Node(3, ('localhost', 5003), 100, ['localhost:5001', 'localhost:5002'])
 
     ballot = Ballot(1, 1, 'message', node1.node_state)
-    
+
     node1.receive(ballot)
 
     assert str(node1) == '<Node[SIGN]: 1(http://localhost:5001)>'
