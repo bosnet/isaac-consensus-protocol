@@ -52,6 +52,19 @@ $ pip install -r requirements.txt
 
 ```
 $ cd bosnet-prototype-fba/bos-consensus
+$ python run_node.py -h
+usage: run_node.py [-h] [-debug] conf
+
+positional arguments:
+  conf        ini config file
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -debug
+```
+
+Set the config file.
+```
 $ python run_node.py node5001.ini
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node ID: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node PORT: 5001
