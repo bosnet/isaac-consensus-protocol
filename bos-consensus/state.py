@@ -7,8 +7,7 @@ log = logging.getLogger(__name__)
 
 class State:
     def handle_ballot(self, ballot):
-        assert isinstance(ballot, Ballot)
-        pass
+        raise NotImplementedError()
 
 
 class InitState(State):
@@ -39,7 +38,7 @@ class SignState(State):
             assert isinstance(node_ballot, Ballot)
             if node_id == ballot.node_id:
                 continue
-            if isinstance(ballot.node_state, SignState) and ballot.message == node_ballot.message:
+            if isinstance(ballot.node_state, SignState) and isinstance(node_ballot.node_state, SignState) and ballot.message == node_ballot.message:
                 validator_th -= 1
 
         if validator_th == 0:
@@ -65,7 +64,7 @@ class AcceptState(State):
             assert isinstance(node_ballot, Ballot)
             if node_id == ballot.node_id:
                 continue
-            if isinstance(ballot.node_state, AcceptState) and ballot.message == node_ballot.message:
+            if isinstance(ballot.node_state, AcceptState) and isinstance(node_ballot.node_state, AcceptState) and ballot.message == node_ballot.message:
                 validator_th -= 1
 
         if validator_th == 0:

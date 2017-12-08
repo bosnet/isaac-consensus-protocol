@@ -56,8 +56,8 @@ if __name__ == '__main__':
 
     config = collections.namedtuple(
         'Config',
-        ('node_id', 'port', 'validators'),
-    )(uuid.uuid1().hex, 8001, [])
+        ('node_id', 'port', 'threshold', 'validators'),
+    )(uuid.uuid1().hex, 8001, 51, [])
 
     if not pathlib.Path(options.conf).exists():
         parser.error('conf file, `%s` does not exists.' % options.conf)
@@ -71,6 +71,7 @@ if __name__ == '__main__':
 
     config = config._replace(node_id=conf['node']['id'])
     config = config._replace(port=int(conf['node']['port']))
+    config = config._replace(threshold=int(conf['node']['threshold_percent']))
     log.debug('loaded conf: %s', config)
 
     validator_list = []
@@ -83,6 +84,7 @@ if __name__ == '__main__':
     nd = Node(
         config.node_id,
         (get_local_ipaddress(), config.port),
+        config.threshold,
         config.validators,
     )
 
