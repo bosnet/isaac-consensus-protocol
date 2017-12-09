@@ -1,19 +1,33 @@
 import logging
 
 from ballot import Ballot
+from enum import Enum
 
 log = logging.getLogger(__name__)
 
 
+class StateKind(Enum):
+    INIT = 1
+    SIGN = 2
+    ACCEPT = 3
+    ALLCONFIRM = 4
+
+
 class State:
+    def __init__(self, kind=StateKind.INIT):
+        self.kind = kind
+
     def handle_ballot(self, ballot):
         raise NotImplementedError()
 
+    def __eq__(self, state):
+        assert isinstance(state, State)
+        return self.kind == state.kind
+
 
 class InitState(State):
-    node = None
-
     def __init__(self, node):
+        super(InitState, self).__init__(StateKind.INIT)
         self.node = node
 
     def handle_ballot(self, ballot):
@@ -28,6 +42,7 @@ class SignState(State):
     node = None
 
     def __init__(self, node):
+        super(SignState, self).__init__(StateKind.SIGN)
         self.node = node
 
     def handle_ballot(self, ballot):
@@ -54,6 +69,7 @@ class AcceptState(State):
     node = None
 
     def __init__(self, node):
+        super(AcceptState, self).__init__(StateKind.ACCEPT)
         self.node = node
 
     def handle_ballot(self, ballot):
@@ -80,6 +96,7 @@ class AllConfirmState(State):
     node = None
 
     def __init__(self, node):
+        super(AllConfirmState, self).__init__(StateKind.ALLCONFIRM)
         self.node = node
 
     def handle_ballot(self, ballot):

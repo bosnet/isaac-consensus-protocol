@@ -72,7 +72,9 @@ class Node:
 
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
-        self.node_state.handle_ballot(ballot)
+        if self.node_state == ballot.node_state:
+            self.node_state.handle_ballot(ballot)
+        return
 
     def get_validator_ballots(self):
         return self.validator_ballots
