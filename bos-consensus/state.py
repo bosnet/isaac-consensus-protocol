@@ -39,7 +39,6 @@ class InitState(State):
 
 
 class SignState(State):
-    node = None
 
     def __init__(self, node):
         super(SignState, self).__init__(StateKind.SIGN)

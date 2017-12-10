@@ -11,8 +11,6 @@ log = logging.getLogger(__name__)
 
 
 class BOSNetHTTPServer(HTTPServer):
-    nd = None
-
     def __init__(self, nd, *a, **kw):
         assert isinstance(nd, Node)
 
