@@ -65,9 +65,6 @@ class Node:
             self.node_state.handle_ballot(ballot)
         return
 
-    def get_validator_ballots(self):
-        return self.validator_ballots
-
     def store(self, ballot):
         assert isinstance(ballot, Ballot)
         self.validator_ballots[ballot.node_id] = ballot

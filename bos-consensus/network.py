@@ -40,14 +40,7 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         log.debug('< finished request: %s', self.path)
         return r
 
-    def do_POST(self):
-        log.debug('> start request: %s', self.path)
-        parsed = urlparse(self.path)
-        func = handler.HTTP_HANDLERS.get(parsed.path[1:].split('/')[0], handler.not_found_handler)
-        r = func(self, parsed)
-
-        log.debug('< finished request: %s', self.path)
-        return r
+    do_POST = do_GET
 
     def response(self, status_code, message, **headers):
         self.send_response(status_code)
