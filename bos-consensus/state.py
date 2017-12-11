@@ -40,7 +40,7 @@ class SignState(State):
         super(SignState, self).__init__(node, StateKind.SIGN)
 
     def handle_ballot_impl(self, ballot):
-        ballots = self.validator_ballots
+        ballots = self.node.validator_ballots
         validator_th = self.node.get_validator_th()
         for node_id, node_ballot in ballots.items():
             assert isinstance(node_ballot, Ballot)
@@ -63,7 +63,7 @@ class AcceptState(State):
         super(AcceptState, self).__init__(node, StateKind.ACCEPT)
 
     def handle_ballot_impl(self, ballot):
-        ballots = self.validator_ballots
+        ballots = self.node.validator_ballots
         validator_th = self.node.get_validator_th()
         for node_id, node_ballot in ballots.items():
             assert isinstance(node_ballot, Ballot)
