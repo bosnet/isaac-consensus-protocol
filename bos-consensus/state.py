@@ -40,17 +40,18 @@ class SignState(State):
         super(SignState, self).__init__(node, StateKind.SIGN)
 
     def handle_ballot_impl(self, ballot):
-        ballots = self.node.validator_ballots
-        validator_th = self.node.get_validator_th()
-        for node_id, node_ballot in ballots.items():
-            assert isinstance(node_ballot, Ballot)
-            if node_id == ballot.node_id:
-                continue
-            if isinstance(ballot.node_state, SignState) and isinstance(node_ballot.node_state, SignState) and ballot.message == node_ballot.message:
-                validator_th -= 1
+        if ballot.node_state.kind == self.kind:
+            ballots = self.node.validator_ballots
+            validator_th = self.node.n_th
 
-        if validator_th == 0:
-            self.node.node_state = AcceptState(self.node)
+            for node_id, node_ballot in ballots.items():
+                if node_id == ballot.node_id:
+                    continue
+                if node_ballot.node_state.kind == self.kind and ballot.message == node_ballot.message:
+                    validator_th -= 1
+
+            if validator_th == 0:
+                self.node.node_state = AcceptState(self.node)
 
         self.node.store(ballot)
 
@@ -63,17 +64,17 @@ class AcceptState(State):
         super(AcceptState, self).__init__(node, StateKind.ACCEPT)
 
     def handle_ballot_impl(self, ballot):
-        ballots = self.node.validator_ballots
-        validator_th = self.node.get_validator_th()
-        for node_id, node_ballot in ballots.items():
-            assert isinstance(node_ballot, Ballot)
-            if node_id == ballot.node_id:
-                continue
-            if isinstance(ballot.node_state, AcceptState) and isinstance(node_ballot.node_state, AcceptState) and ballot.message == node_ballot.message:
-                validator_th -= 1
+        if ballot.node_state.kind == self.kind:
+            ballots = self.node.validator_ballots
+            validator_th = self.node.n_th
+            for node_id, node_ballot in ballots.items():
+                if node_id == ballot.node_id:
+                    continue
+                if node_ballot.node_state.kind == self.kind and ballot.message == node_ballot.message:
+                    validator_th -= 1
 
-        if validator_th == 0:
-            self.node.node_state = AllConfirmState(self.node)
+            if validator_th == 0:
+                self.node.node_state = AllConfirmState(self.node)
 
         self.node.store(ballot)
 
