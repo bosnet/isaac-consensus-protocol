@@ -19,6 +19,7 @@ class Node:
         self.address = address
         self.validators = validators
         self.threshold = threshold
+        self.n_th = len(self.validators) * self.threshold // 100
         self.validator_ballots = {}
 
         self.state_init = InitState(self)
@@ -66,9 +67,5 @@ class Node:
         return
 
     def store(self, ballot):
-        assert isinstance(ballot, Ballot)
         self.validator_ballots[ballot.node_id] = ballot
         return
-
-    def get_validator_th(self):
-        return len(self.validators) * self.threshold // 100
