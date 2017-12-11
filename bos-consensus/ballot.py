@@ -14,3 +14,11 @@ class Ballot:
 
     def __str__(self):
         return '%d:%d[%s]: %s' % (self.ballot_num, self.node_id, self.node_state, self.message)
+
+    def to_dict(self):
+        return dict(
+            ballot_num=self.ballot_num,
+            node_id=self.node_id,
+            message=self.message,
+            node_state=self.node_state
+        )
