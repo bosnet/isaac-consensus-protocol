@@ -15,7 +15,7 @@ class State:
     def handle_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
         self.handle_ballot_impl(ballot)
-    
+
     def handle_ballot_impl(self, ballot):
         raise NotImplementedError()
 
@@ -36,7 +36,6 @@ class InitState(State):
 
 
 class SignState(State):
-
     def __init__(self, node):
         super(SignState, self).__init__(node, StateKind.SIGN)
 
@@ -60,8 +59,6 @@ class SignState(State):
 
 
 class AcceptState(State):
-    node = None
-
     def __init__(self, node):
         super(AcceptState, self).__init__(node, StateKind.ACCEPT)
 
@@ -85,8 +82,6 @@ class AcceptState(State):
 
 
 class AllConfirmState(State):
-    node = None
-
     def __init__(self, node):
         super(AllConfirmState, self).__init__(node, StateKind.ALLCONFIRM)
 

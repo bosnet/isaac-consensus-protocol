@@ -68,10 +68,10 @@ if __name__ == '__main__':
     config = config._replace(port=int(conf['client']['port']))
     config = config._replace(message=conf['client']['message'])
     log.debug('loaded conf: %s', config)
-    
+
     url = 'http://%s:%s/get_node' % (config.ip, config.port)
     log.debug(url)
     response = requests.get(url)
-    #response = requests.get(urllib.parse.urljoin('https://%s:%s' % (config.ip, config.port), '/get_node'))
+    # response = requests.get(urllib.parse.urljoin('https://%s:%s' % (config.ip, config.port), '/get_node'))
     log.debug(response)
     print(response)
