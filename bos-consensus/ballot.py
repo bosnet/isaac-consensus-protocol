@@ -1,16 +1,12 @@
 import logging
+from statekind import StateKind 
 
 
 log = logging.getLogger(__name__)
 
 
 class Ballot:
-    ballot_num = None
-    node_id = None
-    message = None
-    node_state = None
-
-    def __init__(self, num, node_id, message, node_state=None):
+    def __init__(self, num, node_id, message, node_state=StateKind.INIT):
         self.ballot_num = num
         self.node_id = node_id
         self.message = message

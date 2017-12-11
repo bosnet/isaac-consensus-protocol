@@ -8,7 +8,11 @@ from state import AllConfirmState
 
 def test_state_init():
     node = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
-    assert str(node) == '<Node[INIT]: 1(http://localhost:5001)>'
+    assert node.node_id == 1
+    assert isinstance(node.node_state, InitState)
+    assert node.threshold == 100
+    assert node.address == ('localhost', 5001)
+    assert node.validators == ['localhost:5002', 'localhost:5003']
 
 
 def test_state_init_to_sign():
@@ -20,7 +24,7 @@ def test_state_init_to_sign():
 
     node1.receive(ballot)
 
-    assert str(node1) == '<Node[SIGN]: 1(http://localhost:5001)>'
+    assert isinstance(node1.node_state, SignState)
 
 
 def test_state_init_to_all_confirm():

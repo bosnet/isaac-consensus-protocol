@@ -1,23 +1,22 @@
 import logging
 
+from statekind import StateKind
 from ballot import Ballot
-from enum import Enum
+
 
 log = logging.getLogger(__name__)
 
 
-class StateKind(Enum):
-    INIT = 1
-    SIGN = 2
-    ACCEPT = 3
-    ALLCONFIRM = 4
-
-
 class State:
-    def __init__(self, kind=StateKind.INIT):
+    def __init__(self, node, kind=StateKind.INIT):
+        self.node = node
         self.kind = kind
 
     def handle_ballot(self, ballot):
+        assert isinstance(ballot, Ballot)
+        self.handle_ballot_impl(ballot)
+    
+    def handle_ballot_impl(self, ballot):
         raise NotImplementedError()
 
     def __eq__(self, state):
@@ -27,11 +26,9 @@ class State:
 
 class InitState(State):
     def __init__(self, node):
-        super(InitState, self).__init__(StateKind.INIT)
-        self.node = node
+        super(InitState, self).__init__(node, StateKind.INIT)
 
-    def handle_ballot(self, ballot):
-        assert isinstance(ballot, Ballot)
+    def handle_ballot_impl(self, ballot):
         self.node.node_state = SignState(self.node)
 
     def __str__(self):
@@ -41,11 +38,9 @@ class InitState(State):
 class SignState(State):
 
     def __init__(self, node):
-        super(SignState, self).__init__(StateKind.SIGN)
-        self.node = node
+        super(SignState, self).__init__(node, StateKind.SIGN)
 
-    def handle_ballot(self, ballot):
-        assert isinstance(ballot, Ballot)
+    def handle_ballot_impl(self, ballot):
         ballots = self.node.get_validator_ballots()
         validator_th = self.node.get_validator_th()
         for node_id, node_ballot in ballots.items():
@@ -68,11 +63,9 @@ class AcceptState(State):
     node = None
 
     def __init__(self, node):
-        super(AcceptState, self).__init__(StateKind.ACCEPT)
-        self.node = node
+        super(AcceptState, self).__init__(node, StateKind.ACCEPT)
 
-    def handle_ballot(self, ballot):
-        assert isinstance(ballot, Ballot)
+    def handle_ballot_impl(self, ballot):
         ballots = self.node.get_validator_ballots()
         validator_th = self.node.get_validator_th()
         for node_id, node_ballot in ballots.items():
@@ -95,11 +88,9 @@ class AllConfirmState(State):
     node = None
 
     def __init__(self, node):
-        super(AllConfirmState, self).__init__(StateKind.ALLCONFIRM)
-        self.node = node
+        super(AllConfirmState, self).__init__(node, StateKind.ALLCONFIRM)
 
-    def handle_ballot(self, ballot):
-        assert isinstance(ballot, Ballot)
+    def handle_ballot_impl(self, ballot):
         pass
 
     def __str__(self):

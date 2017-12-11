@@ -6,6 +6,7 @@ from state import AcceptState
 from state import AllConfirmState
 from ballot import Ballot
 
+
 log = logging.getLogger(__name__)
 
 
