@@ -5,18 +5,63 @@ import logging
 
 import handler
 from node import Node
+import threading
+import requests
+import urllib
+import time
 
 
 log = logging.getLogger(__name__)
 
 
+class Ping(threading.Thread):
+    def __init__(self, node):
+        super(Ping, self).__init__()
+        self.node = node
+
+    def run(self):
+        while True:
+            time.sleep(1)
+
+            if len(self.node.validators) == len(self.node.validator_addrs):
+                continue
+
+            url = 'http://%s'
+            for addr in self.node.validator_addrs:
+                res_ping = requests.get(
+                    urllib.parse.urljoin(url % addr, '/ping')
+                )
+
+                if res_ping.status_code not in (200,):
+                    return False #[TODO]
+
+                res_get_node = requests.get(
+                    urllib.parse.urljoin(url % addr, '/get_node')
+                )
+
+                if res_get_node.status_code not in (200,):
+                    return False #[TODO]
+
+                s = json.loads(res_get_node.text)
+
+                self.node.validators.append(Node(s['node_id'], s['address'], s['threshold'], s['validator_addrs']))
+                log.info('Init Data Receive! %s, %s' % (s['node_id'], s['endpoint']))
+
+            time.sleep(1)
+
+        return True
+
+
 class BOSNetHTTPServer(HTTPServer):
-    def __init__(self, nd, *a, **kw):
-        assert isinstance(nd, Node)
+    def __init__(self, node, *a, **kw):
+        assert isinstance(node, Node)
 
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
-        self.nd = nd
+        self.node = node
+
+        t = Ping(self.node)
+        t.start()
 
     def finish_request(self, request, client_address):
         self.RequestHandlerClass(request, client_address, self)

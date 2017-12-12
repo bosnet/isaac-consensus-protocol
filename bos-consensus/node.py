@@ -11,15 +11,16 @@ log = logging.getLogger(__name__)
 
 
 class Node:
-    def __init__(self, node_id, address, threshold, validators):
+    def __init__(self, node_id, address, threshold, validator_addrs):
         assert type(address) in (list, tuple) and len(address) == 2
         assert type(address[0]) in (str,) and type(address[1]) in (int,)
 
         self.node_id = node_id
         self.address = address
-        self.validators = validators
+        self.validator_addrs = validator_addrs
+        self.validators = []
         self.threshold = threshold
-        self.n_th = len(self.validators) * self.threshold // 100
+        self.n_th = len(self.validator_addrs) * self.threshold // 100
         self.validator_ballots = {}
 
         self.state_init = InitState(self)
@@ -42,8 +43,10 @@ class Node:
     def to_dict(self):
         return dict(
             node_id=self.node_id,
+            address=self.address,
             endpoint=self.endpoint,
-            validators=self.validators,
+            validator_addrs=self.validator_addrs,
+            threshold=self.threshold,
         )
 
     def __eq__(self, rhs):
