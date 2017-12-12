@@ -24,7 +24,8 @@ class Ping(threading.Thread):
             time.sleep(1)
 
             if len(self.node.validators) == len(self.node.validator_addrs):
-                continue
+                self.node.init_node()
+                break
 
             url = 'http://%s'
             for addr in self.node.validator_addrs:
@@ -53,14 +54,14 @@ class Ping(threading.Thread):
 
 
 class BOSNetHTTPServer(HTTPServer):
-    def __init__(self, node, *a, **kw):
-        assert isinstance(node, Node)
+    def __init__(self, nd, *a, **kw):
+        assert isinstance(nd, Node)
 
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
-        self.node = node
+        self.nd = nd
 
-        t = Ping(self.node)
+        t = Ping(self.nd)
         t.start()
 
     def finish_request(self, request, client_address):

@@ -19,7 +19,7 @@ def handle_ping(handler, parsed):
         handler.response(405, None)
         return
 
-    handler.json_response(200, handler.server.nd.to_dict())
+    handler.response(200, None)
 
     return
 
