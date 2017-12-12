@@ -15,7 +15,7 @@ def not_found_handler(handler, parsed):
 
 
 def handle_ping(handler, parsed):
-    if handler.command not in ('POST',):
+    if handler.command not in ('GET',):
         handler.response(405, None)
         return
 
@@ -24,6 +24,15 @@ def handle_ping(handler, parsed):
     return
 
 
+def handle_get_node(handler, parsed):
+    if handler.command not in ('GET',):
+        handler.response(405, None)
+        return
+
+    return handler.json_response(200, handler.server.nd.to_dict())
+
+
 HTTP_HANDLERS = dict(
     ping=handle_ping,
+    get_node=handle_get_node,
 )

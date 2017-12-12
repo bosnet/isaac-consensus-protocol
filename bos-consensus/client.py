@@ -6,13 +6,8 @@ import logging
 import pathlib
 import sys
 import uuid
-
-from network import (
-    BOSNetHTTPServer,
-    BOSNetHTTPServerRequestHandler,
-)
-from node import Node
-from util import get_local_ipaddress
+import requests
+import urllib
 
 
 logging.basicConfig(
@@ -41,7 +36,7 @@ log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-debug', action='store_true')
-parser.add_argument('conf', help='ini config file for server node')
+parser.add_argument('conf', help='ini config file for client')
 
 
 if __name__ == '__main__':
@@ -56,8 +51,8 @@ if __name__ == '__main__':
 
     config = collections.namedtuple(
         'Config',
-        ('node_id', 'port', 'threshold', 'validators'),
-    )(uuid.uuid1().hex, 8001, 51, [])
+        ('ip', 'port', 'message'),
+    )('localhost', 5001, 'message')
 
     if not pathlib.Path(options.conf).exists():
         parser.error('conf file, `%s` does not exists.' % options.conf)
@@ -69,25 +64,14 @@ if __name__ == '__main__':
     conf.read(options.conf)
     log.info('conf file, `%s` was loaded', options.conf)
 
-    config = config._replace(node_id=conf['node']['id'])
-    config = config._replace(port=int(conf['node']['port']))
-    config = config._replace(threshold=int(conf['node']['threshold_percent']))
+    config = config._replace(ip=conf['client']['ip'])
+    config = config._replace(port=int(conf['client']['port']))
+    config = config._replace(message=conf['client']['message'])
     log.debug('loaded conf: %s', config)
 
-    validator_list = []
-    for i in filter(lambda x: len(x.strip()) > 0, conf['node']['validator_list'].split(',')):
-        validator_list.append(i.strip())
-
-    config = config._replace(validators=validator_list)
-    log.debug('Validators: %s' % config.validators)
-
-    nd = Node(
-        config.node_id,
-        (get_local_ipaddress(), config.port),
-        config.threshold,
-        config.validators,
-    )
-
-    httpd = BOSNetHTTPServer(nd, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
-
-    httpd.serve_forever()
+    url = 'http://%s:%s/get_node' % (config.ip, config.port)
+    log.debug(url)
+    response = requests.get(url)
+    # response = requests.get(urllib.parse.urljoin('https://%s:%s' % (config.ip, config.port), '/get_node'))
+    log.debug(response)
+    print(response)

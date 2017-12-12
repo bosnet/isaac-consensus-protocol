@@ -1,0 +1,10 @@
+from ballot import Ballot
+from state import StateKind
+
+
+def test_ballot():
+    b = Ballot(1, 1, 'message')
+    assert b.ballot_num == 1
+    assert b.node_id == 1
+    assert b.message == 'message'
+    assert b.node_state == StateKind.INIT

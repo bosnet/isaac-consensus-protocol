@@ -11,8 +11,6 @@ log = logging.getLogger(__name__)
 
 
 class BOSNetHTTPServer(HTTPServer):
-    nd = None
-
     def __init__(self, nd, *a, **kw):
         assert isinstance(nd, Node)
 
@@ -39,7 +37,6 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         func = handler.HTTP_HANDLERS.get(parsed.path[1:].split('/')[0], handler.not_found_handler)
         r = func(self, parsed)
-
         log.debug('< finished request: %s', self.path)
         return r
 

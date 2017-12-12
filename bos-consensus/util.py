@@ -1,5 +1,9 @@
 import socket
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 def get_local_ipaddress():
-    return socket.gethostbyname(socket.gethostname())
+    return socket.gethostbyname('localhost')
