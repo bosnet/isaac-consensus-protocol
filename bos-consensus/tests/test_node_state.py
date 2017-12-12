@@ -1,36 +1,44 @@
 from node import Node
 from ballot import Ballot
-from state import InitState
-from state import SignState
-from state import AcceptState
-from state import AllConfirmState
+from statekind import StateKind
+from state import (
+    State,
+    NoneState,
+    SignState,
+    InitState,
+    AcceptState,
+    AllConfirmState
+)
 
 
 def test_state_init():
     node = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
     assert node.node_id == 1
-    assert isinstance(node.node_state, InitState)
+    assert node.node_state.kind == StateKind.NONE
     assert node.threshold == 100
     assert node.address == ('localhost', 5001)
-    assert node.validators == ['localhost:5002', 'localhost:5003']
+    assert node.validator_addrs == ['localhost:5002', 'localhost:5003']
 
 
 def test_state_init_to_sign():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
-    node2 = Node(2, ('localhost', 5002), 100, ['localhost:5001', 'localhost:5003'])
-    node3 = Node(3, ('localhost', 5003), 100, ['localhost:5001', 'localhost:5002'])
+    node1.init_node()
 
     ballot = Ballot(1, 1, 'message', node1.node_state)
 
     node1.receive(ballot)
 
-    assert isinstance(node1.node_state, SignState)
+    assert node1.node_state.kind == StateKind.SIGN
 
 
 def test_state_init_to_all_confirm():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
     node2 = Node(2, ('localhost', 5002), 100, ['localhost:5001', 'localhost:5003'])
     node3 = Node(3, ('localhost', 5003), 100, ['localhost:5001', 'localhost:5002'])
+
+    node1.init_node()
+    node2.init_node()
+    node3.init_node()
 
     ballot_init_1 = Ballot(1, 1, 'message', node1.node_state)
 

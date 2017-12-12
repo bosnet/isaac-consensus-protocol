@@ -16,6 +16,9 @@ class State:
         assert isinstance(ballot, Ballot)
         self.handle_ballot_impl(ballot)
 
+    def init_node(self):
+        raise NotImplementedError()
+
     def handle_ballot_impl(self, ballot):
         raise NotImplementedError()
 
@@ -24,12 +27,26 @@ class State:
         return self.kind == state.kind
 
 
+class NoneState(State):
+    def __init__(self, node):
+        super(NoneState, self).__init__(node, StateKind.NONE)
+
+    def init_node(self):
+        self.node.set_state_init()
+
+    def handle_ballot_impl(self, ballot):
+        pass
+
+
 class InitState(State):
     def __init__(self, node):
         super(InitState, self).__init__(node, StateKind.INIT)
 
+    def init_node(self):
+        pass
+
     def handle_ballot_impl(self, ballot):
-        self.node.node_state = SignState(self.node)
+        self.node.set_state_sign()
 
     def __str__(self):
         return 'INIT'
@@ -38,6 +55,9 @@ class InitState(State):
 class SignState(State):
     def __init__(self, node):
         super(SignState, self).__init__(node, StateKind.SIGN)
+
+    def init_node(self):
+        pass
 
     def handle_ballot_impl(self, ballot):
         if ballot.node_state.kind == self.kind:
@@ -51,7 +71,7 @@ class SignState(State):
                     validator_th -= 1
 
             if validator_th == 0:
-                self.node.node_state = AcceptState(self.node)
+                self.node.set_state_accept()
 
         self.node.store(ballot)
 
@@ -63,6 +83,9 @@ class AcceptState(State):
     def __init__(self, node):
         super(AcceptState, self).__init__(node, StateKind.ACCEPT)
 
+    def init_node(self):
+        pass
+
     def handle_ballot_impl(self, ballot):
         if ballot.node_state.kind == self.kind:
             ballots = self.node.validator_ballots
@@ -74,7 +97,7 @@ class AcceptState(State):
                     validator_th -= 1
 
             if validator_th == 0:
-                self.node.node_state = AllConfirmState(self.node)
+                self.node.set_state_all_confirm()
 
         self.node.store(ballot)
 
@@ -85,6 +108,9 @@ class AcceptState(State):
 class AllConfirmState(State):
     def __init__(self, node):
         super(AllConfirmState, self).__init__(node, StateKind.ALLCONFIRM)
+
+    def init_node(self):
+        pass
 
     def handle_ballot_impl(self, ballot):
         pass

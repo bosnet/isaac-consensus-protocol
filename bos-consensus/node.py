@@ -1,9 +1,12 @@
 import logging
-from state import State
-from state import InitState
-from state import SignState
-from state import AcceptState
-from state import AllConfirmState
+from state import (
+    State,
+    NoneState,
+    SignState,
+    InitState,
+    AcceptState,
+    AllConfirmState
+)
 from ballot import Ballot
 
 
@@ -23,12 +26,25 @@ class Node:
         self.n_th = len(self.validator_addrs) * self.threshold // 100
         self.validator_ballots = {}
 
+        self.state_none = NoneState(self)
         self.state_init = InitState(self)
         self.state_sign = SignState(self)
         self.state_accept = AcceptState(self)
         self.state_all_confirm = AllConfirmState(self)
 
+        self.node_state = self.state_none
+
+    def set_state_init(self):
         self.node_state = self.state_init
+
+    def set_state_sign(self):
+        self.node_state = self.state_sign
+
+    def set_state_accept(self):
+        self.node_state = self.state_accept
+
+    def set_state_all_confirm(self):
+        self.node_state = self.state_all_confirm
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
@@ -62,6 +78,10 @@ class Node:
             lhs_endpoint.replace(t_str, r_str)
 
         return lhs_endpoint == rhs_endpoint
+
+    def init_node(self):
+        self.node_state.init_node()
+        return
 
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
