@@ -83,6 +83,9 @@ class Node:
         self.node_state.init_node()
         return
 
+    def receive_from_client(self, message):
+        assert isinstance(message, str)
+
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
         if self.node_state == ballot.node_state:

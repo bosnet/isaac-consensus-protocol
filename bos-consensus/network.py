@@ -8,6 +8,7 @@ from node import Node
 import threading
 import requests
 import urllib
+import urlparse
 import time
 
 
@@ -20,6 +21,7 @@ class Ping(threading.Thread):
         self.node = node
 
     def run(self):
+        url = 'http://%s'
         while True:
             time.sleep(1)
 
@@ -27,7 +29,6 @@ class Ping(threading.Thread):
                 self.node.init_node()
                 break
 
-            url = 'http://%s'
             for addr in self.node.validator_addrs:
                 res_ping = requests.get(
                     urllib.parse.urljoin(url % addr, '/ping')

@@ -69,9 +69,10 @@ if __name__ == '__main__':
     config = config._replace(message=conf['client']['message'])
     log.debug('loaded conf: %s', config)
 
-    url = 'http://%s:%s/get_node' % (config.ip, config.port)
-    log.debug(url)
-    response = requests.get(url)
-    # response = requests.get(urllib.parse.urljoin('https://%s:%s' % (config.ip, config.port), '/get_node'))
-    log.debug(response)
-    print(response)
+    url = 'http://%s:%s' % (config.ip, config.port)
+    json_data = {'ip': config.ip, 'port': config.port, 'message': config.message}
+    response = requests.post(urllib.parse.urljoin(url, '/send_message'), json=json_data)
+    if response.status_code == 200:
+        log.debug('message sent!')
+    else:
+        log.error('message sent error')

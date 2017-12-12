@@ -1,5 +1,5 @@
 import logging
-
+import urlparse
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +32,17 @@ def handle_get_node(handler, parsed):
     return handler.json_response(200, handler.server.nd.to_dict())
 
 
+def handle_send_message(handler, parsed):
+    if handler.command not in ('POST',):
+        handler.response(405, None)
+        return
+
+    urlparse.parse_qs(parsed.path)
+    handler.server.nd.receive_from_client()
+
+    return handler.json_response(200, handler.server.nd.to_dict())
+
+
 def handle_send_ballot(handler, parsed):
     if handler.command not in ('POST',):
         handler.response(405, None)
@@ -43,5 +54,6 @@ def handle_send_ballot(handler, parsed):
 HTTP_HANDLERS = dict(
     ping=handle_ping,
     get_node=handle_get_node,
+    send_message=handle_send_message,
     send_ballot=handle_send_ballot,
 )
