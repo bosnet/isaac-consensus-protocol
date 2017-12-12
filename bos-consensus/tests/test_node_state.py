@@ -33,8 +33,6 @@ def test_state_init_to_all_confirm():
     node3 = Node(3, ('localhost', 5003), 100, ['localhost:5001', 'localhost:5002'])
 
     ballot_init_1 = Ballot(1, 1, 'message', node1.node_state)
-    ballot2 = Ballot(1, 2, 'message', node2.node_state)
-    ballot3 = Ballot(1, 3, 'message', node3.node_state)
 
     node1.receive(ballot_init_1)
     node2.receive(ballot_init_1)
@@ -77,8 +75,8 @@ def test_state_init_to_all_confirm():
     node2.receive(ballot_accept_2)
     node3.receive(ballot_accept_2)
 
-    node1.receive(ballot_accept_3)  # different state ballot
-    node2.receive(ballot_sign_3)
+    node1.receive(ballot_accept_3)
+    node2.receive(ballot_sign_3)    # different state ballot
     node3.receive(ballot_accept_3)
 
     assert isinstance(node1.node_state, AllConfirmState)
