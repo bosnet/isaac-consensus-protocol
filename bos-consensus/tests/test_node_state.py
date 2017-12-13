@@ -24,7 +24,6 @@ def test_state_init_to_sign():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
 
     node1.init_node()
-    node1.n_th = 2
 
     ballot = Ballot(1, 1, 'message', node1.node_state.kind)
 
@@ -41,7 +40,6 @@ def test_state_init_to_all_confirm():
     node1.init_node()
     node2.init_node()
     node3.init_node()
-    node1.n_th = node2.n_th = node3.n_th = 2
 
     ballot_init_1 = Ballot(1, 1, 'message', node1.node_state.kind)
 
