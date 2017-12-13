@@ -47,6 +47,7 @@ class InitState(State):
 
     def handle_ballot_impl(self, ballot):
         self.node.set_state_sign()
+        self.node.broadcast(ballot.message)
 
     def __str__(self):
         return 'INIT'
@@ -72,6 +73,7 @@ class SignState(State):
 
             if validator_th == 0:
                 self.node.set_state_accept()
+                self.node.broadcast(ballot.message)
 
         self.node.store(ballot)
 

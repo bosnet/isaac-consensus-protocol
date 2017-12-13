@@ -8,11 +8,28 @@ from state import (
     AllConfirmState
 )
 from ballot import Ballot
+import threading
 import requests
 
 import urllib
 
 log = logging.getLogger(__name__)
+
+
+class Request(threading.Thread):
+    def __init__(self, url, ballot):
+        super(Request, self).__init__()
+        self.url = url
+        self.ballot = ballot
+
+    def run(self):
+        try:
+            response = requests.post(urllib.parse.urljoin(self.url, '/send_ballot'), params=self.ballot.to_dict())
+            if response.status_code == 200:
+                log.info('message to %s sent!' % self.url)
+        except requests.exceptions.ConnectionError:
+            log.info('Connection Refused!')
+        return
 
 
 class Node:
@@ -25,7 +42,7 @@ class Node:
         self.validator_addrs = validator_addrs
         self.validators = []
         self.threshold = threshold
-        self.n_th = len(self.validator_addrs) * self.threshold // 100
+        self.n_th = len(self.validators) * self.threshold // 100
         self.validator_ballots = {}
         self.message = ''
 
@@ -97,25 +114,30 @@ class Node:
         return
 
     def send_to(self, url, ballot):
+        log.debug('[%s] send to %s' % (self.node_id, url))
+        # t = Request(url, ballot)
+        # t.start()
+        # t.join()
         try:
             response = requests.post(urllib.parse.urljoin(url, '/send_ballot'), params=ballot.to_dict())
             if response.status_code == 200:
-                log.info('message %s to %s sent!' % (self.node_id, url))
+                log.debug('[%s] Sent to %s!' % (self.node_id, url))
         except requests.exceptions.ConnectionError:
-            log.info('Connection Refused!')
-
+            log.debug('[%s] Connection to %s Refused!' % (self.node_id, url))
+        return
 
     def broadcast(self, message):
+        log.debug('%s broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
-        #self.send_to(self.endpoint, ballot)
+        self.receive(ballot)
         for addr in self.validator_addrs:
             url = 'http://%s' % addr
             self.send_to(url, ballot)
-
         return
 
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
+        log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
         if self.node_state.kind == ballot.node_state_kind:
             self.node_state.handle_ballot(ballot)
         return
