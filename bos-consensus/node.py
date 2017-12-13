@@ -42,7 +42,7 @@ class Node:
         self.validator_addrs = validator_addrs
         self.validators = []
         self.threshold = threshold
-        self.n_th = len(self.validator_addrs) * self.threshold // 100
+        self.n_th = len(self.validators) * self.threshold // 100
         self.validator_ballots = {}
         self.message = ''
 
@@ -130,9 +130,9 @@ class Node:
         log.debug('%s broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
         self.receive(ballot)
-        for addr in self.validator_addrs:
-            url = 'http://%s' % addr
-            self.send_to(url, ballot)
+        for node in self.validators:
+            assert isinstance(node, Node)
+            self.send_to(node.endpoint, ballot)
         return
 
     def receive(self, ballot):
