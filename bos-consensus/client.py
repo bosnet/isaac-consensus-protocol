@@ -70,9 +70,12 @@ if __name__ == '__main__':
     log.debug('loaded conf: %s', config)
 
     url = 'http://%s:%s' % (config.ip, config.port)
-    json_data = {'ip': config.ip, 'port': config.port, 'message': config.message}
-    response = requests.post(urllib.parse.urljoin(url, '/send_message'), json=json_data)
-    if response.status_code == 200:
-        log.debug('message sent!')
-    else:
-        log.error('message sent error')
+    json_data = {'message': config.message}
+    try:
+        response = requests.post(urllib.parse.urljoin(url, '/send_message'), params=json_data)
+        if response.status_code == 200:
+            log.debug('message sent!')
+        else:
+            log.error('message sent error')
+    except requests.exceptions.ConnectionError:
+        log.info('Connection Refused!')

@@ -8,7 +8,6 @@ from node import Node
 import threading
 import requests
 import urllib
-import urlparse
 import time
 
 
@@ -30,19 +29,24 @@ class Ping(threading.Thread):
                 break
 
             for addr in self.node.validator_addrs:
-                res_ping = requests.get(
-                    urllib.parse.urljoin(url % addr, '/ping')
-                )
+                try:
+                    res_ping = requests.get(
+                        urllib.parse.urljoin(url % addr, '/ping')
+                    )
+                    if res_ping.status_code not in (200,):
+                        return False #[TODO]
+                except requests.exceptions.ConnectionError:
+                    log.info('Connection Refused!')
 
-                if res_ping.status_code not in (200,):
-                    return False #[TODO]
+                try:
+                    res_get_node = requests.get(
+                        urllib.parse.urljoin(url % addr, '/get_node')
+                    )
+                    if res_get_node.status_code not in (200,):
+                        return False #[TODO]
+                except requests.exceptions.ConnectionError:
+                    log.info('Connection Refused!')
 
-                res_get_node = requests.get(
-                    urllib.parse.urljoin(url % addr, '/get_node')
-                )
-
-                if res_get_node.status_code not in (200,):
-                    return False #[TODO]
 
                 s = json.loads(res_get_node.text)
 

@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 
 class State:
-    def __init__(self, node, kind=StateKind.INIT):
+    def __init__(self, node, kind=StateKind.NONE):
         self.node = node
         self.kind = kind
 
@@ -60,14 +60,14 @@ class SignState(State):
         pass
 
     def handle_ballot_impl(self, ballot):
-        if ballot.node_state.kind == self.kind:
+        if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
             validator_th = self.node.n_th
 
             for node_id, node_ballot in ballots.items():
                 if node_id == ballot.node_id:
                     continue
-                if node_ballot.node_state.kind == self.kind and ballot.message == node_ballot.message:
+                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
                     validator_th -= 1
 
             if validator_th == 0:
@@ -87,13 +87,13 @@ class AcceptState(State):
         pass
 
     def handle_ballot_impl(self, ballot):
-        if ballot.node_state.kind == self.kind:
+        if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
             validator_th = self.node.n_th
             for node_id, node_ballot in ballots.items():
                 if node_id == ballot.node_id:
                     continue
-                if node_ballot.node_state.kind == self.kind and ballot.message == node_ballot.message:
+                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
                     validator_th -= 1
 
             if validator_th == 0:

@@ -1,5 +1,7 @@
+from urllib.parse import (urlparse, parse_qs)
+from ballot import Ballot
+from statekind import StateKind
 import logging
-import urlparse
 
 log = logging.getLogger(__name__)
 
@@ -37,10 +39,11 @@ def handle_send_message(handler, parsed):
         handler.response(405, None)
         return
 
-    urlparse.parse_qs(parsed.path)
-    handler.server.nd.receive_from_client()
+    json_data = parse_qs(parsed.query)
+    message = json_data['message']
+    handler.server.nd.receive_from_client(message[0])
 
-    return handler.json_response(200, handler.server.nd.to_dict())
+    return handler.response(200, None)
 
 
 def handle_send_ballot(handler, parsed):
@@ -48,7 +51,17 @@ def handle_send_ballot(handler, parsed):
         handler.response(405, None)
         return
 
-    return handler.json_response(200, handler.server.nd.to_dict())
+    json_data = parse_qs(parsed.query)
+    ballot_num = json_data['ballot_num'][0]
+    node_id = json_data['node_id'][0]
+    message = json_data['message'][0]
+    node_state_name = json_data['node_state_kind'][0]
+    state_kind = StateKind[node_state_name]
+
+    ballot = Ballot(ballot_num, node_id, message, state_kind)
+    handler.server.nd.receive(ballot)
+
+    return handler.response(200, None)
 
 
 HTTP_HANDLERS = dict(

@@ -8,7 +8,9 @@ from state import (
     AllConfirmState
 )
 from ballot import Ballot
+import requests
 
+import urllib
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +27,7 @@ class Node:
         self.threshold = threshold
         self.n_th = len(self.validator_addrs) * self.threshold // 100
         self.validator_ballots = {}
+        self.message = ''
 
         self.state_none = NoneState(self)
         self.state_init = InitState(self)
@@ -36,15 +39,19 @@ class Node:
 
     def set_state_init(self):
         self.node_state = self.state_init
+        log.debug('node %s state to INIT', self.node_id)
 
     def set_state_sign(self):
         self.node_state = self.state_sign
+        log.debug('node %s state to SIGN', self.node_id)
 
     def set_state_accept(self):
         self.node_state = self.state_accept
+        log.debug('node %s state to ACCEPT', self.node_id)
 
     def set_state_all_confirm(self):
         self.node_state = self.state_all_confirm
+        log.debug('node %s state to ALLCONFIRM', self.node_id)
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
@@ -85,10 +92,31 @@ class Node:
 
     def receive_from_client(self, message):
         assert isinstance(message, str)
+        self.message = message.strip('"\'')
+        self.broadcast(self.message)
+        return
+
+    def send_to(self, url, ballot):
+        try:
+            response = requests.post(urllib.parse.urljoin(url, '/send_ballot'), params=ballot.to_dict())
+            if response.status_code == 200:
+                log.info('message %s to %s sent!' % (self.node_id, url))
+        except requests.exceptions.ConnectionError:
+            log.info('Connection Refused!')
+
+
+    def broadcast(self, message):
+        ballot = Ballot(1, self.node_id, message, self.node_state.kind)
+        #self.send_to(self.endpoint, ballot)
+        for addr in self.validator_addrs:
+            url = 'http://%s' % addr
+            self.send_to(url, ballot)
+
+        return
 
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
-        if self.node_state == ballot.node_state:
+        if self.node_state.kind == ballot.node_state_kind:
             self.node_state.handle_ballot(ballot)
         return
 

@@ -24,7 +24,7 @@ def test_state_init_to_sign():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
     node1.init_node()
 
-    ballot = Ballot(1, 1, 'message', node1.node_state)
+    ballot = Ballot(1, 1, 'message', node1.node_state.kind)
 
     node1.receive(ballot)
 
@@ -40,7 +40,7 @@ def test_state_init_to_all_confirm():
     node2.init_node()
     node3.init_node()
 
-    ballot_init_1 = Ballot(1, 1, 'message', node1.node_state)
+    ballot_init_1 = Ballot(1, 1, 'message', node1.node_state.kind)
 
     node1.receive(ballot_init_1)
     node2.receive(ballot_init_1)
@@ -50,9 +50,9 @@ def test_state_init_to_all_confirm():
     assert isinstance(node2.node_state, SignState)
     assert isinstance(node3.node_state, SignState)
 
-    ballot_sign_1 = Ballot(1, 1, 'message', node1.node_state)
-    ballot_sign_2 = Ballot(1, 2, 'message', node2.node_state)
-    ballot_sign_3 = Ballot(1, 3, 'message', node3.node_state)
+    ballot_sign_1 = Ballot(1, 1, 'message', node1.node_state.kind)
+    ballot_sign_2 = Ballot(1, 2, 'message', node2.node_state.kind)
+    ballot_sign_3 = Ballot(1, 3, 'message', node3.node_state.kind)
 
     node1.receive(ballot_sign_1)
     node2.receive(ballot_sign_1)
@@ -70,9 +70,9 @@ def test_state_init_to_all_confirm():
     assert isinstance(node2.node_state, AcceptState)
     assert isinstance(node3.node_state, AcceptState)
 
-    ballot_accept_1 = Ballot(1, 1, 'message', node1.node_state)
-    ballot_accept_2 = Ballot(1, 2, 'message', node2.node_state)
-    ballot_accept_3 = Ballot(1, 3, 'message', node3.node_state)
+    ballot_accept_1 = Ballot(1, 1, 'message', node1.node_state.kind)
+    ballot_accept_2 = Ballot(1, 2, 'message', node2.node_state.kind)
+    ballot_accept_3 = Ballot(1, 3, 'message', node3.node_state.kind)
 
     node1.receive(ballot_accept_1)
     node1.receive(ballot_sign_1)    # different state ballot
