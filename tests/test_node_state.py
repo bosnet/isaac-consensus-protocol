@@ -32,9 +32,9 @@ def test_state_init_to_sign():
     ballot_init_2 = Ballot(1, 2, 'message', StateKind.INIT)
     ballot_init_3 = Ballot(1, 3, 'message', StateKind.INIT)
 
-    node1.receive(ballot_init_1)
-    node1.receive(ballot_init_2)
-    node1.receive(ballot_init_3)
+    node1.receive_ballot(ballot_init_1)
+    node1.receive_ballot(ballot_init_2)
+    node1.receive_ballot(ballot_init_3)
 
 
     assert node1.node_state.kind == StateKind.SIGN
@@ -53,17 +53,17 @@ def test_state_init_to_all_confirm_sequence():
     ballot_init_2 = Ballot(1, 2, 'message', StateKind.INIT)
     ballot_init_3 = Ballot(1, 3, 'message', StateKind.INIT)
 
-    node1.receive(ballot_init_1)
-    node1.receive(ballot_init_2)
-    node1.receive(ballot_init_3)
+    node1.receive_ballot(ballot_init_1)
+    node1.receive_ballot(ballot_init_2)
+    node1.receive_ballot(ballot_init_3)
 
-    node2.receive(ballot_init_1)
-    node2.receive(ballot_init_2)
-    node2.receive(ballot_init_3)
+    node2.receive_ballot(ballot_init_1)
+    node2.receive_ballot(ballot_init_2)
+    node2.receive_ballot(ballot_init_3)
 
-    node3.receive(ballot_init_1)
-    node3.receive(ballot_init_2)
-    node3.receive(ballot_init_3)
+    node3.receive_ballot(ballot_init_1)
+    node3.receive_ballot(ballot_init_2)
+    node3.receive_ballot(ballot_init_3)
 
     assert isinstance(node1.node_state, SignState)
     assert isinstance(node2.node_state, SignState)
@@ -73,17 +73,17 @@ def test_state_init_to_all_confirm_sequence():
     ballot_sign_2 = Ballot(1, 2, 'message', StateKind.SIGN)
     ballot_sign_3 = Ballot(1, 3, 'message', StateKind.SIGN)
 
-    node1.receive(ballot_sign_1)
-    node2.receive(ballot_sign_1)
-    node3.receive(ballot_sign_1)
+    node1.receive_ballot(ballot_sign_1)
+    node2.receive_ballot(ballot_sign_1)
+    node3.receive_ballot(ballot_sign_1)
 
-    node1.receive(ballot_sign_2)
-    node2.receive(ballot_sign_2)
-    node3.receive(ballot_sign_2)
+    node1.receive_ballot(ballot_sign_2)
+    node2.receive_ballot(ballot_sign_2)
+    node3.receive_ballot(ballot_sign_2)
 
-    node1.receive(ballot_sign_3)
-    node2.receive(ballot_sign_3)
-    node3.receive(ballot_sign_3)
+    node1.receive_ballot(ballot_sign_3)
+    node2.receive_ballot(ballot_sign_3)
+    node3.receive_ballot(ballot_sign_3)
 
     assert isinstance(node1.node_state, AcceptState)
     assert isinstance(node2.node_state, AcceptState)
@@ -93,18 +93,18 @@ def test_state_init_to_all_confirm_sequence():
     ballot_accept_2 = Ballot(1, 2, 'message', StateKind.ACCEPT)
     ballot_accept_3 = Ballot(1, 3, 'message', StateKind.ACCEPT)
 
-    node1.receive(ballot_accept_1)
-    node1.receive(ballot_sign_1)    # different state ballot
-    node2.receive(ballot_accept_1)
-    node3.receive(ballot_accept_1)
+    node1.receive_ballot(ballot_accept_1)
+    node1.receive_ballot(ballot_sign_1)    # different state ballot
+    node2.receive_ballot(ballot_accept_1)
+    node3.receive_ballot(ballot_accept_1)
 
-    node1.receive(ballot_accept_2)
-    node2.receive(ballot_accept_2)
-    node3.receive(ballot_accept_2)
+    node1.receive_ballot(ballot_accept_2)
+    node2.receive_ballot(ballot_accept_2)
+    node3.receive_ballot(ballot_accept_2)
 
-    node1.receive(ballot_accept_3)
-    node2.receive(ballot_sign_3)    # different state ballot
-    node3.receive(ballot_accept_3)
+    node1.receive_ballot(ballot_accept_3)
+    node2.receive_ballot(ballot_sign_3)    # different state ballot
+    node3.receive_ballot(ballot_accept_3)
 
     assert isinstance(node1.node_state, AllConfirmState)
     assert isinstance(node2.node_state, AcceptState)
@@ -118,7 +118,7 @@ def test_state_init_to_all_confirm_sequence():
 
 #     ballot_init_1 = Ballot(1, 1, 'message', StateKind.INIT)
 
-#     node1.receive(ballot_init_1)
+#     node1.receive_ballot(ballot_init_1)
 
 #     assert isinstance(node1.node_state, SignState)
 
@@ -126,9 +126,9 @@ def test_state_init_to_all_confirm_sequence():
 #     ballot_sign_2 = Ballot(1, 2, 'message', StateKind.ACCEPT)
 #     ballot_sign_3 = Ballot(1, 3, 'message', StateKind.SIGN)
 
-#     node1.receive(ballot_sign_1)
-#     node1.receive(ballot_sign_2)
-#     node1.receive(ballot_sign_3)
+#     node1.receive_ballot(ballot_sign_1)
+#     node1.receive_ballot(ballot_sign_2)
+#     node1.receive_ballot(ballot_sign_3)
 
 #     assert isinstance(node1.node_state, AcceptState)
 
@@ -136,9 +136,9 @@ def test_state_init_to_all_confirm_sequence():
 #     ballot_accept_2 = Ballot(1, 2, 'message', StateKind.ACCEPT)
 #     ballot_accept_3 = Ballot(1, 3, 'message', StateKind.ACCEPT)
 
-#     node1.receive(ballot_accept_1)
-#     node1.receive(ballot_sign_1)    # different state ballot
-#     node1.receive(ballot_accept_2)
-#     node1.receive(ballot_accept_3)
+#     node1.receive_ballot(ballot_accept_1)
+#     node1.receive_ballot(ballot_sign_1)    # different state ballot
+#     node1.receive_ballot(ballot_accept_2)
+#     node1.receive_ballot(ballot_accept_3)
 
 #     assert isinstance(node1.node_state, AllConfirmState)
