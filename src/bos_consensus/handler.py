@@ -1,6 +1,6 @@
 from urllib.parse import (urlparse, parse_qs)
-from ballot import Ballot
-from statekind import StateKind
+from .ballot import Ballot
+from .statekind import StateKind
 import logging
 import time
 import random
