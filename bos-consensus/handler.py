@@ -55,7 +55,6 @@ def handle_send_ballot(handler, parsed):
         handler.response(405, None)
         return
 
-
     json_data = parse_qs(parsed.query)
     ballot_num = json_data['ballot_num'][0]
     node_id = json_data['node_id'][0]

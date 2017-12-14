@@ -37,7 +37,7 @@ class Ping(threading.Thread):
                         urllib.parse.urljoin(url % addr, '/ping')
                     )
                     if res_ping.status_code not in (200,):
-                        return False #[TODO]
+                        return False
                 except requests.exceptions.ConnectionError:
                     log.info('Connection Refused!')
 
@@ -46,17 +46,16 @@ class Ping(threading.Thread):
                         urllib.parse.urljoin(url % addr, '/get_node')
                     )
                     if res_get_node.status_code not in (200,):
-                        return False #[TODO]
+                        return False
                     else:
                         data = json.loads(res_get_node.text)
-
-                        self.node.validators.append(Node(data['node_id'], data['address'], data['threshold'], data['validator_addrs']))
+                        node = Node(data['node_id'], data['address'], data['threshold'], data['validator_addrs'])
+                        self.node.validators.append(node)
                         log.info('Init Data Receive! %s, %s' % (data['node_id'], data['endpoint']))
 
                 except requests.exceptions.ConnectionError:
                     log.info('Connection Refused!')
-                    return False #[TODO]
-
+                    return False
 
         return True
 
@@ -140,6 +139,7 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
 
     def node_sequence_executor(self, func_name, arg):
         self.node_manager.push_element(func_name, arg)
+
 
 class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
     def __init__(self, *a, **kw):
