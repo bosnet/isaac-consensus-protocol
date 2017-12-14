@@ -7,12 +7,12 @@ import pathlib
 import sys
 import uuid
 
-from network import (
+from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
-from node import Node
-from util import get_local_ipaddress
+from bos_consensus.node import Node
+from bos_consensus.util import get_local_ipaddress
 
 
 logging.basicConfig(
