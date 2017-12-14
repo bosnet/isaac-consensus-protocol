@@ -65,11 +65,12 @@ class Node:
 
     def to_dict(self):
         return dict(
+            status=self.node_state.kind.name,
             node_id=self.node_id,
+            threshold=self.threshold,
             address=self.address,
             endpoint=self.endpoint,
             validator_addrs=self.validator_addrs,
-            threshold=self.threshold,
         )
 
     def __eq__(self, rhs):

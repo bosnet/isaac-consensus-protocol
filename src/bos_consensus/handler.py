@@ -4,6 +4,7 @@ from .statekind import StateKind
 import logging
 import time
 import random
+import json
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ def handle_status(handler, parsed):
         handler.response(405, None)
         return
 
-    message = 'Hello!'
+    message = json.dumps(handler.server.node.to_dict(), indent=True)
     handler.response(200, message)
 
     return
