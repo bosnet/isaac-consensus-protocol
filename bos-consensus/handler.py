@@ -33,7 +33,7 @@ def handle_get_node(handler, parsed):
         handler.response(405, None)
         return
 
-    return handler.json_response(200, handler.server.nd.to_dict())
+    return handler.json_response(200, handler.server.node.to_dict())
 
 
 def handle_send_message(handler, parsed):
@@ -45,7 +45,8 @@ def handle_send_message(handler, parsed):
 
     json_data = parse_qs(parsed.query)
     message = json_data['message']
-    handler.server.nd.receive_from_client(message[0])
+    handler.server.node_sequence_executor('receive_from_client', message[0])
+    #handler.server.node.receive_from_client(message[0])
 
     return handler.response(200, None)
 
@@ -64,8 +65,8 @@ def handle_send_ballot(handler, parsed):
     state_kind = StateKind[node_state_name]
 
     ballot = Ballot(ballot_num, node_id, message, state_kind)
-    time.sleep(random.random())
-    handler.server.nd.receive(ballot)
+    handler.server.node_sequence_executor('receive', ballot)
+    #handler.server.node.receive(ballot)
 
     return handler.response(200, None)
 

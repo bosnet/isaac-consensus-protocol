@@ -81,13 +81,13 @@ if __name__ == '__main__':
     config = config._replace(validators=validator_list)
     log.debug('Validators: %s' % config.validators)
 
-    nd = Node(
+    node = Node(
         config.node_id,
         (get_local_ipaddress(), config.port),
         config.threshold,
         config.validators,
     )
 
-    httpd = BOSNetHTTPServer(nd, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
+    httpd = BOSNetHTTPServer(node, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
 
     httpd.serve_forever()
