@@ -10,9 +10,9 @@
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/bos-consensus/client.py",
+            "program": "${workspaceRoot}/scripts/client.py",
             "cwd": "${workspaceRoot}",
-            "args": ["${workspaceRoot}/bos-consensus/client.ini", "-debug"],
+            "args": ["${workspaceRoot}/examples/client.ini", "-debug"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
@@ -28,9 +28,9 @@
         "stopOnEntry": false,
         //"pythonPath": "${config:python.pythonPath}",
         "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",        
-        "program": "${workspaceRoot}/bos-consensus/run_node.py",
+        "program": "${workspaceRoot}/scripts/run-node.py",
         "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/bos-consensus/node5001.ini", "-debug"],
+        "args": ["${workspaceRoot}/examples/node5001.ini", "-debug"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [
@@ -39,23 +39,23 @@
             "RedirectOutput"
         ]
     },
-        {
-            "name": "pytest",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "module": "pytest",
-            //"pythonPath": "${config:python.pythonPath}",
-            "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
-            "program": "${file}",
-            "cwd": "${workspaceRoot}",
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit",
-                "RedirectOutput"
-            ]
-        }
+    {
+        "name": "pytest",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    }
     ]
 }
