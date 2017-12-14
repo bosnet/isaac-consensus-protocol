@@ -57,7 +57,7 @@ def handle_send_message(handler, parsed):
 
     json_data = parse_qs(parsed.query)
     message = json_data['message']
-    handler.server.node_sequence_executor('receive_from_client', message[0])
+    handler.server.node_sequence_executor('receive_message_from_client', message[0])
 
     return handler.response(200, None)
 

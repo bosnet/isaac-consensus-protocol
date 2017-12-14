@@ -90,7 +90,7 @@ class Node:
         self.node_state.init_node()
         return
 
-    def receive_from_client(self, message):
+    def receive_message_from_client(self, message):
         assert isinstance(message, str)
         self.message = message.strip('"\'')
         self.broadcast(self.message)
