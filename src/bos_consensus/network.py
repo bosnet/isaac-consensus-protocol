@@ -4,8 +4,8 @@ from urllib.parse import urlparse
 import json
 import logging
 
-import handler
-from node import Node
+from . import handler
+from .node import Node
 import threading
 import requests
 import urllib

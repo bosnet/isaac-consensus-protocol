@@ -1,7 +1,7 @@
 import logging
 
-from statekind import StateKind
-from ballot import Ballot
+from .statekind import StateKind
+from .ballot import Ballot
 
 
 log = logging.getLogger(__name__)

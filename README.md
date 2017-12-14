@@ -45,14 +45,16 @@ $ mkdir src/
 $ cd src
 $ git clone git@github.com:owlchain/bosnet-prototype-fba.git
 $ cd bosnet-prototype-fba
-$ pip install -r requirements.txt
+```
+
+```
+$ python setup.py develop
 ```
 
 ## Deployment
 
 ```
-$ cd bosnet-prototype-fba/bos-consensus
-$ python run_node.py -h
+$ run_node.py -h
 usage: run_node.py [-h] [-debug] conf
 
 positional arguments:
@@ -65,7 +67,7 @@ optional arguments:
 
 Set the config file.
 ```
-$ python run_node.py node5001.ini
+$ run_node.py examples/node5001.ini
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node ID: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node PORT: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Validators: ['localhost:5002', 'localhost:5003']
@@ -73,6 +75,13 @@ $ python run_node.py node5001.ini
 
 Run the other nodes like this.
 ```
-$ python run_node.py node5002.ini
-$ python run_node.py node5003.ini
+$ python run_node.py examples/node5002.ini
+$ python run_node.py examples/node5003.ini
+```
+
+## Test
+
+```
+$ cd bosnet-prototype-fba
+$ pytest
 ```

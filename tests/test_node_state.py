@@ -1,7 +1,7 @@
-from node import Node
-from ballot import Ballot
+from bos_consensus.node import Node
+from bos_consensus.ballot import Ballot
 from statekind import StateKind
-from state import (
+from bos_consensus.state import (
     State,
     NoneState,
     SignState,

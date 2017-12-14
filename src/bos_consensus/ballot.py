@@ -1,5 +1,6 @@
 import logging
-from statekind import StateKind
+
+from .statekind import StateKind
 
 
 log = logging.getLogger(__name__)
