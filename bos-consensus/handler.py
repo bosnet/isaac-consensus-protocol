@@ -46,7 +46,6 @@ def handle_send_message(handler, parsed):
     json_data = parse_qs(parsed.query)
     message = json_data['message']
     handler.server.node_sequence_executor('receive_from_client', message[0])
-    #handler.server.node.receive_from_client(message[0])
 
     return handler.response(200, None)
 
@@ -66,7 +65,6 @@ def handle_send_ballot(handler, parsed):
 
     ballot = Ballot(ballot_num, node_id, message, state_kind)
     handler.server.node_sequence_executor('receive', ballot)
-    #handler.server.node.receive(ballot)
 
     return handler.response(200, None)
 
