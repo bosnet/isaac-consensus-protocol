@@ -1,5 +1,5 @@
-from ballot import Ballot
-from state import StateKind
+from bos_consensus.ballot import Ballot
+from bos_consensus.state import StateKind
 
 
 def test_ballot():

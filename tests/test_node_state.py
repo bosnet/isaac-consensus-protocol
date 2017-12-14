@@ -1,9 +1,9 @@
-from node import Node
-from ballot import Ballot
-from state import InitState
-from state import SignState
-from state import AcceptState
-from state import AllConfirmState
+from bos_consensus.node import Node
+from bos_consensus.ballot import Ballot
+from bos_consensus.state import InitState
+from bos_consensus.state import SignState
+from bos_consensus.state import AcceptState
+from bos_consensus.state import AllConfirmState
 
 
 def test_state_init():
