@@ -26,6 +26,9 @@ class State:
         assert isinstance(state, State)
         return self.kind == state.kind
 
+    def __str__(self):
+        return self.kind.name
+
 
 class NoneState(State):
     def __init__(self, node):
@@ -48,9 +51,6 @@ class InitState(State):
     def handle_ballot_impl(self, ballot):
         self.node.set_state_sign()
         self.node.broadcast(ballot.message)
-
-    def __str__(self):
-        return 'INIT'
 
 
 class SignState(State):
@@ -77,9 +77,6 @@ class SignState(State):
 
         self.node.store(ballot)
 
-    def __str__(self):
-        return 'SIGN'
-
 
 class AcceptState(State):
     def __init__(self, node):
@@ -103,9 +100,6 @@ class AcceptState(State):
 
         self.node.store(ballot)
 
-    def __str__(self):
-        return 'ACCEPT'
-
 
 class AllConfirmState(State):
     def __init__(self, node):
@@ -116,6 +110,3 @@ class AllConfirmState(State):
 
     def handle_ballot_impl(self, ballot):
         pass
-
-    def __str__(self):
-        return 'ALL_CONFIRM'

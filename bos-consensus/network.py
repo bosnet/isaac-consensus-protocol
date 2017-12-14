@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 from urllib.parse import urlparse
 import json
 import logging
@@ -9,6 +10,7 @@ import threading
 import requests
 import urllib
 import time
+import random
 
 
 log = logging.getLogger(__name__)
@@ -22,7 +24,7 @@ class Ping(threading.Thread):
     def run(self):
         url = 'http://%s'
         while True:
-            time.sleep(1)
+            time.sleep(random.random())
 
             if len(self.node.validators) == len(self.node.validator_addrs):
                 self.node.init_node()
@@ -53,16 +55,16 @@ class Ping(threading.Thread):
                 self.node.validators.append(Node(s['node_id'], s['address'], s['threshold'], s['validator_addrs']))
                 log.info('Init Data Receive! %s, %s' % (s['node_id'], s['endpoint']))
 
-            time.sleep(1)
-
         return True
 
 
-class BOSNetHTTPServer(HTTPServer):
+class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
     def __init__(self, nd, *a, **kw):
         assert isinstance(nd, Node)
 
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
+
+        self.lock = threading.Lock()
 
         self.nd = nd
 

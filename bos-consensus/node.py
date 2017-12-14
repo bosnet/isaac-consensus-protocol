@@ -10,32 +10,17 @@ from state import (
 from ballot import Ballot
 import threading
 import requests
-
 import urllib
 
 log = logging.getLogger(__name__)
-
-
-class Request(threading.Thread):
-    def __init__(self, url, ballot):
-        super(Request, self).__init__()
-        self.url = url
-        self.ballot = ballot
-
-    def run(self):
-        try:
-            response = requests.post(urllib.parse.urljoin(self.url, '/send_ballot'), params=self.ballot.to_dict())
-            if response.status_code == 200:
-                log.info('message to %s sent!' % self.url)
-        except requests.exceptions.ConnectionError:
-            log.info('Connection Refused!')
-        return
 
 
 class Node:
     def __init__(self, node_id, address, threshold, validator_addrs):
         assert type(address) in (list, tuple) and len(address) == 2
         assert type(address[0]) in (str,) and type(address[1]) in (int,)
+
+        #self.lock = threading.Lock()
 
         self.node_id = node_id
         self.address = address
@@ -55,20 +40,28 @@ class Node:
         self.node_state = self.state_none
 
     def set_state_init(self):
+        log.info('[%s] state to INIT', self.node_id)
+        #self.lock.acquire()
         self.node_state = self.state_init
-        log.debug('node %s state to INIT', self.node_id)
+        #self.lock.release()
 
     def set_state_sign(self):
+        log.info('[%s] state to SIGN', self.node_id)
+        #self.lock.acquire()
         self.node_state = self.state_sign
-        log.debug('node %s state to SIGN', self.node_id)
+        #self.lock.release()
 
     def set_state_accept(self):
+        log.info('[%s] state to ACCEPT', self.node_id)
+        #self.lock.acquire()
         self.node_state = self.state_accept
-        log.debug('node %s state to ACCEPT', self.node_id)
+        #self.lock.release()
 
     def set_state_all_confirm(self):
+        log.info('[%s] state to ALLCONFIRM', self.node_id)
+        #self.lock.acquire()
         self.node_state = self.state_all_confirm
-        log.debug('node %s state to ALLCONFIRM', self.node_id)
+        #self.lock.release()
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
@@ -78,7 +71,7 @@ class Node:
 
     @property
     def endpoint(self):
-        return 'http://%s:%s' % self.address
+        return 'http://%s:%s' % (self.address[0], self.address[1])
 
     def to_dict(self):
         return dict(
@@ -100,7 +93,6 @@ class Node:
 
         if t_str in lhs_endpoint:
             lhs_endpoint.replace(t_str, r_str)
-
         return lhs_endpoint == rhs_endpoint
 
     def init_node(self):
@@ -113,33 +105,33 @@ class Node:
         self.broadcast(self.message)
         return
 
-    def send_to(self, url, ballot):
-        log.debug('[%s] send to %s' % (self.node_id, url))
-        # t = Request(url, ballot)
-        # t.start()
-        # t.join()
-        try:
-            response = requests.post(urllib.parse.urljoin(url, '/send_ballot'), params=ballot.to_dict())
-            if response.status_code == 200:
-                log.debug('[%s] Sent to %s!' % (self.node_id, url))
-        except requests.exceptions.ConnectionError:
-            log.debug('[%s] Connection to %s Refused!' % (self.node_id, url))
-        return
-
     def broadcast(self, message):
-        log.debug('%s broadcast to everyone' % self.node_id)
+        log.debug('[%s] begin broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
         self.receive(ballot)
+        #self.send_to(self.endpoint, ballot)
         for node in self.validators:
             assert isinstance(node, Node)
             self.send_to(node.endpoint, ballot)
+        return
+
+    def send_to(self, url, ballot):
+        log.debug('[%s] begin send_to %s' % (self.node_id, url))
+        try:
+            response = requests.post(urllib.parse.urljoin(url, '/send_ballot'), params=ballot.to_dict())
+            if response.status_code == 200:
+                log.debug('[%s] sent to %s!' % (self.node_id, url))
+        except requests.exceptions.ConnectionError:
+            log.error('[%s] Connection to %s Refused!' % (self.node_id, url))
         return
 
     def receive(self, ballot):
         assert isinstance(ballot, Ballot)
         log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
         if self.node_state.kind == ballot.node_state_kind:
+            #self.lock.acquire()
             self.node_state.handle_ballot(ballot)
+            #self.lock.release()
         return
 
     def store(self, ballot):

@@ -2,6 +2,8 @@ from urllib.parse import (urlparse, parse_qs)
 from ballot import Ballot
 from statekind import StateKind
 import logging
+import time
+import random
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +41,8 @@ def handle_send_message(handler, parsed):
         handler.response(405, None)
         return
 
+    time.sleep(random.random())
+
     json_data = parse_qs(parsed.query)
     message = json_data['message']
     handler.server.nd.receive_from_client(message[0])
@@ -51,6 +55,7 @@ def handle_send_ballot(handler, parsed):
         handler.response(405, None)
         return
 
+
     json_data = parse_qs(parsed.query)
     ballot_num = json_data['ballot_num'][0]
     node_id = json_data['node_id'][0]
@@ -59,6 +64,7 @@ def handle_send_ballot(handler, parsed):
     state_kind = StateKind[node_state_name]
 
     ballot = Ballot(ballot_num, node_id, message, state_kind)
+    time.sleep(random.random())
     handler.server.nd.receive(ballot)
 
     return handler.response(200, None)
