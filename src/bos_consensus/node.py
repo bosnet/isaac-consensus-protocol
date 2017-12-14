@@ -25,7 +25,7 @@ class Node:
         self.validator_addrs = validator_addrs
         self.validators = []
         self.threshold = threshold
-        self.n_th = 1 + (len(self.validator_addrs) * self.threshold // 100)
+        self.n_th = (1 + len(self.validator_addrs)) * self.threshold // 100
         self.validator_ballots = {}
         self.message = ''
 
