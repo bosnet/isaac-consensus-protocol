@@ -115,7 +115,7 @@ class Node:
             log.error('[%s] Connection to %s Refused!' % (self.node_id, url))
         return
 
-    def receive(self, ballot):
+    def receive_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
         log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
         if self.node_state.kind == ballot.node_state_kind:

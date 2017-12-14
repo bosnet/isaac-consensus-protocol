@@ -75,7 +75,7 @@ def handle_send_ballot(handler, parsed):
     state_kind = StateKind[node_state_name]
 
     ballot = Ballot(ballot_num, node_id, message, state_kind)
-    handler.server.node_sequence_executor('receive', ballot)
+    handler.server.node_sequence_executor('receive_ballot', ballot)
 
     return handler.response(200, None)
 
