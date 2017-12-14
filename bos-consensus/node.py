@@ -98,8 +98,7 @@ class Node:
     def broadcast(self, message):
         log.debug('[%s] begin broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
-        self.receive(ballot)
-        #self.send_to(self.endpoint, ballot)
+        self.send_to(self.endpoint, ballot)
         for node in self.validators:
             assert isinstance(node, Node)
             self.send_to(node.endpoint, ballot)
