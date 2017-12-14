@@ -54,8 +54,8 @@ $ python setup.py develop
 ## Deployment
 
 ```
-$ run_node.py -h
-usage: run_node.py [-h] [-debug] conf
+$ run-node.py -h
+usage: run-node.py [-h] [-debug] conf
 
 positional arguments:
   conf        ini config file
@@ -67,7 +67,7 @@ optional arguments:
 
 Set the config file.
 ```
-$ run_node.py examples/node5001.ini
+$ run-node.py examples/node5001.ini
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node ID: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node PORT: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Validators: ['localhost:5002', 'localhost:5003']
@@ -75,8 +75,8 @@ $ run_node.py examples/node5001.ini
 
 Run the other nodes like this.
 ```
-$ python run_node.py examples/node5002.ini
-$ python run_node.py examples/node5003.ini
+$ python run-node.py examples/node5002.ini
+$ python run-node.py examples/node5003.ini
 ```
 
 ## Test
