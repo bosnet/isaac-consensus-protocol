@@ -4,6 +4,23 @@
     // 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "client",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/bos-consensus/client.py",
+            "cwd": "${workspaceRoot}",
+            "args": ["${workspaceRoot}/bos-consensus/client.ini", "-debug"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
     {
         "name": "run_node using node.ini",
         "type": "python",

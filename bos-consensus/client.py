@@ -36,17 +36,23 @@ log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-debug', action='store_true')
+parser.add_argument('-info', action='store_true')
 parser.add_argument('conf', help='ini config file for client')
 
 
 if __name__ == '__main__':
     log_level = logging.ERROR
-    if '-debug' in sys.argv[1:]:
+
+    options = parser.parse_args()
+
+    if options.debug == True:
         log_level = logging.DEBUG
+
+    if options.info == True:
+        log_level = logging.INFO
 
     log.root.setLevel(log_level)
 
-    options = parser.parse_args()
     log.debug('options: %s', options)
 
     config = collections.namedtuple(
