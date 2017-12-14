@@ -1,6 +1,6 @@
 from bos_consensus.node import Node
 from bos_consensus.ballot import Ballot
-from statekind import StateKind
+from bos_consensus.statekind import StateKind
 from bos_consensus.state import (
     State,
     NoneState,
@@ -19,15 +19,23 @@ def test_state_init():
     assert node.address == ('localhost', 5001)
     assert node.validator_addrs == ['localhost:5002', 'localhost:5003']
 
+def stub_func(_, __):
+    return
+
+Node.broadcast = stub_func
 
 def test_state_init_to_sign():
     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
-
     node1.init_node()
 
-    ballot = Ballot(1, 1, 'message', StateKind.INIT)
+    ballot_init_1 = Ballot(1, 1, 'message', StateKind.INIT)
+    ballot_init_2 = Ballot(1, 2, 'message', StateKind.INIT)
+    ballot_init_3 = Ballot(1, 3, 'message', StateKind.INIT)
 
-    node1.receive(ballot)
+    node1.receive(ballot_init_1)
+    node1.receive(ballot_init_2)
+    node1.receive(ballot_init_3)
+
 
     assert node1.node_state.kind == StateKind.SIGN
 
@@ -42,10 +50,20 @@ def test_state_init_to_all_confirm_sequence():
     node3.init_node()
 
     ballot_init_1 = Ballot(1, 1, 'message', StateKind.INIT)
+    ballot_init_2 = Ballot(1, 2, 'message', StateKind.INIT)
+    ballot_init_3 = Ballot(1, 3, 'message', StateKind.INIT)
 
     node1.receive(ballot_init_1)
+    node1.receive(ballot_init_2)
+    node1.receive(ballot_init_3)
+
     node2.receive(ballot_init_1)
+    node2.receive(ballot_init_2)
+    node2.receive(ballot_init_3)
+
     node3.receive(ballot_init_1)
+    node3.receive(ballot_init_2)
+    node3.receive(ballot_init_3)
 
     assert isinstance(node1.node_state, SignState)
     assert isinstance(node2.node_state, SignState)

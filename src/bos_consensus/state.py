@@ -49,8 +49,19 @@ class InitState(State):
         pass
 
     def handle_ballot_impl(self, ballot):
-        self.node.set_state_sign()
         self.node.broadcast(ballot.message)
+        self.node.store(ballot)
+        if ballot.node_state_kind == self.kind:
+            ballots = self.node.validator_ballots
+            validator_th = self.node.n_th
+
+            for node_id, node_ballot in ballots.items():
+                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
+                    validator_th -= 1
+
+            if validator_th == 0:
+                self.node.set_state_sign()
+                self.node.broadcast(ballot.message)
 
 
 class SignState(State):
@@ -61,21 +72,18 @@ class SignState(State):
         pass
 
     def handle_ballot_impl(self, ballot):
+        self.node.store(ballot)
         if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
             validator_th = self.node.n_th
 
             for node_id, node_ballot in ballots.items():
-                if node_id == ballot.node_id:
-                    continue
                 if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
                     validator_th -= 1
 
             if validator_th == 0:
                 self.node.set_state_accept()
                 self.node.broadcast(ballot.message)
-
-        self.node.store(ballot)
 
 
 class AcceptState(State):
@@ -86,19 +94,16 @@ class AcceptState(State):
         pass
 
     def handle_ballot_impl(self, ballot):
+        self.node.store(ballot)
         if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
             validator_th = self.node.n_th
             for node_id, node_ballot in ballots.items():
-                if node_id == ballot.node_id:
-                    continue
                 if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
                     validator_th -= 1
 
             if validator_th == 0:
                 self.node.set_state_all_confirm()
-
-        self.node.store(ballot)
 
 
 class AllConfirmState(State):
