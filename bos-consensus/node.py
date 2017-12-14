@@ -20,8 +20,6 @@ class Node:
         assert type(address) in (list, tuple) and len(address) == 2
         assert type(address[0]) in (str,) and type(address[1]) in (int,)
 
-        #self.lock = threading.Lock()
-
         self.node_id = node_id
         self.address = address
         self.validator_addrs = validator_addrs
@@ -41,27 +39,19 @@ class Node:
 
     def set_state_init(self):
         log.info('[%s] state to INIT', self.node_id)
-        #self.lock.acquire()
         self.node_state = self.state_init
-        #self.lock.release()
 
     def set_state_sign(self):
         log.info('[%s] state to SIGN', self.node_id)
-        #self.lock.acquire()
         self.node_state = self.state_sign
-        #self.lock.release()
 
     def set_state_accept(self):
         log.info('[%s] state to ACCEPT', self.node_id)
-        #self.lock.acquire()
         self.node_state = self.state_accept
-        #self.lock.release()
 
     def set_state_all_confirm(self):
         log.info('[%s] state to ALLCONFIRM', self.node_id)
-        #self.lock.acquire()
         self.node_state = self.state_all_confirm
-        #self.lock.release()
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
@@ -129,9 +119,7 @@ class Node:
         assert isinstance(ballot, Ballot)
         log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
         if self.node_state.kind == ballot.node_state_kind:
-            #self.lock.acquire()
             self.node_state.handle_ballot(ballot)
-            #self.lock.release()
         return
 
     def store(self, ballot):
