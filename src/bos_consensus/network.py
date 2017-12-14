@@ -148,7 +148,11 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         log.debug('> start request: %s', self.path)
         parsed = urlparse(self.path)
-        func = handler.HTTP_HANDLERS.get(parsed.path[1:].split('/')[0], handler.not_found_handler)
+        func = None
+        query = parsed.path[1:]
+        if len(query) == 0:
+            query = 'status'
+        func = handler.HTTP_HANDLERS.get(query.split('/')[0], handler.not_found_handler)
         r = func(self, parsed)
         log.debug('< pushed request in queue: %s', self.path)
         return r

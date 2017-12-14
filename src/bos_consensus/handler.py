@@ -18,6 +18,17 @@ def not_found_handler(handler, parsed):
     return
 
 
+def handle_status(handler, parsed):
+    if handler.command not in ('GET',):
+        handler.response(405, None)
+        return
+
+    message = 'Hello!'
+    handler.response(200, message)
+
+    return
+
+
 def handle_ping(handler, parsed):
     if handler.command not in ('GET',):
         handler.response(405, None)
@@ -69,6 +80,7 @@ def handle_send_ballot(handler, parsed):
 
 
 HTTP_HANDLERS = dict(
+    status=handle_status,
     ping=handle_ping,
     get_node=handle_get_node,
     send_message=handle_send_message,
