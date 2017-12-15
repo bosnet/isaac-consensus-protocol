@@ -35,10 +35,11 @@ logging.root.handlers = [log_handler]
 log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-debug', action='store_true')
-parser.add_argument('-info', action='store_true')
-parser.add_argument('conf', help='ini config file for client')
-
+parser.add_argument('-debug', action='store_true', help='Log level set to debug')
+parser.add_argument('-info', action='store_true', help='Log level set to info')
+parser.add_argument('-m', '--message', required=True, help='Messages you want to send to the server.', type=str)
+parser.add_argument('-i', '--ip', required=True, help='Server IP you want to send the message to.', type=str)
+parser.add_argument('-p', '--port', required=True, help='Server port you want to send the message to.', type=int)
 
 if __name__ == '__main__':
     log_level = logging.ERROR
@@ -60,19 +61,11 @@ if __name__ == '__main__':
         ('ip', 'port', 'message'),
     )('localhost', 5001, 'message')
 
-    if not pathlib.Path(options.conf).exists():
-        parser.error('conf file, `%s` does not exists.' % options.conf)
+    log.info('Sending Message: %s' % options.message)
 
-    if not pathlib.Path(options.conf).is_file():
-        parser.error('conf file, `%s` is not valid file.' % options.conf)
-
-    conf = configparser.ConfigParser()
-    conf.read(options.conf)
-    log.info('conf file, `%s` was loaded', options.conf)
-
-    config = config._replace(ip=conf['client']['ip'])
-    config = config._replace(port=int(conf['client']['port']))
-    config = config._replace(message=conf['client']['message'])
+    config = config._replace(ip=options.ip)
+    config = config._replace(port=options.port)
+    config = config._replace(message=options.message)
     log.debug('loaded conf: %s', config)
 
     url = 'http://%s:%s' % (config.ip, config.port)

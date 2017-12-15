@@ -27,7 +27,7 @@ class Node:
         self.threshold = threshold
         self.n_th = (1 + len(self.validator_addrs)) * self.threshold // 100
         self.validator_ballots = {}
-        self.message = ''
+        self.messages = []
 
         self.state_none = NoneState(self)
         self.state_init = InitState(self)
@@ -52,6 +52,7 @@ class Node:
     def set_state_all_confirm(self):
         log.info('[%s] state to ALLCONFIRM', self.node_id)
         self.node_state = self.state_all_confirm
+        self.save_message(self.validator_ballots[self.node_id].message)
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
@@ -71,6 +72,7 @@ class Node:
             address=self.address,
             endpoint=self.endpoint,
             validator_addrs=self.validator_addrs,
+            messages=self.messages
         )
 
     def __eq__(self, rhs):
@@ -92,8 +94,7 @@ class Node:
 
     def receive_message_from_client(self, message):
         assert isinstance(message, str)
-        self.message = message.strip('"\'')
-        self.broadcast(self.message)
+        self.broadcast(message.strip('"\''))
         return
 
     def broadcast(self, message):
@@ -125,3 +126,6 @@ class Node:
     def store(self, ballot):
         self.validator_ballots[ballot.node_id] = ballot
         return
+
+    def save_message(self, message):
+        self.messages.append(message)
