@@ -1,10 +1,9 @@
 import argparse
 import collections
-import colorlog
 import logging
-import pathlib
-import requests
 import urllib
+import colorlog
+import requests
 
 
 logging.basicConfig(
