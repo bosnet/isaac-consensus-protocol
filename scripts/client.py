@@ -1,11 +1,8 @@
 import argparse
 import collections
 import colorlog
-import configparser
 import logging
 import pathlib
-import sys
-import uuid
 import requests
 import urllib
 
@@ -71,6 +68,7 @@ if __name__ == '__main__':
     url = 'http://%s:%s' % (config.ip, config.port)
     json_data = {'message': config.message}
     try:
+
         response = requests.post(urllib.parse.urljoin(url, '/send_message'), params=json_data)
         if response.status_code == 200:
             log.debug('message sent!')
