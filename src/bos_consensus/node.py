@@ -62,7 +62,7 @@ class Node:
 
     @property
     def endpoint(self):
-        return 'http://%s:%s' % (self.address[0], self.address[1])
+        return 'http://%s:%s' % tuple(self.address)
 
     def to_dict(self):
         return dict(
