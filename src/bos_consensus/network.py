@@ -122,6 +122,7 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
 
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
+        self.version = '0.8.2'
         self.lqueue = LockedQueue()
         self.node = node
         self.node_manager = NodeManager(self.node)

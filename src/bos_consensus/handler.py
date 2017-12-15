@@ -24,8 +24,8 @@ def handle_status(handler, parsed):
         handler.response(405, None)
         return
 
-    message = json.dumps(handler.server.node.to_dict(), indent=True)
-    handler.response(200, message)
+    info = json.dumps({'Version':handler.server.version, 'Node':handler.server.node.to_dict()}, indent=True)
+    handler.response(200, info)
 
     return
 
