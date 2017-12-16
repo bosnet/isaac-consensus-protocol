@@ -1,10 +1,11 @@
+import json
+import logging
+import random
+import time
 from urllib.parse import (urlparse, parse_qs)
+
 from .ballot import Ballot
 from .statekind import StateKind
-import logging
-import time
-import random
-import json
 
 log = logging.getLogger(__name__)
 

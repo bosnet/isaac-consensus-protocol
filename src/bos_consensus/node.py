@@ -1,4 +1,9 @@
 import logging
+import requests
+import threading
+import urllib
+
+from .ballot import Ballot
 from .state import (
     State,
     NoneState,
@@ -7,10 +12,6 @@ from .state import (
     AcceptState,
     AllConfirmState
 )
-from .ballot import Ballot
-import threading
-import requests
-import urllib
 
 log = logging.getLogger(__name__)
 

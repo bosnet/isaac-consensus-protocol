@@ -1,17 +1,17 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from socketserver import ThreadingMixIn
-from urllib.parse import urlparse
 import json
 import logging
+from queue import Queue
+import random
+import requests
+import time
+import threading
+from socketserver import ThreadingMixIn
+import urllib
+from urllib.parse import urlparse
 
 from . import handler
 from .node import Node
-import threading
-import requests
-import urllib
-import time
-import random
-from queue import Queue
 
 
 log = logging.getLogger(__name__)
