@@ -4,6 +4,7 @@ import logging
 import urllib
 import colorlog
 import requests
+import json
 
 
 logging.basicConfig(
@@ -65,9 +66,9 @@ if __name__ == '__main__':
     log.debug('loaded conf: %s', config)
 
     url = 'http://%s:%s' % (config.ip, config.port)
-    json_data = {'message': config.message}
+    json_data = json.dumps({'message': config.message})
     try:
-        response = requests.post(urllib.parse.urljoin(url, '/send_message'), params=json_data)
+        response = requests.post(urllib.parse.urljoin(url, '/send_message'), data=json_data)
         if response.status_code == 200:
             log.debug('message sent!')
         else:

@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 import threading
@@ -107,8 +108,9 @@ class Node:
 
     def send_to(self, addr, ballot):
         log.debug('[%s] begin send_to %s' % (self.node_id, addr))
+        post_data = json.dumps(ballot.to_dict())
         try:
-            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), params=ballot.to_dict())
+            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
             if response.status_code == 200:
                 log.debug('[%s] sent to %s!' % (self.node_id, addr))
         except requests.exceptions.ConnectionError:
