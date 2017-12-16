@@ -53,7 +53,7 @@ class InitState(State):
         self.node.store(ballot)
         if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
-            validator_th = self.node.n_th
+            validator_th = self.node.minimum_number_of_agreement
 
             for node_id, node_ballot in ballots.items():
                 if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
@@ -75,7 +75,7 @@ class SignState(State):
         self.node.store(ballot)
         if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
-            validator_th = self.node.n_th
+            validator_th = self.node.minimum_number_of_agreement
 
             for node_id, node_ballot in ballots.items():
                 if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
@@ -97,7 +97,7 @@ class AcceptState(State):
         self.node.store(ballot)
         if ballot.node_state_kind == self.kind:
             ballots = self.node.validator_ballots
-            validator_th = self.node.n_th
+            validator_th = self.node.minimum_number_of_agreement
             for node_id, node_ballot in ballots.items():
                 if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
                     validator_th -= 1
