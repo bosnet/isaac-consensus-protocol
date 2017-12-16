@@ -34,28 +34,19 @@ class Ping(threading.Thread):
                 if connected == True:
                     continue
                 try:
-                    res_ping = requests.get(
-                        urllib.parse.urljoin(addr, '/ping')
-                    )
-                    if res_ping.status_code not in (200,):
-                        continue
-                except requests.exceptions.ConnectionError:
-                    log.info('Validator check connection to `%s` refused !' % addr)
-                    continue
+                    ping_response = requests.get(urllib.parse.urljoin(addr, '/ping'))
+                    ping_response.raise_for_status()  
 
-                try:
-                    res_get_node = requests.get(
-                        urllib.parse.urljoin(addr, '/get_node')
-                    )
                     # validation check
-                    if res_get_node.status_code not in (200,):
-                        continue
-                    else:
-                        self.node.validators[addr] = True
-                        log.info('Validator information received from `%s`!' % addr)
+                    get_node_response = requests.get(urllib.parse.urljoin(addr, '/get_node'))
+                    get_node_response.raise_for_status()
+                    self.node.validators[addr] = True
+                    log.info("Validator information received from '%s'" % addr)
 
                 except requests.exceptions.ConnectionError:
-                    log.info('Connection Refused!')
+                    log.warn("ConnectionError occurred during validator connection to '%s'!" % addr)
+                except requests.exceptions.HTTPError:
+                    log.warn("HTTPError occurred during validator connection to '%s'!" % addr)
                     continue
 
         return True
