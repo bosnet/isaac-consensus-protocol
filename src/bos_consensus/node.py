@@ -25,7 +25,7 @@ class Node:
         self.address = address
         self.validators = dict((key, False) for key in validator_addrs)
         self.threshold = threshold
-        self.n_th = (1 + len(self.validators)) * self.threshold // 100
+        self.minimum_number_of_agreement = (1 + len(self.validators)) * self.threshold // 100
         self.validator_ballots = {}
         self.messages = []
 
