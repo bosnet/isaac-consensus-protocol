@@ -23,7 +23,6 @@ class Ping(threading.Thread):
         self.node = node
 
     def run(self):
-        url = 'http://%s'
         while True:
             time.sleep(1)
 
@@ -36,7 +35,7 @@ class Ping(threading.Thread):
                     continue
                 try:
                     res_ping = requests.get(
-                        urllib.parse.urljoin(url % addr, '/ping')
+                        urllib.parse.urljoin(addr, '/ping')
                     )
                     if res_ping.status_code not in (200,):
                         continue
@@ -46,7 +45,7 @@ class Ping(threading.Thread):
 
                 try:
                     res_get_node = requests.get(
-                        urllib.parse.urljoin(url % addr, '/get_node')
+                        urllib.parse.urljoin(addr, '/get_node')
                     )
                     # validation check
                     if res_get_node.status_code not in (200,):

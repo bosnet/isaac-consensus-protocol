@@ -100,19 +100,18 @@ class Node:
         log.debug('[%s] begin broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
         self.send_to(self.endpoint, ballot)
-        for addr in self.validators.key():
-            assert isinstance(node, Node)
-            self.send_to(node.endpoint, ballot)
+        for addr in self.validators.keys():
+            self.send_to(addr, ballot)
         return
 
-    def send_to(self, url, ballot):
-        log.debug('[%s] begin send_to %s' % (self.node_id, url))
+    def send_to(self, addr, ballot):
+        log.debug('[%s] begin send_to %s' % (self.node_id, addr))
         try:
-            response = requests.post(urllib.parse.urljoin(url, '/send_ballot'), params=ballot.to_dict())
+            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), params=ballot.to_dict())
             if response.status_code == 200:
-                log.debug('[%s] sent to %s!' % (self.node_id, url))
+                log.debug('[%s] sent to %s!' % (self.node_id, addr))
         except requests.exceptions.ConnectionError:
-            log.error('[%s] Connection to %s Refused!' % (self.node_id, url))
+            log.error('[%s] Connection to %s Refused!' % (self.node_id, addr))
         return
 
     def receive_ballot(self, ballot):
