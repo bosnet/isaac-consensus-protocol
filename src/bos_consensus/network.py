@@ -25,37 +25,39 @@ class Ping(threading.Thread):
     def run(self):
         url = 'http://%s'
         while True:
-            time.sleep(random.random())
+            time.sleep(1)
 
-            if len(self.node.validators) == len(self.node.validator_addrs):
+            if self.node.all_validators_connected():
                 self.node.init_node()
                 break
 
-            for addr in self.node.validator_addrs:
+            for addr, connected in self.node.validators.items():
+                if connected == True:
+                    continue
                 try:
                     res_ping = requests.get(
                         urllib.parse.urljoin(url % addr, '/ping')
                     )
                     if res_ping.status_code not in (200,):
-                        return False
+                        continue
                 except requests.exceptions.ConnectionError:
-                    log.info('Connection Refused!')
+                    log.info('Validator check connection to `%s` refused !' % addr)
+                    continue
 
                 try:
                     res_get_node = requests.get(
                         urllib.parse.urljoin(url % addr, '/get_node')
                     )
+                    # validation check
                     if res_get_node.status_code not in (200,):
-                        return False
+                        continue
                     else:
-                        data = json.loads(res_get_node.text)
-                        node = Node(data['node_id'], data['address'], data['threshold'], data['validator_addrs'])
-                        self.node.validators.append(node)
-                        log.info('Init Data Receive! %s, %s' % (data['node_id'], data['endpoint']))
+                        self.node.validators[addr] = True
+                        log.info('Validator information received from `%s`!' % addr)
 
                 except requests.exceptions.ConnectionError:
                     log.info('Connection Refused!')
-                    return False
+                    continue
 
         return True
 

@@ -22,10 +22,9 @@ class Node:
 
         self.node_id = node_id
         self.address = address
-        self.validator_addrs = validator_addrs
-        self.validators = []
+        self.validators = dict((key, False) for key in validator_addrs)
         self.threshold = threshold
-        self.n_th = (1 + len(self.validator_addrs)) * self.threshold // 100
+        self.n_th = (1 + len(self.validators)) * self.threshold // 100
         self.validator_ballots = {}
         self.messages = []
 
@@ -71,7 +70,7 @@ class Node:
             threshold=self.threshold,
             address=self.address,
             endpoint=self.endpoint,
-            validator_addrs=self.validator_addrs,
+            validator_addrs=self.validators,
             messages=self.messages
         )
 
@@ -101,7 +100,7 @@ class Node:
         log.debug('[%s] begin broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
         self.send_to(self.endpoint, ballot)
-        for node in self.validators:
+        for addr in self.validators.key():
             assert isinstance(node, Node)
             self.send_to(node.endpoint, ballot)
         return
@@ -129,3 +128,9 @@ class Node:
 
     def save_message(self, message):
         self.messages.append(message)
+
+    def all_validators_connected(self):
+        for _, connected in self.validators.items():
+            if connected is False:
+                return False
+        return True
