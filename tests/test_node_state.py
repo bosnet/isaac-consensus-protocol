@@ -12,12 +12,13 @@ from bos_consensus.state import (
 
 
 def test_state_init():
-    node = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
+    node = Node(1, ('localhost', 5001), 100, ['http://localhost:5002', 'http://localhost:5003'])
     assert node.node_id == 1
     assert node.node_state.kind == StateKind.NONE
     assert node.threshold == 100
     assert node.address == ('localhost', 5001)
-    assert node.validator_addrs == ['localhost:5002', 'localhost:5003']
+    assert node.validators['http://localhost:5002'] == False
+    assert node.validators['http://localhost:5003'] == False
 
 def stub_func(_, __):
     return
@@ -25,7 +26,7 @@ def stub_func(_, __):
 Node.broadcast = stub_func
 
 def test_state_init_to_sign():
-    node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
+    node1 = Node(1, ('localhost', 5001), 100, ['http://localhost:5002', 'http://localhost:5003'])
     node1.init_node()
 
     ballot_init_1 = Ballot(1, 1, 'message', StateKind.INIT)
@@ -41,9 +42,9 @@ def test_state_init_to_sign():
 
 
 def test_state_init_to_all_confirm_sequence():
-    node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
-    node2 = Node(2, ('localhost', 5002), 100, ['localhost:5001', 'localhost:5003'])
-    node3 = Node(3, ('localhost', 5003), 100, ['localhost:5001', 'localhost:5002'])
+    node1 = Node(1, ('localhost', 5001), 100, ['http://localhost:5002', 'http://localhost:5003'])
+    node2 = Node(2, ('localhost', 5002), 100, ['http://localhost:5001', 'http://localhost:5003'])
+    node3 = Node(3, ('localhost', 5003), 100, ['http://localhost:5001', 'http://localhost:5002'])
 
     node1.init_node()
     node2.init_node()
@@ -112,7 +113,7 @@ def test_state_init_to_all_confirm_sequence():
 
 
 # def test_state_jump_from_init():
-#     node1 = Node(1, ('localhost', 5001), 100, ['localhost:5002', 'localhost:5003'])
+#     node1 = Node(1, ('localhost', 5001), 100, ['http://localhost:5002', 'http://localhost:5003'])
 
 #     node1.init_node()
 

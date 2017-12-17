@@ -1,4 +1,10 @@
+import json
 import logging
+import requests
+import threading
+import urllib
+
+from .ballot import Ballot
 from .state import (
     State,
     NoneState,
@@ -7,10 +13,6 @@ from .state import (
     AcceptState,
     AllConfirmState
 )
-from .ballot import Ballot
-import threading
-import requests
-import urllib
 
 log = logging.getLogger(__name__)
 
@@ -22,10 +24,9 @@ class Node:
 
         self.node_id = node_id
         self.address = address
-        self.validator_addrs = validator_addrs
-        self.validators = []
+        self.validators = dict((key, False) for key in validator_addrs)
         self.threshold = threshold
-        self.n_th = (1 + len(self.validator_addrs)) * self.threshold // 100
+        self.minimum_number_of_agreement = (1 + len(self.validators)) * self.threshold // 100
         self.validator_ballots = {}
         self.messages = []
 
@@ -71,7 +72,7 @@ class Node:
             threshold=self.threshold,
             address=self.address,
             endpoint=self.endpoint,
-            validator_addrs=self.validator_addrs,
+            validator_addrs=self.validators,
             messages=self.messages
         )
 
@@ -101,19 +102,19 @@ class Node:
         log.debug('[%s] begin broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.node_state.kind)
         self.send_to(self.endpoint, ballot)
-        for node in self.validators:
-            assert isinstance(node, Node)
-            self.send_to(node.endpoint, ballot)
+        for addr in self.validators.keys():
+            self.send_to(addr, ballot)
         return
 
-    def send_to(self, url, ballot):
-        log.debug('[%s] begin send_to %s' % (self.node_id, url))
+    def send_to(self, addr, ballot):
+        log.debug('[%s] begin send_to %s' % (self.node_id, addr))
+        post_data = json.dumps(ballot.to_dict())
         try:
-            response = requests.post(urllib.parse.urljoin(url, '/send_ballot'), params=ballot.to_dict())
+            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
             if response.status_code == 200:
-                log.debug('[%s] sent to %s!' % (self.node_id, url))
+                log.debug('[%s] sent to %s!' % (self.node_id, addr))
         except requests.exceptions.ConnectionError:
-            log.error('[%s] Connection to %s Refused!' % (self.node_id, url))
+            log.error('[%s] Connection to %s Refused!' % (self.node_id, addr))
         return
 
     def receive_ballot(self, ballot):
@@ -129,3 +130,9 @@ class Node:
 
     def save_message(self, message):
         self.messages.append(message)
+
+    def all_validators_connected(self):
+        for _, connected in self.validators.items():
+            if connected is False:
+                return False
+        return True

@@ -1,17 +1,17 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from socketserver import ThreadingMixIn
-from urllib.parse import urlparse
 import json
 import logging
+from queue import Queue
+import random
+import requests
+import time
+import threading
+from socketserver import ThreadingMixIn
+import urllib
+from urllib.parse import urlparse
 
 from . import handler
 from .node import Node
-import threading
-import requests
-import urllib
-import time
-import random
-from queue import Queue
 
 
 log = logging.getLogger(__name__)
@@ -23,39 +23,31 @@ class Ping(threading.Thread):
         self.node = node
 
     def run(self):
-        url = 'http://%s'
         while True:
-            time.sleep(random.random())
+            time.sleep(1)
 
-            if len(self.node.validators) == len(self.node.validator_addrs):
+            if self.node.all_validators_connected():
                 self.node.init_node()
                 break
 
-            for addr in self.node.validator_addrs:
+            for addr, connected in self.node.validators.items():
+                if connected == True:
+                    continue
                 try:
-                    res_ping = requests.get(
-                        urllib.parse.urljoin(url % addr, '/ping')
-                    )
-                    if res_ping.status_code not in (200,):
-                        return False
-                except requests.exceptions.ConnectionError:
-                    log.info('Connection Refused!')
+                    ping_response = requests.get(urllib.parse.urljoin(addr, '/ping'))
+                    ping_response.raise_for_status()  
 
-                try:
-                    res_get_node = requests.get(
-                        urllib.parse.urljoin(url % addr, '/get_node')
-                    )
-                    if res_get_node.status_code not in (200,):
-                        return False
-                    else:
-                        data = json.loads(res_get_node.text)
-                        node = Node(data['node_id'], data['address'], data['threshold'], data['validator_addrs'])
-                        self.node.validators.append(node)
-                        log.info('Init Data Receive! %s, %s' % (data['node_id'], data['endpoint']))
+                    # validation check
+                    get_node_response = requests.get(urllib.parse.urljoin(addr, '/get_node'))
+                    get_node_response.raise_for_status()
+                    self.node.validators[addr] = True
+                    log.info("Validator information received from '%s'" % addr)
 
                 except requests.exceptions.ConnectionError:
-                    log.info('Connection Refused!')
-                    return False
+                    log.warn("ConnectionError occurred during validator connection to '%s'!" % addr)
+                except requests.exceptions.HTTPError:
+                    log.warn("HTTPError occurred during validator connection to '%s'!" % addr)
+                    continue
 
         return True
 
