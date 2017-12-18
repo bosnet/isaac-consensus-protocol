@@ -40,7 +40,7 @@
         ]
     },
     {
-        "name": "pytest",
+        "name": "test_node_state",
         "type": "python",
         "request": "launch",
         "stopOnEntry": false,
@@ -49,6 +49,26 @@
         "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
         "program": "${file}",
         "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/tests/test_node_state.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
+        "name": "test_network_interface",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/tests/test_network_interface.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [
