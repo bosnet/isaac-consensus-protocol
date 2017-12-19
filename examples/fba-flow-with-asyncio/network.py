@@ -180,7 +180,7 @@ class Quorum:
         '''
         the required minimum quorum will be round *up*
         '''
-        return math.ceil(len(self.validators) * (self.threshold / 100))
+        return math.ceil((len(self.validators) + 1) * (self.threshold / 100))
 
     def to_dict(self, simple=True):
         return dict(
