@@ -1,15 +1,16 @@
+import requests
+
 from bos_consensus.ballot import Ballot
-from bos_consensus.statekind import StateKind
-from bos_consensus.node import Node
 from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
-
 import json
-import requests
+from bos_consensus.node import Node
+from bos_consensus.statekind import StateKind
 import threading
 import urllib
+
 
 
 def test_sample():
