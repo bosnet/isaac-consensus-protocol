@@ -5,17 +5,19 @@ from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
+from contextlib import closing
 import json
 from bos_consensus.node import Node
+import socket
 from bos_consensus.statekind import StateKind
 import threading
 import urllib
 
 
-
-def test_sample():
-    print('test_sample')
-    assert 1 == 1
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
 
 
 class Server(threading.Thread):
@@ -66,8 +68,8 @@ class Ping(Client):
 
 
 def test_handler_ping():
-    port = 5001
-    server_thread = Server(port, 5001)
+    port = find_free_port()
+    server_thread = Server(port, port)
     server_thread.daemon = True
     server_thread.start()
 
@@ -99,8 +101,8 @@ class Status(Client):
 
 
 def test_handler_status():
-    port = 5001
-    node_id = 5001
+    port = find_free_port()
+    node_id = 52
     server_thread = Server(port, node_id)
     server_thread.daemon = True
     server_thread.start()
@@ -134,8 +136,8 @@ class GetNode(Client):
         return self.node_id
 
 def test_handler_get_node():
-    port = 5001
-    node_id = 5001
+    port = find_free_port()
+    node_id = 52
     server_thread = Server(port, node_id)
     server_thread.daemon = True
     server_thread.start()
@@ -169,8 +171,9 @@ class SendMessage(Client):
 
 
 def test_handler_send_message():
-    port = 5001
-    server_thread = Server(port, 5001)
+    port = find_free_port()
+    node_id = 52
+    server_thread = Server(port, node_id)
     server_thread.daemon = True
     server_thread.start()
 
@@ -203,12 +206,13 @@ class SendBallot(Client):
 
 
 def test_handler_send_ballot():
-    port = 5001
-    server_thread = Server(port, 5001)
+    port = find_free_port()
+    node_id = 52
+    server_thread = Server(port, node_id)
     server_thread.daemon = True
     server_thread.start()
 
-    ballot = Ballot(1, 5001, 'message', StateKind.INIT)
+    ballot = Ballot(1, port, 'message', StateKind.INIT)
     client_ping_thread = SendBallot(port, ballot)
     client_ping_thread.daemon = True
     client_ping_thread.start()
