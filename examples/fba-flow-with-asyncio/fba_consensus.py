@@ -232,7 +232,7 @@ class Ballot:
         self.voted.setdefault(state.value, dict())
 
         # if node.name in self.voted:
-        #     # raise Ballot.AlreadyVotedError('node, %s already voted' % node_name)
+        #     raise Ballot.AlreadyVotedError('node, %s already voted' % node_name)
         #     return
         if node.name in self.voted[state.value]:
             # existing vote will be overrided
@@ -418,7 +418,6 @@ class Consensus:
 
                 return
 
-        # current node will vote first
         result = BallotVoteResult.disagree
         if self.validate_message(message):
             result = BallotVoteResult.agree
@@ -478,10 +477,10 @@ class Consensus:
 
         self.ballot.vote(ballot_message.node, ballot_message.result, ballot_message.state)
 
-        # check threshold
         state, is_passed_threshold = self.ballot.check_threshold()
 
-        # new state was already agreed from other validators
+        # if new state was already agreed from other validators, the new ballot
+        # will be accepted
         if is_passed_threshold and state != self.ballot.state:
             self.ballot.change_state(state)
 
@@ -552,17 +551,15 @@ class Consensus:
 
             self.ballot.is_broadcasted = True
 
-        if is_passed_threshold:  # move to next state
+        if is_passed_threshold:
             return True
 
-        # will wait~
         return False
 
     def _handle_sign(self, ballot_message, is_passed_threshold):
-        if is_passed_threshold:  # move to next state
+        if is_passed_threshold:
             return True
 
-        # will wait~
         return False
 
     _handle_accept = _handle_sign
