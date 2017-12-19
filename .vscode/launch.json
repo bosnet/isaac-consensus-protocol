@@ -12,7 +12,7 @@
             "pythonPath": "${config:python.pythonPath}",
             "program": "${workspaceRoot}/scripts/client.py",
             "cwd": "${workspaceRoot}",
-            "args": ["-m", "'message10'", "-i", "'localhost'", "-p", "5001", "-debug"],
+            "args": ["-m", "message10", "-i", "localhost", "-p", "5001", "-debug"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
