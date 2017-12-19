@@ -41,19 +41,11 @@ log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-debug', action='store_true')
+parser.add_argument('-info', action='store_true')
 parser.add_argument('conf', help='ini config file for server node')
 
 
-if __name__ == '__main__':
-    log_level = logging.ERROR
-    if '-debug' in sys.argv[1:]:
-        log_level = logging.DEBUG
-
-    log.root.setLevel(log_level)
-
-    options = parser.parse_args()
-    log.debug('options: %s', options)
-
+def main(options):
     config = collections.namedtuple(
         'Config',
         ('node_id', 'port', 'threshold', 'validators'),
@@ -91,3 +83,17 @@ if __name__ == '__main__':
     httpd = BOSNetHTTPServer(nd, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
 
     httpd.serve_forever()
+
+if __name__ == '__main__':
+    log_level = logging.ERROR
+
+    options = parser.parse_args()
+    if options.debug == True:
+        log_level = logging.DEBUG
+    if options.info == True:
+        log_level = logging.INFO
+
+    log.root.setLevel(log_level)
+
+    log.debug('options: %s', options)
+    main(options)
