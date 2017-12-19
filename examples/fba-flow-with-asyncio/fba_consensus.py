@@ -395,6 +395,22 @@ class Consensus:
         if isinstance(loaded, BallotMessage):
             return self._handle_ballot_message(loaded)
 
+    def broadcast(self, ballot_message, skip_nodes=None):
+        assert type(skip_nodes) in (list, tuple) if skip_nodes is not None else True
+
+        for node in self.quorum.validators:
+            if skip_nodes is not None and node in skip_nodes:
+                continue
+
+            self.transport.send(
+                node.endpoint,
+                ballot_message,
+            )
+
+        self.ballot.is_broadcasted = True
+
+        return
+
     def _handle_message(self, message):
         assert message.node is not None
 
@@ -427,13 +443,8 @@ class Consensus:
 
         ballot_message = self.ballot.serialize_ballot_message()
         log.consensus.debug('%s: broadcast ballot_message initially: %s', self.node.name, ballot_message.strip())
-        for node in self.quorum.validators:
-            if node.name == message.node:
-                continue
 
-            self.transport.send(node.endpoint, ballot_message)
-
-        self.ballot.is_broadcasted = True
+        self.broadcast(ballot_message, skip_nodes=(message.node,))
 
         return False
 
@@ -514,15 +525,7 @@ class Consensus:
         self.ballot.node_result = result
         self.ballot.vote(self.node, self.ballot.node_result, self.ballot.state)
 
-        # initialize ballot and broadcast it
-        new_ballot_message = self.ballot.serialize_ballot_message()
-        for node in self.quorum.validators:
-            self.transport.send(
-                node.endpoint,
-                new_ballot_message,
-            )
-
-        self.ballot.is_broadcasted = True
+        self.broadcast(self.ballot.serialize_ballot_message())
 
         log.consensus.debug('%s: new ballot broadcasted: %s', self.node.name, self.ballot)
 
@@ -540,16 +543,9 @@ class Consensus:
             self.ballot.vote(self.node, result, self.ballot.state)
 
         if not self.ballot.is_broadcasted:
+            self.broadcast(self.ballot.serialize_ballot_message())
+
             log.consensus.debug('%s: new ballot broadcasted: %s', self.node.name, self.ballot)
-
-            ballot_message = self.ballot.serialize_ballot_message()
-            for node in self.quorum.validators:
-                self.transport.send(
-                    node.endpoint,
-                    ballot_message,
-                )
-
-            self.ballot.is_broadcasted = True
 
         if is_passed_threshold:
             return True
