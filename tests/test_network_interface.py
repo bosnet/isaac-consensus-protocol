@@ -1,3 +1,4 @@
+import pytest
 from bos_consensus.ballot import Ballot
 from bos_consensus.statekind import StateKind
 from bos_consensus.node import Node
@@ -18,15 +19,20 @@ def test_sample():
 
 
 class Server(threading.Thread):
+    httpd = None
+
     def __init__(self, port, node_id):
         super(Server, self).__init__()
         self.port = port
         self.node_id = node_id
 
+        self.httpd = None
+
     def run(self):
         node = Node(self.node_id, ('localhost', self.port), 100, ['localhost:5002', 'localhost:5003'])
-        httpd = BOSNetHTTPServer(node, ('localhost', self.port), BOSNetHTTPServerRequestHandler)
-        httpd.serve_forever()
+        self.httpd = BOSNetHTTPServer(node, ('localhost', self.port), BOSNetHTTPServerRequestHandler)
+        self.httpd.serve_forever()
+
         return True
 
 
@@ -64,11 +70,27 @@ class Ping(Client):
         return True
 
 
-def test_handler_ping():
-    port = 5001
-    server_thread = Server(port, 5001)
+@pytest.fixture(scope='function')
+def setup_server(request):
+    port = 7001
+    node_id = 7001
+
+    server_thread = Server(node_id, port)
     server_thread.daemon = True
     server_thread.start()
+
+    def teardown():
+        server_thread.httpd.server_close()
+
+        return
+
+    request.addfinalizer(teardown)
+
+    return
+
+
+def test_handler_ping(setup_server):
+    port = 7001
 
     client_ping_thread = Ping(port)
     client_ping_thread.daemon = True
@@ -97,12 +119,10 @@ class Status(Client):
         return self.node_id
 
 
-def test_handler_status():
-    port = 5001
-    node_id = 5001
-    server_thread = Server(port, node_id)
-    server_thread.daemon = True
-    server_thread.start()
+
+def test_handler_status(setup_server):
+    port = 7001
+    node_id = 7001
 
     client_ping_thread = Status(port)
     client_ping_thread.daemon = True
@@ -134,12 +154,10 @@ class GetNode(Client):
     def get_node_id(self):
         return self.node_id
 
-def test_handler_get_node():
-    port = 5001
-    node_id = 5001
-    server_thread = Server(port, node_id)
-    server_thread.daemon = True
-    server_thread.start()
+
+def test_handler_get_node(setup_server):
+    port = 7001
+    node_id = 7001
 
     client_ping_thread = GetNode(port)
     client_ping_thread.daemon = True
@@ -169,11 +187,8 @@ class SendMessage(Client):
         return True
 
 
-def test_handler_send_message():
-    port = 5001
-    server_thread = Server(port, 5001)
-    server_thread.daemon = True
-    server_thread.start()
+def test_handler_send_message(setup_server):
+    port = 7001
 
     client_ping_thread = SendMessage(port, 'message')
     client_ping_thread.daemon = True
@@ -203,15 +218,13 @@ class SendBallot(Client):
         return True
 
 
-def test_handler_send_ballot():
-    port = 5001
-    server_thread = Server(port, 5001)
-    server_thread.daemon = True
-    server_thread.start()
+def test_handler_send_ballot(setup_server):
+    port = 7001
 
-    ballot = Ballot(1, 5001, 'message', StateKind.INIT)
+    ballot = Ballot(1, 7001, 'message', StateKind.INIT)
     client_ping_thread = SendBallot(port, ballot)
     client_ping_thread.daemon = True
     client_ping_thread.start()
     client_ping_thread.join()
+
     assert client_ping_thread.get_response_code() == 200
