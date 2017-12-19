@@ -1,17 +1,19 @@
 import requests
 import pytest
+
+from contextlib import closing
+import json
+import socket
+import threading
+import urllib
+
 from bos_consensus.ballot import Ballot
 from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
-from contextlib import closing
-import json
 from bos_consensus.node import Node
-import socket
 from bos_consensus.statekind import StateKind
-import threading
-import urllib
 
 
 
