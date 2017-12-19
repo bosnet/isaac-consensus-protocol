@@ -124,10 +124,8 @@ class GetNode(Client):
             response = requests.get(
                 urllib.parse.urljoin(url, '/get_node')
                 )
-
             self.response_code = response.status_code
             self.node_id = json.loads(response.text)['node_id']
-
         except requests.exceptions.ConnectionError:
             print('Connection Refused!')
         return True
