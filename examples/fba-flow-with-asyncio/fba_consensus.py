@@ -232,7 +232,7 @@ class Ballot:
         self.voted.setdefault(state.value, dict())
 
         # if node.name in self.voted:
-        #     # raise Ballot.AlreadyVotedError('node, %s already voted' % node_name)
+        #     raise Ballot.AlreadyVotedError('node, %s already voted' % node_name)
         #     return
         if node.name in self.voted[state.value]:
             # existing vote will be overrided
@@ -395,6 +395,22 @@ class Consensus:
         if isinstance(loaded, BallotMessage):
             return self._handle_ballot_message(loaded)
 
+    def broadcast(self, ballot_message, skip_nodes=None):
+        assert type(skip_nodes) in (list, tuple) if skip_nodes is not None else True
+
+        for node in self.quorum.validators:
+            if skip_nodes is not None and node in skip_nodes:
+                continue
+
+            self.transport.send(
+                node.endpoint,
+                ballot_message,
+            )
+
+        self.ballot.is_broadcasted = True
+
+        return
+
     def _handle_message(self, message):
         assert message.node is not None
 
@@ -418,7 +434,6 @@ class Consensus:
 
                 return
 
-        # current node will vote first
         result = BallotVoteResult.disagree
         if self.validate_message(message):
             result = BallotVoteResult.agree
@@ -428,13 +443,8 @@ class Consensus:
 
         ballot_message = self.ballot.serialize_ballot_message()
         log.consensus.debug('%s: broadcast ballot_message initially: %s', self.node.name, ballot_message.strip())
-        for node in self.quorum.validators:
-            if node.name == message.node:
-                continue
 
-            self.transport.send(node.endpoint, ballot_message)
-
-        self.ballot.is_broadcasted = True
+        self.broadcast(ballot_message, skip_nodes=(message.node,))
 
         return False
 
@@ -478,10 +488,10 @@ class Consensus:
 
         self.ballot.vote(ballot_message.node, ballot_message.result, ballot_message.state)
 
-        # check threshold
         state, is_passed_threshold = self.ballot.check_threshold()
 
-        # new state was already agreed from other validators
+        # if new state was already agreed from other validators, the new ballot
+        # will be accepted
         if is_passed_threshold and state != self.ballot.state:
             self.ballot.change_state(state)
 
@@ -515,15 +525,7 @@ class Consensus:
         self.ballot.node_result = result
         self.ballot.vote(self.node, self.ballot.node_result, self.ballot.state)
 
-        # initialize ballot and broadcast it
-        new_ballot_message = self.ballot.serialize_ballot_message()
-        for node in self.quorum.validators:
-            self.transport.send(
-                node.endpoint,
-                new_ballot_message,
-            )
-
-        self.ballot.is_broadcasted = True
+        self.broadcast(self.ballot.serialize_ballot_message())
 
         log.consensus.debug('%s: new ballot broadcasted: %s', self.node.name, self.ballot)
 
@@ -541,28 +543,19 @@ class Consensus:
             self.ballot.vote(self.node, result, self.ballot.state)
 
         if not self.ballot.is_broadcasted:
+            self.broadcast(self.ballot.serialize_ballot_message())
+
             log.consensus.debug('%s: new ballot broadcasted: %s', self.node.name, self.ballot)
 
-            ballot_message = self.ballot.serialize_ballot_message()
-            for node in self.quorum.validators:
-                self.transport.send(
-                    node.endpoint,
-                    ballot_message,
-                )
-
-            self.ballot.is_broadcasted = True
-
-        if is_passed_threshold:  # move to next state
+        if is_passed_threshold:
             return True
 
-        # will wait~
         return False
 
     def _handle_sign(self, ballot_message, is_passed_threshold):
-        if is_passed_threshold:  # move to next state
+        if is_passed_threshold:
             return True
 
-        # will wait~
         return False
 
     _handle_accept = _handle_sign
