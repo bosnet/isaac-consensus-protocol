@@ -171,3 +171,6 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         headers['Content-Type'] = 'application/json'
 
         return self.response(status_code, message, **headers)
+
+    def log_message(self, format, *args):
+        pass
