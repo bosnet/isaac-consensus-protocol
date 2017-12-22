@@ -111,9 +111,20 @@ NodeConfig = collections.namedtuple(
 )
 
 
+def check_threshold(v):
+    v = int(v)
+    if v < 1 or v > 100:
+        raise argparse.ArgumentTypeError(
+            '%d is an invalid thresdhold, it must be 0 < trs <= 100' % v,
+        )
+
+    return v
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', dest='silent', action='store_true', help='turn off the debug messages')
 parser.add_argument('-nodes', type=int, default=4, help='number of validator nodes in the same quorum')
+parser.add_argument('-trs', type=check_threshold, default=80, help='threshold')
 
 
 if __name__ == '__main__':
@@ -137,7 +148,7 @@ if __name__ == '__main__':
     for i in range(options.nodes):
         name = 'n%d' % i
         endpoint = 'sock://memory:%d' % i
-        nodes_config[name] = NodeConfig(name, endpoint, 80)
+        nodes_config[name] = NodeConfig(name, endpoint, options.trs)
 
     log.main.debug('node configs created: %s', nodes_config)
 
