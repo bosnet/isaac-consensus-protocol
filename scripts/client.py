@@ -1,10 +1,14 @@
 import argparse
 import collections
-import logging
-import urllib
-import colorlog
-import requests
 import json
+import logging
+import requests
+import time
+import urllib
+
+import colorlog
+
+from bos_consensus.statekind import StateKind
 
 
 logging.basicConfig(
@@ -66,12 +70,21 @@ if __name__ == '__main__':
     log.debug('loaded conf: %s', config)
 
     url = 'http://%s:%s' % (config.ip, config.port)
-    json_data = json.dumps({'message': config.message})
     try:
-        response = requests.post(urllib.parse.urljoin(url, '/send_message'), data=json_data)
-        if response.status_code == 200:
-            log.debug('message sent!')
-        else:
-            log.error('message sent error')
+        while(True):
+            get_node_response = requests.get(urllib.parse.urljoin(url, '/get_node'))
+            get_node_response.raise_for_status()
+            json_data = json.loads(get_node_response.text)
+            status = StateKind[json_data['status']]
+            if status == StateKind.ALLCONFIRM or status == StateKind.INIT:
+                json_data = json.dumps({'message': config.message})
+                response = requests.post(urllib.parse.urljoin(url, '/send_message'), data=json_data)
+                response.raise_for_status()
+                log.debug('message sent!')
+                break
+            else:
+                time.sleep(1)
     except requests.exceptions.ConnectionError:
-        log.info('Connection Refused!')
+        log.warn("ConnectionError occurred during client send message to '%s'!" % url)
+    except requests.exceptions.HTTPError:
+        log.warn("HTTPError occurred during client send message to '%s'!" % url)
