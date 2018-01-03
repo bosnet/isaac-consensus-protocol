@@ -19,9 +19,12 @@ class StateKind(enum.Enum):
 class BaseState:
     kind = None
 
-    def __init__(self, consensus, node):
-        assert self.kind is not None
+    def __new__(cls, *a, **kw):
+        assert isinstance(cls.kind, StateKind)
 
+        return super(BaseState, cls).__new__(cls)
+
+    def __init__(self, consensus, node):
         self.consensus = consensus
         self.node = node
 
