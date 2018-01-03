@@ -5,6 +5,7 @@ import requests
 import socket
 import threading
 import time
+import traceback
 import urllib
 
 from bos_consensus.ballot import Ballot
@@ -61,18 +62,21 @@ class Client(threading.Thread):
         self.url_format = 'http://localhost:%d'
 
     def run(self):
-        while True:
+        max_tries = 10
+        tried = 0
+        while tried < max_tries:
             try:
                 self.run_impl()
-            except requests.exceptions.ConnectionError as e:
+            except requests.exceptions.ConnectionError:
                 continue
-            except Exception as e:
-                print(e)
+            except Exception:
+                traceback.print_exc()
                 break
             else:
                 break
-
-            time.sleep(0.5)
+            finally:
+                tried += 1
+                time.sleep(0.2)
 
         return
 
