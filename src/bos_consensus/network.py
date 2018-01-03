@@ -2,7 +2,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import logging
 from queue import Queue
-import random
 import requests
 import time
 import threading
@@ -31,11 +30,11 @@ class Ping(threading.Thread):
                 break
 
             for addr, connected in self.node.validators.items():
-                if connected == True:
+                if connected is True:
                     continue
                 try:
                     ping_response = requests.get(urllib.parse.urljoin(addr, '/ping'))
-                    ping_response.raise_for_status()  
+                    ping_response.raise_for_status()
 
                     # validation check
                     get_node_response = requests.get(urllib.parse.urljoin(addr, '/get_node'))

@@ -4,7 +4,6 @@ import colorlog
 import configparser
 import logging
 import pathlib
-import sys
 import uuid
 
 from bos_consensus.network import (
@@ -13,6 +12,7 @@ from bos_consensus.network import (
 )
 from bos_consensus.node import Node
 from bos_consensus.util import get_local_ipaddress
+from bos_consensus.consensus import get_consensus_module
 
 
 logging.basicConfig(
@@ -73,24 +73,28 @@ def main(options):
     config = config._replace(validators=validator_list)
     log.debug('Validators: %s' % config.validators)
 
+    consensus_module = get_consensus_module('simple_fba')
+    consensus = consensus_module.Consensus()
     nd = Node(
         config.node_id,
         (get_local_ipaddress(), config.port),
         config.threshold,
         config.validators,
+        consensus,
     )
 
     httpd = BOSNetHTTPServer(nd, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
 
     httpd.serve_forever()
 
+
 if __name__ == '__main__':
     log_level = logging.ERROR
 
     options = parser.parse_args()
-    if options.debug == True:
+    if options.debug is True:
         log_level = logging.DEBUG
-    if options.info == True:
+    if options.info is True:
         log_level = logging.INFO
 
     log.root.setLevel(log_level)

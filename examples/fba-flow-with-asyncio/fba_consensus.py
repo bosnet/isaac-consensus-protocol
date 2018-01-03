@@ -135,7 +135,7 @@ class Ballot:
         self.node_result = node_result
 
     def __repr__(self):
-        return '<Ballot: node=%(node)s state=%(state)s voted=%(voted)s node_result=%(node_result)s is_broadcasted=%(is_broadcasted)s>' % self.__dict__
+        return '<Ballot: node=%(node)s state=%(state)s voted=%(voted)s node_result=%(node_result)s is_broadcasted=%(is_broadcasted)s>' % self.__dict__  # noqa
 
     def to_dict(self):
         vh = dict()
@@ -261,7 +261,7 @@ class Ballot:
 
             is_passed = len(agreed_votes) >= self.node.quorum.minimum_quorum
             log.ballot.info(
-                '%s: threshold checked: threshold=%s voted=%s minimum_quorum=%s agreed=%d is_passed=%s',
+                '%s: threshold checked: threshold=%s voted=%s minimum_quorum=%s agreed=%d is_passed=%s',  # noqa
                 self.node.name,
                 self.node.quorum.threshold,
                 sorted(map(lambda x: (x[0], x[1].value), target.items())),
@@ -296,7 +296,7 @@ class BallotMessage:
         self.result = result
 
     def __repr__(self):
-        return '<BallotMessage: node=%(node)s state=%(state)s result=%(result)s message=%(message)s>' % self.__dict__
+        return '<BallotMessage: node=%(node)s state=%(state)s result=%(result)s message=%(message)s>' % self.__dict__  # noqa
 
     def serialize(self):
         return json.dumps(dict(
@@ -360,7 +360,7 @@ class Consensus:
         )
 
     def __repr__(self):
-        return '<Consensus: node=%(node)s quorum=%(quorum)s transport=%(transport)s>' % self.__dict__
+        return '<Consensus: node=%(node)s quorum=%(quorum)s transport=%(transport)s>' % self.__dict__  # noqa
 
     def validate_message(self, message):
         assert isinstance(message, Message)
@@ -418,7 +418,7 @@ class Consensus:
 
         if self.ballot.state != State.init:
             log.consensus.debug(
-                '%s: ballot state is not `init`, this message will be in stacked in pending storage',
+                '%s: ballot state is not `init`, this message will be in stacked in pending storage',  # noqa
                 self.node.name,
                 message,
             )
@@ -442,7 +442,11 @@ class Consensus:
         self.ballot.vote(self.node, self.ballot.node_result, State.init)
 
         ballot_message = self.ballot.serialize_ballot_message()
-        log.consensus.debug('%s: broadcast ballot_message initially: %s', self.node.name, ballot_message.strip())
+        log.consensus.debug(
+            '%s: broadcast ballot_message initially: %s',
+            self.node.name,
+            ballot_message.strip(),
+        )
 
         self.broadcast(ballot_message, skip_nodes=(message.node,))
 
@@ -476,7 +480,11 @@ class Consensus:
 
         is_valid_ballot_message = self.ballot.is_valid_ballot_message(ballot_message)
 
-        log.consensus.debug('%s: ballot_message is valid?: %s', self.node.name, is_valid_ballot_message)
+        log.consensus.debug(
+            '%s: ballot_message is valid?: %s',
+            self.node.name,
+            is_valid_ballot_message,
+        )
         if not is_valid_ballot_message:
             log.consensus.error(
                 '%s: unexpected ballot_message was received: expected != given\n%s\n%s',

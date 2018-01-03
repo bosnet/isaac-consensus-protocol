@@ -123,7 +123,12 @@ def check_threshold(v):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', dest='silent', action='store_true', help='turn off the debug messages')
-parser.add_argument('-nodes', type=int, default=4, help='number of validator nodes in the same quorum')
+parser.add_argument(
+    '-nodes',
+    type=int,
+    default=4,
+    help='number of validator nodes in the same quorum',
+)
 parser.add_argument('-trs', type=check_threshold, default=80, help='threshold')
 
 

@@ -1,16 +1,29 @@
+import enum
 import logging
 
-from .ballot import Ballot
-from .statekind import StateKind
+from ...ballot import Ballot
+from ..base import BaseConsensus
 
 
 log = logging.getLogger(__name__)
 
 
-class State:
-    def __init__(self, node, kind=StateKind.NONE):
+class StateKind(enum.Enum):
+    NONE = enum.auto()
+    INIT = enum.auto()
+    SIGN = enum.auto()
+    ACCEPT = enum.auto()
+    ALLCONFIRM = enum.auto()
+
+
+class BaseState:
+    kind = None
+
+    def __init__(self, consensus, node):
+        assert self.kind is not None
+
+        self.consensus = consensus
         self.node = node
-        self.kind = kind
 
     def handle_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
@@ -23,27 +36,25 @@ class State:
         raise NotImplementedError()
 
     def __eq__(self, state):
-        assert isinstance(state, State)
+        assert isinstance(state, BaseState)
         return self.kind == state.kind
 
     def __str__(self):
         return self.kind.name
 
 
-class NoneState(State):
-    def __init__(self, node):
-        super(NoneState, self).__init__(node, StateKind.NONE)
+class NoneState(BaseState):
+    kind = StateKind.NONE
 
     def init_node(self):
-        self.node.set_state_init()
+        self.consensus.set_state_init()
 
     def handle_ballot_impl(self, ballot):
         pass
 
 
-class InitState(State):
-    def __init__(self, node):
-        super(InitState, self).__init__(node, StateKind.INIT)
+class InitState(BaseState):
+    kind = StateKind.INIT
 
     def init_node(self):
         pass
@@ -56,17 +67,16 @@ class InitState(State):
             validator_th = self.node.minimum_number_of_agreement
 
             for node_id, node_ballot in ballots.items():
-                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
+                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:  # noqa
                     validator_th -= 1
 
             if validator_th == 0:
-                self.node.set_state_sign()
+                self.consensus.set_state_sign()
                 self.node.broadcast(ballot.message)
 
 
-class SignState(State):
-    def __init__(self, node):
-        super(SignState, self).__init__(node, StateKind.SIGN)
+class SignState(BaseState):
+    kind = StateKind.SIGN
 
     def init_node(self):
         pass
@@ -78,17 +88,16 @@ class SignState(State):
             validator_th = self.node.minimum_number_of_agreement
 
             for node_id, node_ballot in ballots.items():
-                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
+                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:  # noqa
                     validator_th -= 1
 
             if validator_th == 0:
-                self.node.set_state_accept()
+                self.consensus.set_state_accept()
                 self.node.broadcast(ballot.message)
 
 
-class AcceptState(State):
-    def __init__(self, node):
-        super(AcceptState, self).__init__(node, StateKind.ACCEPT)
+class AcceptState(BaseState):
+    kind = StateKind.ACCEPT
 
     def init_node(self):
         pass
@@ -99,16 +108,15 @@ class AcceptState(State):
             ballots = self.node.validator_ballots
             validator_th = self.node.minimum_number_of_agreement
             for node_id, node_ballot in ballots.items():
-                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:
+                if node_ballot.node_state_kind == self.kind and ballot.message == node_ballot.message:  # noqa
                     validator_th -= 1
 
             if validator_th == 0:
-                self.node.set_state_all_confirm()
+                self.consensus.set_state_all_confirm()
 
 
-class AllConfirmState(State):
-    def __init__(self, node):
-        super(AllConfirmState, self).__init__(node, StateKind.ALLCONFIRM)
+class AllConfirmState(BaseState):
+    kind = StateKind.ALLCONFIRM
 
     def init_node(self):
         pass
@@ -123,4 +131,42 @@ class AllConfirmState(State):
         # 같은 메시지가 들어오면 pass
         else:
             pass
+        return
+
+
+class Consensus(BaseConsensus):
+    def initialize(self):
+        super(Consensus, self).initialize()
+
+        self.state_none = NoneState(self, self.node)
+        self.state_init = InitState(self, self.node)
+        self.state_sign = SignState(self, self.node)
+        self.state_accept = AcceptState(self, self.node)
+        self.state_all_confirm = AllConfirmState(self, self.node)
+
+        self.node_state = self.state_none
+
+    def set_state_init(self):
+        log.info('[%s] state to INIT', self.node.node_id)
+        self.node_state = self.state_init
+
+        return
+
+    def set_state_sign(self):
+        log.info('[%s] state to SIGN', self.node.node_id)
+        self.node_state = self.state_sign
+
+        return
+
+    def set_state_accept(self):
+        log.info('[%s] state to ACCEPT', self.node.node_id)
+        self.node_state = self.state_accept
+
+        return
+
+    def set_state_all_confirm(self):
+        log.info('[%s] state to ALLCONFIRM', self.node.node_id)
+        self.node_state = self.state_all_confirm
+        self.node.save_message(self.node.validator_ballots[self.node.node_id].message)
+
         return

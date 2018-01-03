@@ -1,11 +1,9 @@
 import json
 import logging
-import random
-import time
-from urllib.parse import (urlparse, parse_qs)
 
 from .ballot import Ballot
-from .statekind import StateKind
+from .consensus import get_consensus_module
+
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +23,10 @@ def handle_status(handler, parsed):
         handler.response(405, None)
         return
 
-    info = json.dumps({'Version':handler.server.version, 'Node':handler.server.node.to_dict()}, indent=True)
+    info = json.dumps({
+        'Version': handler.server.version,
+        'Node': handler.server.node.to_dict(),
+    }, indent=True)
     handler.response(200, info)
 
     return
@@ -73,6 +74,8 @@ def handle_send_ballot(handler, parsed):
     ballot_num = post_data['ballot_num']
     node_id = post_data['node_id']
     message = post_data['message']
+
+    StateKind = get_consensus_module('simple_fba').StateKind
     state_kind = StateKind[post_data['node_state_kind']]
 
     ballot = Ballot(ballot_num, node_id, message, state_kind)
