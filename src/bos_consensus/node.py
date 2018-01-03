@@ -28,23 +28,6 @@ class Node:
         self.consensus.set_node(self)
         self.consensus.initialize()
 
-    # def set_state_init(self):
-    #     log.info('[%s] state to INIT', self.node_id)
-    #     self.node_state = self.state_init
-
-    # def set_state_sign(self):
-    #     log.info('[%s] state to SIGN', self.node_id)
-    #     self.node_state = self.state_sign
-
-    # def set_state_accept(self):
-    #     log.info('[%s] state to ACCEPT', self.node_id)
-    #     self.node_state = self.state_accept
-
-    # def set_state_all_confirm(self):
-    #     log.info('[%s] state to ALLCONFIRM', self.node_id)
-    #     self.node_state = self.state_all_confirm
-    #     self.save_message(self.validator_ballots[self.node_id].message)
-
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
 

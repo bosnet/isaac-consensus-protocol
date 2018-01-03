@@ -50,7 +50,7 @@ class NoneState(BaseState):
     kind = StateKind.NONE
 
     def init_node(self):
-        self.consensus.set_state_init()
+        self.consensus.set_init()
 
     def handle_ballot_impl(self, ballot):
         pass
@@ -74,7 +74,7 @@ class InitState(BaseState):
                     validator_th -= 1
 
             if validator_th == 0:
-                self.consensus.set_state_sign()
+                self.consensus.set_sign()
                 self.node.broadcast(ballot.message)
 
 
@@ -95,7 +95,7 @@ class SignState(BaseState):
                     validator_th -= 1
 
             if validator_th == 0:
-                self.consensus.set_state_accept()
+                self.consensus.set_accept()
                 self.node.broadcast(ballot.message)
 
 
@@ -115,7 +115,7 @@ class AcceptState(BaseState):
                     validator_th -= 1
 
             if validator_th == 0:
-                self.consensus.set_state_all_confirm()
+                self.consensus.set_all_confirm()
 
 
 class AllConfirmState(BaseState):
@@ -127,7 +127,7 @@ class AllConfirmState(BaseState):
     def handle_ballot_impl(self, ballot):
         # 다른 메시지가 들어오면 INIT 으로 변경
         if (not self.node.messages) or (self.node.messages[-1] != ballot.message):
-            self.node.set_state_init()
+            self.node.set_init()
             ballot.node_state_kind = StateKind.INIT
             self.node.receive_ballot(ballot)
 
@@ -149,25 +149,25 @@ class Consensus(BaseConsensus):
 
         self.node_state = self.state_none
 
-    def set_state_init(self):
+    def set_init(self):
         log.info('[%s] state to INIT', self.node.node_id)
         self.node_state = self.state_init
 
         return
 
-    def set_state_sign(self):
+    def set_sign(self):
         log.info('[%s] state to SIGN', self.node.node_id)
         self.node_state = self.state_sign
 
         return
 
-    def set_state_accept(self):
+    def set_accept(self):
         log.info('[%s] state to ACCEPT', self.node.node_id)
         self.node_state = self.state_accept
 
         return
 
-    def set_state_all_confirm(self):
+    def set_all_confirm(self):
         log.info('[%s] state to ALLCONFIRM', self.node.node_id)
         self.node_state = self.state_all_confirm
         self.node.save_message(self.node.validator_ballots[self.node.node_id].message)
