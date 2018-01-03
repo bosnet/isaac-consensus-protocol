@@ -1,17 +1,14 @@
-import pytest
-import requests
-
 from contextlib import closing
 import json
+import pytest
+import requests
 import socket
 import threading
+import time
 import urllib
 
 from bos_consensus.ballot import Ballot
-from bos_consensus.network import (
-    BOSNetHTTPServer,
-    BOSNetHTTPServerRequestHandler,
-)
+from bos_consensus.network import get_network_module
 from .. import get_consensus_module
 from ...node import Node
 
@@ -45,10 +42,11 @@ class Server(threading.Thread):
             ['localhost:5002', 'localhost:5003'],
             consensus_module.Consensus(),
         )
-        self.httpd = BOSNetHTTPServer(
+        network_module = get_network_module('default_http')
+        self.httpd = network_module.BOSNetHTTPServer(
             node,
             ('localhost', self.port),
-            BOSNetHTTPServerRequestHandler,
+            network_module.BOSNetHTTPServerRequestHandler,
         )
         self.httpd.serve_forever()
 
@@ -63,7 +61,19 @@ class Client(threading.Thread):
         self.url_format = 'http://localhost:%d'
 
     def run(self):
-        self.run_impl()
+        while True:
+            try:
+                self.run_impl()
+            except requests.exceptions.ConnectionError as e:
+                continue
+            except Exception as e:
+                print(e)
+                break
+            else:
+                break
+
+            time.sleep(0.5)
+
         return
 
     def run_impl(self):
@@ -78,14 +88,12 @@ class Ping(Client):
         super(Ping, self).__init__(port)
 
     def run_impl(self):
-        try:
-            response = requests.get(
-                urllib.parse.urljoin(self.url_format % self.port, '/ping'),
-            )
+        response = requests.get(
+            urllib.parse.urljoin(self.url_format % self.port, '/ping'),
+        )
 
-            self.response_code = response.status_code
-        except requests.exceptions.ConnectionError:
-            print('Connection Refused!')
+        self.response_code = response.status_code
+
         return True
 
 
@@ -119,14 +127,12 @@ class Status(Client):
         self.node_id = 0
 
     def run_impl(self):
-        try:
-            response = requests.get(
-                urllib.parse.urljoin(self.url_format % self.port, '/status'),
-            )
-            self.response_code = response.status_code
-            self.node_id = json.loads(response.text)['Node']['node_id']
-        except requests.exceptions.ConnectionError:
-            print('Connection Refused!')
+        response = requests.get(
+            urllib.parse.urljoin(self.url_format % self.port, '/status'),
+        )
+        self.response_code = response.status_code
+        self.node_id = json.loads(response.text)['Node']['node_id']
+
         return True
 
     def get_node_id(self):
@@ -148,15 +154,13 @@ class GetNode(Client):
         self.node_id = 0
 
     def run_impl(self):
-        try:
-            url = 'http://localhost:%d' % self.port
-            response = requests.get(
-                urllib.parse.urljoin(url, '/get_node'),
-            )
-            self.response_code = response.status_code
-            self.node_id = json.loads(response.text)['node_id']
-        except requests.exceptions.ConnectionError:
-            print('Connection Refused!')
+        url = 'http://localhost:%d' % self.port
+        response = requests.get(
+            urllib.parse.urljoin(url, '/get_node'),
+        )
+        self.response_code = response.status_code
+        self.node_id = json.loads(response.text)['node_id']
+
         return True
 
     def get_node_id(self):
@@ -178,17 +182,15 @@ class SendMessage(Client):
         self.message = message
 
     def run_impl(self):
-        try:
-            url = 'http://localhost:%d' % self.port
-            post_data = json.dumps({'message': self.message})
-            response = requests.post(
-                urllib.parse.urljoin(url, '/send_message'),
-                data=post_data,
-            )
+        url = 'http://localhost:%d' % self.port
+        post_data = json.dumps({'message': self.message})
+        response = requests.post(
+            urllib.parse.urljoin(url, '/send_message'),
+            data=post_data,
+        )
 
-            self.response_code = response.status_code
-        except requests.exceptions.ConnectionError:
-            print('Connection Refused!')
+        self.response_code = response.status_code
+
         return True
 
 
@@ -207,18 +209,16 @@ class SendBallot(Client):
         self.ballot = ballot
 
     def run_impl(self):
-        try:
-            url = 'http://localhost:%d' % self.port
+        url = 'http://localhost:%d' % self.port
 
-            post_data = json.dumps(self.ballot.to_dict())
-            response = requests.post(
-                urllib.parse.urljoin(url, '/send_ballot'),
-                data=post_data,
-            )
+        post_data = json.dumps(self.ballot.to_dict())
+        response = requests.post(
+            urllib.parse.urljoin(url, '/send_ballot'),
+            data=post_data,
+        )
 
-            self.response_code = response.status_code
-        except requests.exceptions.ConnectionError:
-            print('Connection Refused!')
+        self.response_code = response.status_code
+
         return True
 
 

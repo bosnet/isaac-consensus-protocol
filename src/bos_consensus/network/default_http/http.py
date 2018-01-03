@@ -10,7 +10,7 @@ import urllib
 from urllib.parse import urlparse
 
 from . import handler
-from .node import Node
+from ...node import Node
 
 
 log = logging.getLogger(__name__)
