@@ -1,5 +1,5 @@
 import sys
-import os
+import pathlib
 
 
-sys.path.insert(0, os.path.abspath('.') + '/src/')
+sys.path.insert(0, pathlib.Path('.').resolve() / 'src')
