@@ -5,6 +5,8 @@ from contextlib import closing
 import json
 import socket
 import threading
+import time
+import traceback
 import urllib
 
 from bos_consensus.ballot import Ballot
@@ -14,7 +16,6 @@ from bos_consensus.network import (
 )
 from bos_consensus.node import Node
 from bos_consensus.statekind import StateKind
-
 
 
 def find_free_port():
@@ -53,7 +54,22 @@ class Client(threading.Thread):
         self.url_format = 'http://localhost:%d'
 
     def run(self):
-        self.run_impl()
+        max_tries = 10
+        tried = 0
+        while tried < max_tries:
+            try:
+                self.run_impl()
+            except requests.exceptions.ConnectionError:
+                continue
+            except Exception:
+                traceback.print_exc()
+                break
+            else:
+                break
+            finally:
+                tried += 1
+                time.sleep(0.2)
+
         return
 
     def run_impl(self):
