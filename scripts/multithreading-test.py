@@ -3,8 +3,8 @@ import collections
 import colorlog
 import configparser
 import logging
+import os
 import pathlib
-import sys
 import threading
 import uuid
 
@@ -41,12 +41,11 @@ logging.root.handlers = [log_handler]
 log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
-
-
-class Options:
-
-    def __init__(self, conf):
-        self.conf = conf
+parser.add_argument('--num', help='number of validators')
+parser.add_argument('--th', help='value of threshold')
+parser.add_argument('--output', help='value of threshold')
+parser.add_argument('-debug', help='debug log level', action='store_true')
+parser.add_argument('-info', help='info log level', action='store_true')
 
 
 def test_fba(options):
@@ -89,9 +88,12 @@ def test_fba(options):
     httpd.serve_forever()
 
 
-def make_conf(seq, num_validators, th_percent):
+def make_conf(seq, num_validators, th_percent, output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     id = str(5000 + seq)
-    with open('examples/node' + id + '.ini', 'w') as f:
+
+    with open(output_dir + '/node' + id + '.ini', 'w') as f:
         f.write('[node]' + '\n')
         f.write('id=' + id + '\n')
         f.write('port=' + id + '\n')
@@ -108,32 +110,36 @@ def make_conf(seq, num_validators, th_percent):
         f.write('\n')
         f.write('threshold_percent=' + th_percent + '\n')
 
-    return 'examples/node' + id + '.ini'
+    return output_dir + '/node' + id + '.ini'
 
 
 if __name__ == '__main__':
-    num_validators = int(sys.argv[1])
-    th_percent = sys.argv[2]
+    log_level = logging.ERROR
+
+    options = parser.parse_args()
+
+    num_validators = int(options.num)
     conf_list = []
-
     for i in range(1, num_validators + 1):
-        conf_list.append(make_conf(i, num_validators, th_percent))
+        conf_list.append(make_conf(i, num_validators, options.th, options.output))
 
-    if len(sys.argv) > 3:
-        if sys.argv[3] == '-debug':
-            logging.getLogger(__name__).root.setLevel(logging.DEBUG)
-        elif sys.argv[3] == '-info':
-            logging.getLogger(__name__).root.setLevel(logging.INFO)
-    else:
-        logging.getLogger(__name__).root.setLevel(logging.INFO)
+    if options.debug is True:
+        log_level = logging.DEBUG
+    if options.info is True:
+        log_level = logging.INFO
+
+    log.root.setLevel(log_level)
 
     for c in conf_list:
         try:
-            t_options = Options(c)
+            t_options = collections.namedtuple(
+                'Options',
+                ('conf'),
+            )(c)
             t = threading.Thread(target=test_fba, args=(t_options,))
             t.start()
         except:  # noqa
             print('Error: unable to start thread')
 
     while 1:
-        pass
+        t.join()
