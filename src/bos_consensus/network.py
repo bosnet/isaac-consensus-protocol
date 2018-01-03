@@ -30,8 +30,9 @@ class Ping(threading.Thread):
                 break
 
             for addr, connected in self.node.validators.items():
-                if connected is True:
+                if connected:
                     continue
+
                 try:
                     ping_response = requests.get(urllib.parse.urljoin(addr, '/ping'))
                     ping_response.raise_for_status()

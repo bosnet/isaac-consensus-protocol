@@ -65,10 +65,10 @@ if __name__ == '__main__':
 
     options = parser.parse_args()
 
-    if options.debug is True:
+    if options.debug:
         log_level = logging.DEBUG
 
-    if options.info is True:
+    if options.info:
         log_level = logging.INFO
 
     log.root.setLevel(log_level)

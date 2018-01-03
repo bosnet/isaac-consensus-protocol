@@ -127,6 +127,7 @@ class Node:
 
     def all_validators_connected(self):
         for _, connected in self.validators.items():
-            if connected is False:
+            if not connected:
                 return False
+
         return True

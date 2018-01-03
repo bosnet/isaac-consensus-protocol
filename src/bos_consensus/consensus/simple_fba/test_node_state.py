@@ -17,8 +17,8 @@ def test_state_init():
     assert node.consensus.node_state.kind == consensus_module.StateKind.NONE
     assert node.threshold == 100
     assert node.address == ('localhost', 5001)
-    assert node.validators['http://localhost:5002'] is False
-    assert node.validators['http://localhost:5003'] is False
+    assert not node.validators['http://localhost:5002']
+    assert not node.validators['http://localhost:5003']
 
 
 def stub_func(_, __):
