@@ -97,19 +97,9 @@ def test_state_init_to_all_confirm_sequence():
     node3.receive_ballot(ballot_init_2)
     node3.receive_ballot(ballot_init_3)
 
-    (
-        SignState,
-        AcceptState,
-        AllConfirmState,
-    ) = (
-        consensus_module.SignState,
-        consensus_module.AcceptState,
-        consensus_module.AllConfirmState,
-    )
-
-    assert isinstance(node1.consensus.node_state, SignState)
-    assert isinstance(node2.consensus.node_state, SignState)
-    assert isinstance(node3.consensus.node_state, SignState)
+    assert isinstance(node1.consensus.node_state, consensus_module.SignState)
+    assert isinstance(node2.consensus.node_state, consensus_module.SignState)
+    assert isinstance(node3.consensus.node_state, consensus_module.SignState)
 
     ballot_sign_1 = Ballot(1, 1, 'message', StateKind.SIGN)
     ballot_sign_2 = Ballot(1, 2, 'message', StateKind.SIGN)
@@ -127,9 +117,9 @@ def test_state_init_to_all_confirm_sequence():
     node2.receive_ballot(ballot_sign_3)
     node3.receive_ballot(ballot_sign_3)
 
-    assert isinstance(node1.consensus.node_state, AcceptState)
-    assert isinstance(node2.consensus.node_state, AcceptState)
-    assert isinstance(node3.consensus.node_state, AcceptState)
+    assert isinstance(node1.consensus.node_state, consensus_module.AcceptState)
+    assert isinstance(node2.consensus.node_state, consensus_module.AcceptState)
+    assert isinstance(node3.consensus.node_state, consensus_module.AcceptState)
 
     ballot_accept_1 = Ballot(1, 1, 'message', StateKind.ACCEPT)
     ballot_accept_2 = Ballot(1, 2, 'message', StateKind.ACCEPT)
@@ -148,9 +138,9 @@ def test_state_init_to_all_confirm_sequence():
     node2.receive_ballot(ballot_sign_3)    # different state ballot
     node3.receive_ballot(ballot_accept_3)
 
-    assert isinstance(node1.consensus.node_state, AllConfirmState)
-    assert isinstance(node2.consensus.node_state, AcceptState)
-    assert isinstance(node3.consensus.node_state, AllConfirmState)
+    assert isinstance(node1.consensus.node_state, consensus_module.AllConfirmState)
+    assert isinstance(node2.consensus.node_state, consensus_module.AcceptState)
+    assert isinstance(node3.consensus.node_state, consensus_module.AllConfirmState)
 
 
 # def test_state_jump_from_init():
