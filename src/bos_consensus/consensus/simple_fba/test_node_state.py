@@ -1,6 +1,6 @@
-from ...node import Node
-from ...ballot import Ballot
 from .. import get_consensus_module
+from ...ballot import Ballot
+from ...node import Node
 
 
 def test_state_init():

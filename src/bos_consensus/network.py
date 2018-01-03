@@ -3,9 +3,9 @@ import json
 import logging
 from queue import Queue
 import requests
-import time
-import threading
 from socketserver import ThreadingMixIn
+import threading
+import time
 import urllib
 from urllib.parse import urlparse
 

@@ -1,8 +1,8 @@
 import enum
 import logging
 
-from ...ballot import Ballot
 from ..base import BaseConsensus
+from ...ballot import Ballot
 
 
 log = logging.getLogger(__name__)

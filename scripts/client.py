@@ -5,7 +5,6 @@ import logging
 import requests
 import time
 import urllib
-
 import colorlog
 
 from bos_consensus.statekind import StateKind

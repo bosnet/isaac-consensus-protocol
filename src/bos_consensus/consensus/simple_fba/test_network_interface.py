@@ -1,5 +1,5 @@
-import requests
 import pytest
+import requests
 
 from contextlib import closing
 import json
@@ -12,8 +12,8 @@ from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
-from ...node import Node
 from .. import get_consensus_module
+from ...node import Node
 
 
 def find_free_port():

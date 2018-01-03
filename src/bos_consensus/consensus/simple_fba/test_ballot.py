@@ -1,5 +1,5 @@
-from ...ballot import Ballot
 from .. import get_consensus_module
+from ...ballot import Ballot
 
 
 def test_ballot():
