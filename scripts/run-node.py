@@ -81,13 +81,11 @@ def main(options):
     )
 
     network_module = get_network_module('default_http')
-    httpd = network_module.BOSNetHTTPServer(
+    network = network_module.Network(
         nd,
-        ('0.0.0.0', config.port),
-        network_module.BOSNetHTTPServerRequestHandler,
+        bind=('0.0.0.0', config.port),
     )
-
-    httpd.serve_forever()
+    network.start()
 
 
 if __name__ == '__main__':

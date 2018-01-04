@@ -25,14 +25,14 @@ NODE_ID = 52
 
 
 class Server(threading.Thread):
-    httpd = None
+    network = None
 
     def __init__(self, port, node_id):
         super(Server, self).__init__()
         self.port = port
         self.node_id = node_id
 
-        self.httpd = None
+        self.network = None
 
     def run(self):
         consensus_module = get_consensus_module('simple_fba')
@@ -43,18 +43,21 @@ class Server(threading.Thread):
             ['localhost:5002', 'localhost:5003'],
             consensus_module.Consensus(),
         )
+
         network_module = get_network_module('default_http')
 
         class TestBOSNetHTTPServer(network_module.BOSNetHTTPServer):
             def start_ping(self):
                 return
 
-        self.httpd = TestBOSNetHTTPServer(
+        class TestNetwork(network_module.Network):
+            http_server_class = TestBOSNetHTTPServer
+
+        self.network = TestNetwork(
             node,
-            ('localhost', self.port),
-            network_module.BOSNetHTTPServerRequestHandler,
+            bind=('localhost', self.port),
         )
-        self.httpd.serve_forever()
+        self.network.start()
 
         return True
 
@@ -113,7 +116,7 @@ def setup_server(request):
     server_thread.start()
 
     def teardown():
-        server_thread.httpd.server_close()
+        server_thread.network.stop()
 
         return
 

@@ -10,6 +10,7 @@ import urllib
 from urllib.parse import urlparse
 
 from . import handler
+from ..base import BaseNetwork
 from ...node import Node
 
 
@@ -180,4 +181,32 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, *a, **kw):
         if log.root.level == logging.DEBUG:
             super(BOSNetHTTPServerRequestHandler, self).log_message(*a, **kw)
+        return
+
+
+class Network(BaseNetwork):
+    http_server_class = BOSNetHTTPServer
+    http_request_handler_class = BOSNetHTTPServerRequestHandler
+
+    def __init__(self, node, **config):
+        super(Network, self).__init__(node, **config)
+
+        assert 'bind' in config
+        assert hasattr(config['bind'], '__getitem__')
+        assert type(config['bind'][1]) in (int,)
+
+    def _start(self):
+        self.server = self.http_server_class(
+            self.node,
+            self.config['bind'],
+            self.http_request_handler_class,
+        )
+
+        self.server.serve_forever()
+
+        return
+
+    def _stop(self):
+        self.server.server_close()
+
         return
