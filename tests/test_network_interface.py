@@ -31,6 +31,10 @@ NODE_ID = 52
 class Server(threading.Thread):
     httpd = None
 
+    class TestBOSNetHTTPServer(BOSNetHTTPServer):
+        def start_ping(self):
+            return
+
     def __init__(self, port, node_id):
         super(Server, self).__init__()
         self.port = port
@@ -40,7 +44,7 @@ class Server(threading.Thread):
 
     def run(self):
         node = Node(self.node_id, ('localhost', self.port), 100, ['localhost:5002', 'localhost:5003'])
-        self.httpd = BOSNetHTTPServer(node, ('localhost', self.port), BOSNetHTTPServerRequestHandler)
+        self.httpd = self.TestBOSNetHTTPServer(node, ('localhost', self.port), BOSNetHTTPServerRequestHandler)
         self.httpd.serve_forever()
 
         return True
