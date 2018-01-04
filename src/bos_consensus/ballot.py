@@ -1,7 +1,5 @@
 import logging
 
-from .statekind import StateKind
-
 
 log = logging.getLogger(__name__)
 
@@ -15,6 +13,9 @@ class Ballot:
 
     def __str__(self):
         return '%d:%d[%s]: %s' % (self.ballot_num, self.node_id, self.node_state_kind, self.message)
+
+    def __eq__(self, a):
+        return self.node_state_kind == a.node_state_kind and self.message == a.message  # noqa
 
     def to_dict(self):
         return dict(

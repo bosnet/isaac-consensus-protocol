@@ -1,5 +1,5 @@
-import requests
 import pytest
+import requests
 
 from contextlib import closing
 import json
@@ -14,8 +14,8 @@ from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
-from bos_consensus.node import Node
-from bos_consensus.statekind import StateKind
+from .. import get_consensus_module
+from ...node import Node
 
 
 def find_free_port():
@@ -43,7 +43,14 @@ class Server(threading.Thread):
         self.httpd = None
 
     def run(self):
-        node = Node(self.node_id, ('localhost', self.port), 100, ['localhost:5002', 'localhost:5003'])
+        consensus_module = get_consensus_module('simple_fba')
+        node = Node(
+            self.node_id,
+            ('localhost', self.port),
+            100,
+            ['localhost:5002', 'localhost:5003'],
+            consensus_module.Consensus(),
+        )
         self.httpd = self.TestBOSNetHTTPServer(node, ('localhost', self.port), BOSNetHTTPServerRequestHandler)
         self.httpd.serve_forever()
 
@@ -90,8 +97,8 @@ class Ping(Client):
     def run_impl(self):
         try:
             response = requests.get(
-                urllib.parse.urljoin(self.url_format % self.port, '/ping')
-                )
+                urllib.parse.urljoin(self.url_format % self.port, '/ping'),
+            )
 
             self.response_code = response.status_code
         except requests.exceptions.ConnectionError:
@@ -131,8 +138,8 @@ class Status(Client):
     def run_impl(self):
         try:
             response = requests.get(
-                urllib.parse.urljoin(self.url_format % self.port, '/status')
-                )
+                urllib.parse.urljoin(self.url_format % self.port, '/status'),
+            )
             self.response_code = response.status_code
             self.node_id = json.loads(response.text)['Node']['node_id']
         except requests.exceptions.ConnectionError:
@@ -161,8 +168,8 @@ class GetNode(Client):
         try:
             url = 'http://localhost:%d' % self.port
             response = requests.get(
-                urllib.parse.urljoin(url, '/get_node')
-                )
+                urllib.parse.urljoin(url, '/get_node'),
+            )
             self.response_code = response.status_code
             self.node_id = json.loads(response.text)['node_id']
         except requests.exceptions.ConnectionError:
@@ -193,8 +200,8 @@ class SendMessage(Client):
             post_data = json.dumps({'message': self.message})
             response = requests.post(
                 urllib.parse.urljoin(url, '/send_message'),
-                data = post_data
-                )
+                data=post_data,
+            )
 
             self.response_code = response.status_code
         except requests.exceptions.ConnectionError:
@@ -223,8 +230,8 @@ class SendBallot(Client):
             post_data = json.dumps(self.ballot.to_dict())
             response = requests.post(
                 urllib.parse.urljoin(url, '/send_ballot'),
-                data = post_data
-                )
+                data=post_data,
+            )
 
             self.response_code = response.status_code
         except requests.exceptions.ConnectionError:
@@ -233,6 +240,8 @@ class SendBallot(Client):
 
 
 def test_handler_send_ballot(setup_server):
+    StateKind = get_consensus_module('simple_fba').StateKind
+
     ballot = Ballot(1, NODE_ID, 'message', StateKind.INIT)
     client_ping_thread = SendBallot(PORT, ballot)
     client_ping_thread.daemon = True

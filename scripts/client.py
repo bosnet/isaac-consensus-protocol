@@ -5,7 +5,6 @@ import logging
 import requests
 import time
 import urllib
-
 import colorlog
 
 from bos_consensus.statekind import StateKind
@@ -38,19 +37,37 @@ log = logging.getLogger(__name__)
 parser = argparse.ArgumentParser()
 parser.add_argument('-debug', action='store_true', help='Log level set to debug')
 parser.add_argument('-info', action='store_true', help='Log level set to info')
-parser.add_argument('-m', '--message', required=True, help='Messages you want to send to the server.', type=str)
-parser.add_argument('-i', '--ip', required=True, help='Server IP you want to send the message to.', type=str)
-parser.add_argument('-p', '--port', required=True, help='Server port you want to send the message to.', type=int)
+parser.add_argument(
+    '-m',
+    '--message',
+    required=True,
+    help='Messages you want to send to the server.',
+    type=str,
+)
+parser.add_argument(
+    '-i',
+    '--ip',
+    required=True,
+    help='Server IP you want to send the message to.',
+    type=str,
+)
+parser.add_argument(
+    '-p',
+    '--port',
+    required=True,
+    help='Server port you want to send the message to.',
+    type=int,
+)
 
 if __name__ == '__main__':
     log_level = logging.ERROR
 
     options = parser.parse_args()
 
-    if options.debug == True:
+    if options.debug:
         log_level = logging.DEBUG
 
-    if options.info == True:
+    if options.info:
         log_level = logging.INFO
 
     log.root.setLevel(log_level)

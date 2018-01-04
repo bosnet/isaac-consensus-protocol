@@ -1,26 +1,20 @@
 import json
 import logging
 import requests
-import threading
 import urllib
 
 from .ballot import Ballot
-from .state import (
-    State,
-    NoneState,
-    SignState,
-    InitState,
-    AcceptState,
-    AllConfirmState
-)
+from .consensus import BaseConsensus
+
 
 log = logging.getLogger(__name__)
 
 
 class Node:
-    def __init__(self, node_id, address, threshold, validator_addrs):
+    def __init__(self, node_id, address, threshold, validator_addrs, consensus):
         assert type(address) in (list, tuple) and len(address) == 2
         assert type(address[0]) in (str,) and type(address[1]) in (int,)
+        assert isinstance(consensus, BaseConsensus)
 
         self.node_id = node_id
         self.address = address
@@ -30,36 +24,19 @@ class Node:
         self.validator_ballots = {}
         self.messages = []
 
-        self.state_none = NoneState(self)
-        self.state_init = InitState(self)
-        self.state_sign = SignState(self)
-        self.state_accept = AcceptState(self)
-        self.state_all_confirm = AllConfirmState(self)
-
-        self.node_state = self.state_none
-
-    def set_state_init(self):
-        log.info('[%s] state to INIT', self.node_id)
-        self.node_state = self.state_init
-
-    def set_state_sign(self):
-        log.info('[%s] state to SIGN', self.node_id)
-        self.node_state = self.state_sign
-
-    def set_state_accept(self):
-        log.info('[%s] state to ACCEPT', self.node_id)
-        self.node_state = self.state_accept
-
-    def set_state_all_confirm(self):
-        log.info('[%s] state to ALLCONFIRM', self.node_id)
-        self.node_state = self.state_all_confirm
-        self.save_message(self.validator_ballots[self.node_id].message)
+        self.consensus = consensus
+        self.consensus.set_node(self)
+        self.consensus.initialize()
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
 
     def __str__(self):
-        return '<Node[%s]: %s(%s)>' % (self.node_state.__str__(), self.node_id, self.endpoint)
+        return '<Node[%s]: %s(%s)>' % (
+            self.consensus.node_state.__str__(),
+            self.node_id,
+            self.endpoint,
+        )
 
     @property
     def endpoint(self):
@@ -67,7 +44,7 @@ class Node:
 
     def to_dict(self):
         return dict(
-            status=self.node_state.kind.name,
+            status=self.consensus.node_state.kind.name,
             node_id=self.node_id,
             threshold=self.threshold,
             address=self.address,
@@ -90,7 +67,7 @@ class Node:
         return lhs_endpoint == rhs_endpoint
 
     def init_node(self):
-        self.node_state.init_node()
+        self.consensus.node_state.init_node()
         return
 
     def receive_message_from_client(self, message):
@@ -100,7 +77,7 @@ class Node:
 
     def broadcast(self, message):
         log.debug('[%s] begin broadcast to everyone' % self.node_id)
-        ballot = Ballot(1, self.node_id, message, self.node_state.kind)
+        ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
         self.send_to(self.endpoint, ballot)
         for addr in self.validators.keys():
             self.send_to(addr, ballot)
@@ -120,8 +97,8 @@ class Node:
     def receive_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
         log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
-        if self.node_state.kind == ballot.node_state_kind:
-            self.node_state.handle_ballot(ballot)
+        if self.consensus.node_state.kind == ballot.node_state_kind:
+            self.consensus.node_state.handle_ballot(ballot)
         return
 
     def store(self, ballot):
@@ -133,6 +110,7 @@ class Node:
 
     def all_validators_connected(self):
         for _, connected in self.validators.items():
-            if connected is False:
+            if not connected:
                 return False
+
         return True
