@@ -1,5 +1,6 @@
 from .http import (  # noqa
-    Network,
+    Server,
+    Transport,
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )

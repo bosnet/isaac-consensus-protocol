@@ -10,7 +10,10 @@ import urllib
 from urllib.parse import urlparse
 
 from . import handler
-from ..base import BaseNetwork
+from ..base import (
+    BaseTransport,
+    BaseServer,
+)
 from ...node import Node
 
 
@@ -184,18 +187,18 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         return
 
 
-class Network(BaseNetwork):
+class Transport(BaseTransport):
     http_server_class = BOSNetHTTPServer
     http_request_handler_class = BOSNetHTTPServerRequestHandler
 
     def __init__(self, node, **config):
-        super(Network, self).__init__(node, **config)
+        super(Transport, self).__init__(node, **config)
 
         assert 'bind' in config
         assert hasattr(config['bind'], '__getitem__')
         assert type(config['bind'][1]) in (int,)
 
-    def _start(self):
+    def start(self, message_received_callback):
         self.server = self.http_server_class(
             self.node,
             self.config['bind'],
@@ -206,7 +209,11 @@ class Network(BaseNetwork):
 
         return
 
-    def _stop(self):
+    def stop(self):
         self.server.server_close()
 
         return
+
+
+class Server(BaseServer):
+    pass

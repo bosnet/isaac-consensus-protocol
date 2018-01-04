@@ -6,7 +6,7 @@ import logging
 import pathlib
 import uuid
 
-from bos_consensus.network import get_network_module
+from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.consensus import get_consensus_module
 from bos_consensus.node import Node
 from bos_consensus.util import get_local_ipaddress
@@ -81,11 +81,11 @@ def main(options):
     )
 
     network_module = get_network_module('default_http')
-    network = network_module.Network(
+    transport = network_module.Transport(
         nd,
         bind=('0.0.0.0', config.port),
     )
-    network.start()
+    BaseServer(nd, transport).start()
 
 
 if __name__ == '__main__':

@@ -10,11 +10,11 @@ def get_network_module(name):
         return None
 
 
-class BaseNetwork:
+class BaseTransport:
     node = None
     config = None
 
-    server = None
+    message_received_callback = None
 
     def __init__(self, node, **config):
         assert isinstance(node, Node)
@@ -22,23 +22,42 @@ class BaseNetwork:
         self.node = node
         self.config = config
 
-        self.server = None
+    def receive(self, data):
+        raise NotImplementedError()
+
+    def write(self, data):
+        raise NotImplementedError()
+
+    def send(self, data):
+        raise NotImplementedError()
+
+    def start(self, message_received_callback):
+        self.message_received_callback = message_received_callback
+
+        return
+
+
+class BaseServer:
+    node = None
+    transport = None
+
+    config = None
+
+    def __init__(self, node, transport, **config):
+        self.node = node
+        self.transport = transport
+
+        self.config = config
 
     def start(self):
-        self._start()
+        self.transport.start(self.message_received_callback)
 
         return
 
-    def _start(self):
-        raise NotImplementedError
+    def message_received_callback(self):
+        raise NotImplementedError()
 
     def stop(self):
-        if self.server is None:
-            return
-
-        self._stop()
+        self.transport.stop()
 
         return
-
-    def _stop(self):
-        raise NotImplementedError
