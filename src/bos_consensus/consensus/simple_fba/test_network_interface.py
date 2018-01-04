@@ -44,7 +44,12 @@ class Server(threading.Thread):
             consensus_module.Consensus(),
         )
         network_module = get_network_module('default_http')
-        self.httpd = network_module.BOSNetHTTPServer(
+
+        class TestBOSNetHTTPServer(network_module.BOSNetHTTPServer):
+            def start_ping(self):
+                return
+
+        self.httpd = TestBOSNetHTTPServer(
             node,
             ('localhost', self.port),
             network_module.BOSNetHTTPServerRequestHandler,
@@ -76,7 +81,7 @@ class Client(threading.Thread):
                 break
             finally:
                 tried += 1
-                time.sleep(0.2)
+                time.sleep(0.1)
 
         return
 
