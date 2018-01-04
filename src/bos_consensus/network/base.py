@@ -1,7 +1,5 @@
 import importlib
 
-from ..node import Node
-
 
 def get_network_module(name):
     try:
@@ -16,10 +14,7 @@ class BaseTransport:
 
     message_received_callback = None
 
-    def __init__(self, node, **config):
-        assert isinstance(node, Node)
-
-        self.node = node
+    def __init__(self, **config):
         self.config = config
 
     def receive(self, data):
@@ -28,13 +23,25 @@ class BaseTransport:
     def write(self, data):
         raise NotImplementedError()
 
-    def send(self, data):
+    def send(self, addr, message):
         raise NotImplementedError()
 
-    def start(self, message_received_callback):
+    def start(self, node, message_received_callback):
+        from ..node import Node
+        assert isinstance(node, Node)
+
+        self.node = node
         self.message_received_callback = message_received_callback
 
+        self._start()
+
         return
+
+    def _start(self):
+        raise NotImplementedError()
+
+    def stop(self):
+        raise NotImplementedError()
 
 
 class BaseServer:
@@ -46,11 +53,12 @@ class BaseServer:
     def __init__(self, node, transport, **config):
         self.node = node
         self.transport = transport
+        self.node.set_transport(transport)
 
         self.config = config
 
     def start(self):
-        self.transport.start(self.message_received_callback)
+        self.transport.start(self.node, self.message_received_callback)
 
         return
 

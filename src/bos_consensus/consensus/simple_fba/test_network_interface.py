@@ -55,10 +55,7 @@ class Server(threading.Thread):
 
         self.server = network_module.Server(
             node,
-            TestTransport(
-                node,
-                bind=('localhost', self.port),
-            ),
+            TestTransport(bind=('localhost', self.port)),
         )
         self.server.start()
 

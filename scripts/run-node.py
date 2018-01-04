@@ -81,10 +81,7 @@ def main(options):
     )
 
     network_module = get_network_module('default_http')
-    transport = network_module.Transport(
-        nd,
-        bind=('0.0.0.0', config.port),
-    )
+    transport = network_module.Transport(bind=('0.0.0.0', config.port))
     BaseServer(nd, transport).start()
 
 
