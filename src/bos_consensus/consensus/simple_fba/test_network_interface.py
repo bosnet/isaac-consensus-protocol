@@ -5,6 +5,8 @@ from contextlib import closing
 import json
 import socket
 import threading
+import time
+import traceback
 import urllib
 
 from bos_consensus.ballot import Ballot
@@ -29,6 +31,10 @@ NODE_ID = 52
 class Server(threading.Thread):
     httpd = None
 
+    class TestBOSNetHTTPServer(BOSNetHTTPServer):
+        def start_ping(self):
+            return
+
     def __init__(self, port, node_id):
         super(Server, self).__init__()
         self.port = port
@@ -45,11 +51,7 @@ class Server(threading.Thread):
             ['localhost:5002', 'localhost:5003'],
             consensus_module.Consensus(),
         )
-        self.httpd = BOSNetHTTPServer(
-            node,
-            ('localhost', self.port),
-            BOSNetHTTPServerRequestHandler,
-        )
+        self.httpd = self.TestBOSNetHTTPServer(node, ('localhost', self.port), BOSNetHTTPServerRequestHandler)
         self.httpd.serve_forever()
 
         return True
@@ -63,7 +65,22 @@ class Client(threading.Thread):
         self.url_format = 'http://localhost:%d'
 
     def run(self):
-        self.run_impl()
+        max_tries = 10
+        tried = 0
+        while tried < max_tries:
+            try:
+                self.run_impl()
+            except requests.exceptions.ConnectionError:
+                continue
+            except Exception:
+                traceback.print_exc()
+                break
+            else:
+                break
+            finally:
+                tried += 1
+                time.sleep(0.2)
+
         return
 
     def run_impl(self):
