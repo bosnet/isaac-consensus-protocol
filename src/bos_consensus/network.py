@@ -119,6 +119,8 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
         self.node = node
         self.node_manager = NodeManager(self.node)
 
+        self.start_ping()
+
     def start_ping(self):
         t = Ping(self.node)
         t.start()
