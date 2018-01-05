@@ -49,7 +49,7 @@
         "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
         "program": "${file}",
         "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/tests/test_node_state.py"],
+        "args": ["${workspaceRoot}/src/bos_consensus/consensus/simple_fba/test_node_state.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [
