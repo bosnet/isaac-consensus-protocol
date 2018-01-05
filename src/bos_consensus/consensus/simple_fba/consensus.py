@@ -127,7 +127,7 @@ class AllConfirmState(BaseState):
     def handle_ballot_impl(self, ballot):
         # 다른 메시지가 들어오면 INIT 으로 변경
         if (not self.node.messages) or (self.node.messages[-1] != ballot.message):
-            self.node.set_init()
+            self.consensus.set_init()
             ballot.node_state_kind = StateKind.INIT
             self.node.receive_ballot(ballot)
 
