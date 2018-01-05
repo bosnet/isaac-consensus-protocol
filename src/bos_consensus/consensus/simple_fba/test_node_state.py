@@ -143,34 +143,41 @@ def test_state_init_to_all_confirm_sequence():
     assert isinstance(node3.consensus.node_state, consensus_module.AllConfirmState)
 
 
-# def test_state_jump_from_init():
-#     node1 = Node(1, ('localhost', 5001), 100, ['http://localhost:5002', 'http://localhost:5003'])
+def test_state_jump_from_init():
+    consensus_module = get_consensus_module('simple_fba')
+    state_kind = consensus_module.StateKind
+    node1 = Node(
+        1, ('localhost', 5001), 100,
+        ['http://localhost:5002', 'http://localhost:5003'],
+        consensus_module.Consensus(),
+    )
 
-#     node1.init_node()
+    node1.init_node()
 
-#     ballot_init_1 = Ballot(1, 1, 'message', StateKind.INIT)
+    ballot_init_1 = Ballot(1, 1, 'message', state_kind.INIT)
+    ballot_init_2 = Ballot(1, 2, 'message', state_kind.INIT)
+    ballot_init_3 = Ballot(1, 3, 'message', state_kind.INIT)
 
-#     node1.receive_ballot(ballot_init_1)
+    node1.receive_ballot(ballot_init_1)
+    node1.receive_ballot(ballot_init_2)
+    node1.receive_ballot(ballot_init_3)
 
-#     assert isinstance(node1.node_state, SignState)
+    assert isinstance(node1.consensus.node_state, consensus_module.SignState)
 
-#     ballot_sign_1 = Ballot(1, 1, 'message', StateKind.SIGN)
-#     ballot_sign_2 = Ballot(1, 2, 'message', StateKind.ACCEPT)
-#     ballot_sign_3 = Ballot(1, 3, 'message', StateKind.SIGN)
+    ballot_sign_1 = Ballot(1, 1, 'message', state_kind.SIGN)
+    ballot_sign_2 = Ballot(1, 2, 'message', state_kind.ACCEPT)
+    ballot_sign_3 = Ballot(1, 3, 'message', state_kind.SIGN)
 
-#     node1.receive_ballot(ballot_sign_1)
-#     node1.receive_ballot(ballot_sign_2)
-#     node1.receive_ballot(ballot_sign_3)
+    node1.receive_ballot(ballot_sign_1)
+    node1.receive_ballot(ballot_sign_2)
+    node1.receive_ballot(ballot_sign_3)
 
-#     assert isinstance(node1.node_state, AcceptState)
+    assert isinstance(node1.consensus.node_state, consensus_module.AcceptState)
 
-#     ballot_accept_1 = Ballot(1, 1, 'message', StateKind.ACCEPT)
-#     ballot_accept_2 = Ballot(1, 2, 'message', StateKind.ACCEPT)
-#     ballot_accept_3 = Ballot(1, 3, 'message', StateKind.ACCEPT)
+    ballot_accept_1 = Ballot(1, 1, 'message', state_kind.ACCEPT)
+    ballot_accept_3 = Ballot(1, 3, 'message', state_kind.ACCEPT)
 
-#     node1.receive_ballot(ballot_accept_1)
-#     node1.receive_ballot(ballot_sign_1)    # different state ballot
-#     node1.receive_ballot(ballot_accept_2)
-#     node1.receive_ballot(ballot_accept_3)
+    node1.receive_ballot(ballot_accept_1)
+    node1.receive_ballot(ballot_accept_3)
 
-#     assert isinstance(node1.node_state, AllConfirmState)
+    assert isinstance(node1.consensus.node_state, consensus_module.AllConfirmState)
