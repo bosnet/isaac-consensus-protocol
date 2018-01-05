@@ -7,8 +7,9 @@ import time
 import urllib
 import colorlog
 
-from bos_consensus.statekind import StateKind
-
+from bos_consensus.consensus import get_consensus_module
+simple_fba_module = get_consensus_module('simple_fba')
+StateKind = simple_fba_module.StateKind
 
 logging.basicConfig(
     level=logging.ERROR,
