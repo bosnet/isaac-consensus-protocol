@@ -8,27 +8,12 @@ from ...ballot import Ballot
 log = logging.getLogger(__name__)
 
 
-class StateKind(enum.Enum):
+class StateKind(enum.IntEnum):
     NONE = enum.auto()
     INIT = enum.auto()
     SIGN = enum.auto()
     ACCEPT = enum.auto()
     ALLCONFIRM = enum.auto()
-
-    def __gt__(self, state_kind):
-        return self.value > state_kind.value
-
-    def __lt__(self, state_kind):
-        return self.value < state_kind.value
-
-    def __ge__(self, state_kind):
-        return self.value >= state_kind.value
-
-    def __le__(self, state_kind):
-        return self.value <= state_kind.value
-
-    def __eq__(self, state_kind):
-        return self.value == state_kind.value
 
 
 class BaseState:
