@@ -10,7 +10,11 @@ import urllib
 from urllib.parse import urlparse
 
 from . import handler
-from .node import Node
+from ..base import (
+    BaseTransport,
+    BaseServer,
+)
+from ...node import Node
 
 
 log = logging.getLogger(__name__)
@@ -181,3 +185,47 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         if log.root.level == logging.DEBUG:
             super(BOSNetHTTPServerRequestHandler, self).log_message(*a, **kw)
         return
+
+
+class Transport(BaseTransport):
+    http_server_class = BOSNetHTTPServer
+    http_request_handler_class = BOSNetHTTPServerRequestHandler
+
+    def __init__(self, **config):
+        super(Transport, self).__init__(**config)
+
+        assert 'bind' in config
+        assert hasattr(config['bind'], '__getitem__')
+        assert type(config['bind'][1]) in (int,)
+
+    def _start(self):
+        self.server = self.http_server_class(
+            self.node,
+            self.config['bind'],
+            self.http_request_handler_class,
+        )
+
+        self.server.serve_forever()
+
+        return
+
+    def stop(self):
+        self.server.server_close()
+
+        return
+
+    def send(self, addr, message):
+        log.debug('[%s] begin send_to %s' % (self.node.node_id, addr))
+        post_data = json.dumps(message)
+        try:
+            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
+            if response.status_code == 200:
+                log.debug('[%s] sent to %s!' % (self.node.node_id, addr))
+        except requests.exceptions.ConnectionError:
+            log.error('[%s] Connection to %s Refused!' % (self.node.node_id, addr))
+
+        return
+
+
+class Server(BaseServer):
+    pass

@@ -1,8 +1,8 @@
 import json
 import logging
 
-from .ballot import Ballot
-from .consensus import get_consensus_module
+from ...ballot import Ballot
+from ...consensus import get_consensus_module
 
 
 log = logging.getLogger(__name__)

@@ -1,16 +1,17 @@
-import json
 import logging
-import requests
-import urllib
 
 from .ballot import Ballot
 from .consensus import BaseConsensus
+from .network import BaseTransport
 
 
 log = logging.getLogger(__name__)
 
 
 class Node:
+    node_id = None
+    transport = None
+
     def __init__(self, node_id, address, threshold, validator_addrs, consensus):
         assert type(address) in (list, tuple) and len(address) == 2
         assert type(address[0]) in (str,) and type(address[1]) in (int,)
@@ -37,6 +38,13 @@ class Node:
             self.node_id,
             self.endpoint,
         )
+
+    def set_transport(self, transport):
+        assert isinstance(transport, BaseTransport)
+
+        self.transport = transport
+
+        return
 
     @property
     def endpoint(self):
@@ -78,20 +86,10 @@ class Node:
     def broadcast(self, message):
         log.debug('[%s] begin broadcast to everyone' % self.node_id)
         ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
-        self.send_to(self.endpoint, ballot)
+        self.transport.send(self.endpoint, ballot.to_dict())
         for addr in self.validators.keys():
-            self.send_to(addr, ballot)
-        return
+            self.transport.send(addr, ballot.to_dict())
 
-    def send_to(self, addr, ballot):
-        log.debug('[%s] begin send_to %s' % (self.node_id, addr))
-        post_data = json.dumps(ballot.to_dict())
-        try:
-            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
-            if response.status_code == 200:
-                log.debug('[%s] sent to %s!' % (self.node_id, addr))
-        except requests.exceptions.ConnectionError:
-            log.error('[%s] Connection to %s Refused!' % (self.node_id, addr))
         return
 
     def receive_ballot(self, ballot):

@@ -6,10 +6,7 @@ import logging
 import pathlib
 import uuid
 
-from bos_consensus.network import (
-    BOSNetHTTPServer,
-    BOSNetHTTPServerRequestHandler,
-)
+from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.consensus import get_consensus_module
 from bos_consensus.node import Node
 from bos_consensus.util import get_local_ipaddress
@@ -83,9 +80,9 @@ def main(options):
         consensus,
     )
 
-    httpd = BOSNetHTTPServer(nd, ('0.0.0.0', config.port), BOSNetHTTPServerRequestHandler)
-
-    httpd.serve_forever()
+    network_module = get_network_module('default_http')
+    transport = network_module.Transport(bind=('0.0.0.0', config.port))
+    BaseServer(nd, transport).start()
 
 
 if __name__ == '__main__':
