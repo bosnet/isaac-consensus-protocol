@@ -8,7 +8,7 @@ from ...ballot import Ballot
 log = logging.getLogger(__name__)
 
 
-class StateKind(enum.Enum):
+class StateKind(enum.IntEnum):
     NONE = enum.auto()
     INIT = enum.auto()
     SIGN = enum.auto()
@@ -65,17 +65,16 @@ class InitState(BaseState):
     def handle_ballot_impl(self, ballot):
         self.node.broadcast(ballot.message)
         self.node.store(ballot)
-        if ballot.node_state_kind == self.kind:
-            ballots = self.node.validator_ballots
-            validator_th = self.node.minimum_number_of_agreement
+        ballots = self.node.validator_ballots
+        validator_th = self.node.minimum_number_of_agreement
 
-            for node_id, node_ballot in ballots.items():
-                if node_ballot.node_state_kind == self.kind and ballot == node_ballot:
-                    validator_th -= 1
+        for _, node_ballot in ballots.items():
+            if self.kind <= node_ballot.node_state_kind:
+                validator_th -= 1
 
-            if validator_th == 0:
-                self.consensus.set_sign()
-                self.node.broadcast(ballot.message)
+        if validator_th == 0:
+            self.consensus.set_sign()
+            self.node.broadcast(ballot.message)
 
 
 class SignState(BaseState):
@@ -86,17 +85,16 @@ class SignState(BaseState):
 
     def handle_ballot_impl(self, ballot):
         self.node.store(ballot)
-        if ballot.node_state_kind == self.kind:
-            ballots = self.node.validator_ballots
-            validator_th = self.node.minimum_number_of_agreement
+        ballots = self.node.validator_ballots
+        validator_th = self.node.minimum_number_of_agreement
 
-            for node_id, node_ballot in ballots.items():
-                if node_ballot.node_state_kind == self.kind and ballot == node_ballot:
-                    validator_th -= 1
+        for _, node_ballot in ballots.items():
+            if self.kind <= node_ballot.node_state_kind:
+                validator_th -= 1
 
-            if validator_th == 0:
-                self.consensus.set_accept()
-                self.node.broadcast(ballot.message)
+        if validator_th == 0:
+            self.consensus.set_accept()
+            self.node.broadcast(ballot.message)
 
 
 class AcceptState(BaseState):
@@ -107,15 +105,16 @@ class AcceptState(BaseState):
 
     def handle_ballot_impl(self, ballot):
         self.node.store(ballot)
-        if ballot.node_state_kind == self.kind:
-            ballots = self.node.validator_ballots
-            validator_th = self.node.minimum_number_of_agreement
-            for node_id, node_ballot in ballots.items():
-                if node_ballot.node_state_kind == self.kind and ballot == node_ballot:
-                    validator_th -= 1
+        ballots = self.node.validator_ballots
+        validator_th = self.node.minimum_number_of_agreement
 
-            if validator_th == 0:
-                self.consensus.set_all_confirm()
+        for _, node_ballot in ballots.items():
+            if self.kind <= node_ballot.node_state_kind:
+                validator_th -= 1
+
+        if validator_th == 0:
+            self.consensus.set_all_confirm()
+            self.node.broadcast(ballot.message)
 
 
 class AllConfirmState(BaseState):
