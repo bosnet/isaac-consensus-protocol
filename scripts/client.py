@@ -8,8 +8,7 @@ import urllib
 import colorlog
 
 from bos_consensus.consensus import get_consensus_module
-simple_fba_module = get_consensus_module('simple_fba')
-StateKind = simple_fba_module.StateKind
+
 
 logging.basicConfig(
     level=logging.ERROR,
@@ -87,14 +86,16 @@ if __name__ == '__main__':
     config = config._replace(message=options.message)
     log.debug('loaded conf: %s', config)
 
+    consensus_module = get_consensus_module('simple_fba')
+
     url = 'http://%s:%s' % (config.ip, config.port)
     try:
         while(True):
             get_node_response = requests.get(urllib.parse.urljoin(url, '/get_node'))
             get_node_response.raise_for_status()
             json_data = json.loads(get_node_response.text)
-            status = StateKind[json_data['status']]
-            if status == StateKind.ALLCONFIRM or status == StateKind.INIT:
+            status = consensus_module.StateKind[json_data['status']]
+            if status == consensus_module.StateKind.ALLCONFIRM or status == consensus_module.StateKind.INIT:
                 json_data = json.dumps({'message': config.message})
                 response = requests.post(urllib.parse.urljoin(url, '/send_message'), data=json_data)
                 response.raise_for_status()
