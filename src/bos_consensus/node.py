@@ -95,12 +95,12 @@ class Node:
     def receive_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
         log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
-        if self.consensus.node_state.kind == ballot.node_state_kind:
-            self.consensus.node_state.handle_ballot(ballot)
-        return
+        self.consensus.node_state.handle_ballot(ballot)
 
     def store(self, ballot):
-        self.validator_ballots[ballot.node_id] = ballot
+        # [TODO] when receive different message?
+        if self.consensus.node_state.kind <= ballot.node_state_kind:
+            self.validator_ballots[ballot.node_id] = ballot
         return
 
     def save_message(self, message):
