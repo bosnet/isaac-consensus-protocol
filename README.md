@@ -79,7 +79,7 @@ $ python run-node.py examples/node5002.ini
 $ python run-node.py examples/node5003.ini
 ```
 
-After check node state in cmd line, then run client like this.
+After checking node state in cmd line, then run client like this.
 $ python scripts/client.py --ip "localhost" --port 5001 -message "message"
 
 ## Test
