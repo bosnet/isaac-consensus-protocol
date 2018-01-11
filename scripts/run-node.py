@@ -5,16 +5,19 @@ import configparser
 import logging
 import pathlib
 import uuid
+import datetime
 
 from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.consensus import get_consensus_module
 from bos_consensus.node import Node
 from bos_consensus.util import get_local_ipaddress
 
+log_record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 logging.basicConfig(
-    level=logging.ERROR,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG,
+    format='[%(levelname)s|%(filename)s:%(lineno)s] '
+           '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 )
 
 log_handler = colorlog.StreamHandler()
@@ -32,13 +35,13 @@ log_handler.setFormatter(
     ),
 )
 
-logging.root.handlers = [log_handler]
-
 log = logging.getLogger(__name__)
+logging.root.handlers = [log_handler]
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-debug', action='store_true')
 parser.add_argument('-info', action='store_true')
+parser.add_argument('-log', action='store_true')
 parser.add_argument('conf', help='ini config file for server node')
 
 
@@ -56,6 +59,11 @@ def main(options):
 
     conf = configparser.ConfigParser()
     conf.read(options.conf)
+    if parser.parse_args().log:
+        log_file_handler = logging.FileHandler(
+            'node_' + str(conf['node']['id']) + '_'
+            + log_record_time + '_.log')
+        logging.root.addHandler(log_file_handler)
     log.info('conf file, `%s` was loaded', options.conf)
 
     config = config._replace(node_id=conf['node']['id'])
@@ -64,7 +72,8 @@ def main(options):
     log.debug('loaded conf: %s', config)
 
     validator_list = []
-    for i in filter(lambda x: len(x.strip()) > 0, conf['node']['validator_list'].split(',')):
+    for i in filter(lambda x: len(x.strip()) > 0,
+                    conf['node']['validator_list'].split(',')):
         validator_list.append(i.strip())
 
     config = config._replace(validators=validator_list)
@@ -93,6 +102,7 @@ if __name__ == '__main__':
         log_level = logging.DEBUG
     if options.info:
         log_level = logging.INFO
+
 
     log.root.setLevel(log_level)
 
