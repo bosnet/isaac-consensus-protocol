@@ -1,0 +1,55 @@
+{
+    "nodes":
+    {
+        "n1":
+        {
+            "threshold": 80
+        },
+        "n2":
+        {
+            "threshold": 80
+        },
+        "n3":
+        {
+            "threshold": 80,
+            "bad_behavior_percent": 20
+        },
+        "n4":
+        {
+            "bad_behavior_percent": 20
+        },
+        "n5":
+        {
+            "threshold": 80
+        },
+        "n6":
+        {
+            "threshold": 51
+        },
+        "n7":
+        {
+            "threshold": 51
+        },
+        "n8":
+        {
+            "threshold": 51
+        },
+        "n9":
+        {
+        }
+    },
+    "groups":
+    {
+        "g1": ["n1", "n2", "n3"],
+        "g2": ["n4", "n5", "n6", "n7"]
+    },
+    "binary_link":
+    [
+        [ ["n8"], ["n3", "n4"] ],
+        [ ["n9"], ["n3", "n6"] ]
+    ],
+    "unary_link":
+    [
+        [ ["n9"], ["n1"] ]
+    ]
+}

@@ -78,6 +78,9 @@ class Node:
         self.consensus.node_state.init_node()
         return
 
+    def clear_validator_ballots(self):
+        self.validator_ballots.clear()
+
     def receive_message_from_client(self, message):
         assert isinstance(message, str)
         self.broadcast(message.strip('"\''))

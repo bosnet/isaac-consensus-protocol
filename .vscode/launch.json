@@ -19,14 +19,14 @@
             ]
         },
         {
-            "name": "Client Configure Script",
+            "name": "run star_cluster server",
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/test_scripts/client_configure_script.py",
-            "cwd": "${workspaceRoot}/test_scripts/",
-            "args": ["-i", "${workspaceRoot}/test_scripts/client.json"],
+            "program": "${workspaceRoot}/examples/star_cluster_scripts/run-star-cluster.py",
+            "cwd": "${workspaceRoot}/examples/star_cluster_scripts/",
+            "args": ["-i", "${workspaceRoot}/examples/star_cluster_scripts/star_cluster_conf.json", "-info"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
@@ -36,14 +36,14 @@
             ]
         },
         {
-            "name": "Quorum Intersection Server Script",
+            "name": "star_cluster ini generator",
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/test_scripts/quorum_intersection_script.py",
-            "cwd": "${workspaceRoot}/test_scripts/",
-            "args": ["-i", "${workspaceRoot}/test_scripts/server.json", "-o", "${workspaceRoot}/test_scripts/"],
+            "program": "${workspaceRoot}/examples/star_cluster_scripts/star_cluster_ini_generator.py",
+            "cwd": "${workspaceRoot}/examples/star_cluster_scripts/",
+            "args": ["-i", "${workspaceRoot}/examples/star_cluster_scripts/star_cluster_conf.json", "-o", "${workspaceRoot}/examples/star_cluster_scripts/output_ini/"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [

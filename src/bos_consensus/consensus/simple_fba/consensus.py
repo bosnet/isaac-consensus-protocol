@@ -127,6 +127,7 @@ class AllConfirmState(BaseState):
         # 다른 메시지가 들어오면 INIT 으로 변경
         if (not self.node.messages) or (self.node.messages[-1] != ballot.message):
             self.consensus.set_init()
+
             ballot.node_state_kind = StateKind.INIT
             self.node.receive_ballot(ballot)
 
@@ -150,7 +151,9 @@ class Consensus(BaseConsensus):
 
     def set_init(self):
         log.info('[%s] state to INIT', self.node.node_id)
+        self.node.clear_validator_ballots()
         self.node_state = self.state_init
+        self.node.validator_ballots = dict()
 
         return
 

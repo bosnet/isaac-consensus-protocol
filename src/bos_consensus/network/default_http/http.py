@@ -182,7 +182,7 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         return self.response(status_code, message, **headers)
 
     def log_message(self, *a, **kw):
-        if log.root.level == logging.DEBUG:
+        if log.level == logging.DEBUG:
             super(BOSNetHTTPServerRequestHandler, self).log_message(*a, **kw)
         return
 
