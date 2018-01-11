@@ -24,6 +24,6 @@ setup(
     packages=find_packages('src', exclude=('test',)),
     scripts=(
         'scripts/run-node.py',
-        'scripts/client.py',
+        'scripts/run-client.py',
     ),
 )

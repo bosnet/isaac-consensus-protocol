@@ -65,6 +65,8 @@ optional arguments:
   -debug
 ```
 
+### Running Node Server
+
 Set the config file.
 ```
 $ run-node.py examples/node5001.ini
@@ -79,8 +81,56 @@ $ python run-node.py examples/node5002.ini
 $ python run-node.py examples/node5003.ini
 ```
 
+### Running Message Client
+
 After checking node state in cmd line, then run client like this.
-$ python scripts/client.py --ip "localhost" --port 5001 -message "message"
+Send one message to `5001`
+```
+$ python scripts/run-client.py --ip "localhost" --port 5001 -message "message"
+```
+
+Send five messages at a time every 4 seconds to `5001`
+```
+for i in $(seq 5)
+do
+    python scripts/run-client.py \
+        --ip localhost \
+        --port 5001 \
+        --message "message-$i"
+        sleep 4
+done
+```
+
+Send five messages at a time every 4 seconds to `5001` and` 5002`,
+```
+for port in 5001 5002
+do
+    for i in $(seq 5)
+    do
+        python scripts/run-client.py \
+            --ip localhost \
+            --port $port \
+            --message "message-$i"
+            sleep 4
+    done
+done
+```
+
+Send five messages at a time every 4 seconds to `5000-5003` randomly three times
+```
+for _ in $(seq 3)
+do
+    p=$(expr $RANDOM % 4)
+    for i in $(seq 5)
+    do
+        python scripts/run-client.py \
+            --ip localhost \
+            --port "500$p" \
+            --message "message-$i"
+            sleep 4
+    done
+done
+```
 
 ## Test
 

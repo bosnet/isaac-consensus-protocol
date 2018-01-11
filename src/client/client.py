@@ -1,11 +1,11 @@
-import argparse
 import collections
 import json
 import logging
-import requests
 import time
 import urllib
+
 import colorlog
+import requests
 
 from bos_consensus.consensus import get_consensus_module
 
@@ -34,61 +34,20 @@ logging.root.handlers = [log_handler]
 
 log = logging.getLogger(__name__)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-debug', action='store_true', help='Log level set to debug')
-parser.add_argument('-info', action='store_true', help='Log level set to info')
-parser.add_argument(
-    '-m',
-    '--message',
-    required=True,
-    help='Messages you want to send to the server.',
-    type=str,
-)
-parser.add_argument(
-    '-i',
-    '--ip',
-    required=True,
-    help='Server IP you want to send the message to.',
-    type=str,
-)
-parser.add_argument(
-    '-p',
-    '--port',
-    required=True,
-    help='Server port you want to send the message to.',
-    type=int,
+
+MessageInfo = collections.namedtuple(
+    'MessageInfo',
+    ('ip', 'port', 'message'),
 )
 
-if __name__ == '__main__':
-    log_level = logging.ERROR
 
-    options = parser.parse_args()
-
-    if options.debug:
-        log_level = logging.DEBUG
-
-    if options.info:
-        log_level = logging.INFO
-
-    log.root.setLevel(log_level)
-
-    log.debug('options: %s', options)
-
-    config = collections.namedtuple(
-        'Config',
-        ('ip', 'port', 'message'),
-    )('localhost', 5001, 'message')
-
-    log.info('Sending Message: %s' % options.message)
-
-    config = config._replace(ip=options.ip)
-    config = config._replace(port=options.port)
-    config = config._replace(message=options.message)
-    log.debug('loaded conf: %s', config)
+def send_message(message_info):
+    assert isinstance(message_info, MessageInfo)
+    log.debug('loaded message: %s', message_info)
 
     consensus_module = get_consensus_module('simple_fba')
 
-    url = 'http://%s:%s' % (config.ip, config.port)
+    url = 'http://%s:%s' % (message_info.ip, message_info.port)
     try:
         while(True):
             get_node_response = requests.get(urllib.parse.urljoin(url, '/get_node'))
@@ -96,7 +55,7 @@ if __name__ == '__main__':
             json_data = json.loads(get_node_response.text)
             status = consensus_module.StateKind[json_data['status']]
             if status == consensus_module.StateKind.ALLCONFIRM or status == consensus_module.StateKind.INIT:
-                json_data = json.dumps({'message': config.message})
+                json_data = json.dumps({'message': message_info.message})
                 response = requests.post(urllib.parse.urljoin(url, '/send_message'), data=json_data)
                 response.raise_for_status()
                 log.debug('message sent!')

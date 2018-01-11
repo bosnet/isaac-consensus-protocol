@@ -5,14 +5,45 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "client",
+            "name": "Python",
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/scripts/client.py",
-            "cwd": "${workspaceRoot}",
-            "args": ["-m", "message10", "-i", "localhost", "-p", "5001", "-debug"],
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "debugOptions": [
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "Client Configure Script",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/test_scripts/client_configure_script.py",
+            "cwd": "${workspaceRoot}/test_scripts/",
+            "args": ["-i", "${workspaceRoot}/test_scripts/client.json"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "Quorum Intersection Server Script",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/test_scripts/quorum_intersection_script.py",
+            "cwd": "${workspaceRoot}/test_scripts/",
+            "args": ["-i", "${workspaceRoot}/test_scripts/server.json", "-o", "${workspaceRoot}/test_scripts/"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
