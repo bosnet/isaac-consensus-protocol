@@ -115,3 +115,20 @@ class Node:
                 return False
 
         return True
+
+
+class Illnode(Node):
+
+    def __init__(self, node_id, address, threshold, validator_addrs, consensus, bad_behavior_percent):
+        Node.__init__(self, node_id, address, threshold, validator_addrs, consensus)
+        self.bad_behavior_percent = bad_behavior_percent
+
+    def is_bad_behavior(self, bad_behavior_percent):
+        from random import randint
+        return bad_behavior_percent >= randint(1, 100)
+
+    def receive_ballot(self, ballot):
+        if not self.is_bad_behavior(self.bad_behavior_percent):
+            Node.receive_ballot(self, ballot)
+        else:
+            log.debug('[%s] is not receiving the ballot from %s' % (self.node_id, ballot.node_id))

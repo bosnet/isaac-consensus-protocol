@@ -10,6 +10,7 @@ import datetime
 from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.consensus import get_consensus_module
 from bos_consensus.node import Node
+from bos_consensus.node import Illnode
 from bos_consensus.util import get_local_ipaddress
 
 log_record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -48,8 +49,8 @@ parser.add_argument('conf', help='ini config file for server node')
 def main(options):
     config = collections.namedtuple(
         'Config',
-        ('node_id', 'port', 'threshold', 'validators'),
-    )(uuid.uuid1().hex, 8001, 51, [])
+        ('node_id', 'port', 'threshold', 'validators', 'bad_behavior_percent'),
+    )(uuid.uuid1().hex, 8001, 51, [], 0)
 
     if not pathlib.Path(options.conf).exists():
         parser.error('conf file, `%s` does not exists.' % options.conf)
@@ -69,6 +70,10 @@ def main(options):
     config = config._replace(node_id=conf['node']['id'])
     config = config._replace(port=int(conf['node']['port']))
     config = config._replace(threshold=int(conf['node']['threshold_percent']))
+
+    if conf.has_option('bad', 'bad_behavior_percent'):
+        config = config._replace(bad_behavior_percent=int(conf['bad']['bad_behavior_percent']))
+
     log.debug('loaded conf: %s', config)
 
     validator_list = []
@@ -81,13 +86,24 @@ def main(options):
 
     consensus_module = get_consensus_module('simple_fba')
     consensus = consensus_module.Consensus()
-    nd = Node(
-        config.node_id,
-        (get_local_ipaddress(), config.port),
-        config.threshold,
-        config.validators,
-        consensus,
-    )
+
+    if conf.has_option('bad', 'bad_behavior_percent'):
+        nd = Illnode(
+            config.node_id,
+            (get_local_ipaddress(), config.port),
+            config.threshold,
+            config.validators,
+            consensus,
+            config.bad_behavior_percent,
+        )
+    else:
+        nd = Node(
+            config.node_id,
+            (get_local_ipaddress(), config.port),
+            config.threshold,
+            config.validators,
+            consensus,
+        )
 
     network_module = get_network_module('default_http')
     transport = network_module.Transport(bind=('0.0.0.0', config.port))
