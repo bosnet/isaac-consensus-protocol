@@ -11,8 +11,8 @@ class Ballot:
         self.message = message
         self.node_state_kind = node_state_kind
 
-    def __str__(self):
-        return '%d:%d[%s]: %s' % (self.ballot_num, self.node_id, self.node_state_kind, self.message)
+    def __repr__(self):
+        return '<Ballot: ballot_num=%(ballot_num)d node_id=%(node_id)s node_state_kind=%(node_state_kind)s: %(message)s' % self.__dict__  # noqa
 
     def __eq__(self, a):
         return self.node_state_kind == a.node_state_kind and self.message == a.message  # noqa

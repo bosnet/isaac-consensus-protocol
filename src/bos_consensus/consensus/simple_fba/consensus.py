@@ -33,7 +33,7 @@ class BaseState:
         self.handle_ballot_impl(ballot)
 
     def init_node(self):
-        raise NotImplementedError()
+        return
 
     def handle_ballot_impl(self, ballot):
         raise NotImplementedError()
@@ -44,6 +44,28 @@ class BaseState:
 
     def __str__(self):
         return self.kind.name
+
+    def check_threshold(self, ballot):
+        ballots = self.node.validator_ballots
+        validator_th = self.node.minimum_number_of_agreement
+
+        for _, node_ballot in ballots.items():
+            if validator_th < 1:
+                break
+
+            if self.kind <= node_ballot.node_state_kind:
+                validator_th -= 1
+
+        log.debug(
+            '[%s] ballot.node_id=%s validator_th=%s minimum_number_of_agreement=%s ballots=%s',
+            self.node.node_id,
+            ballot.node_id,
+            validator_th,
+            self.node.minimum_number_of_agreement,
+            ballots,
+        )
+
+        return validator_th < 1
 
 
 class NoneState(BaseState):
@@ -59,20 +81,16 @@ class NoneState(BaseState):
 class InitState(BaseState):
     kind = StateKind.INIT
 
-    def init_node(self):
-        pass
-
     def handle_ballot_impl(self, ballot):
-        self.node.broadcast(ballot.message)
-        self.node.store(ballot)
-        ballots = self.node.validator_ballots
-        validator_th = self.node.minimum_number_of_agreement
+        if self.node.node_id not in self.node.validator_ballots or self.node.validator_ballots[self.node.node_id] != ballot:  # noqa
+            self.node.broadcast(ballot.message)
+            if ballot.node_id != self.node.node_id:
+                self.node.store(ballot, node_id=self.node.node_id)
 
-        for _, node_ballot in ballots.items():
-            if self.kind <= node_ballot.node_state_kind:
-                validator_th -= 1
+        if ballot.node_id != self.node.node_id:
+            self.node.store(ballot)
 
-        if validator_th == 0:
+        if self.check_threshold(ballot):
             self.consensus.set_sign()
             self.node.broadcast(ballot.message)
 
@@ -80,19 +98,14 @@ class InitState(BaseState):
 class SignState(BaseState):
     kind = StateKind.SIGN
 
-    def init_node(self):
-        pass
-
     def handle_ballot_impl(self, ballot):
-        self.node.store(ballot)
-        ballots = self.node.validator_ballots
-        validator_th = self.node.minimum_number_of_agreement
+        if ballot.node_id != self.node.node_id:
+            self.node.store(ballot, node_id=self.node.node_id)
 
-        for _, node_ballot in ballots.items():
-            if self.kind <= node_ballot.node_state_kind:
-                validator_th -= 1
+        if ballot.node_id != self.node.node_id:
+            self.node.store(ballot)
 
-        if validator_th == 0:
+        if self.check_threshold(ballot):
             self.consensus.set_accept()
             self.node.broadcast(ballot.message)
 
@@ -100,28 +113,20 @@ class SignState(BaseState):
 class AcceptState(BaseState):
     kind = StateKind.ACCEPT
 
-    def init_node(self):
-        pass
-
     def handle_ballot_impl(self, ballot):
-        self.node.store(ballot)
-        ballots = self.node.validator_ballots
-        validator_th = self.node.minimum_number_of_agreement
+        if ballot.node_id != self.node.node_id:
+            self.node.store(ballot, node_id=self.node.node_id)
 
-        for _, node_ballot in ballots.items():
-            if self.kind <= node_ballot.node_state_kind:
-                validator_th -= 1
+        if ballot.node_id != self.node.node_id:
+            self.node.store(ballot)
 
-        if validator_th == 0:
+        if self.check_threshold(ballot):
             self.consensus.set_all_confirm()
             self.node.broadcast(ballot.message)
 
 
 class AllConfirmState(BaseState):
     kind = StateKind.ALLCONFIRM
-
-    def init_node(self):
-        pass
 
     def handle_ballot_impl(self, ballot):
         # 다른 메시지가 들어오면 INIT 으로 변경

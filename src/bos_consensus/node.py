@@ -1,4 +1,8 @@
 import logging
+from urllib.parse import (
+    urlparse,
+    parse_qs,
+)
 
 from .ballot import Ballot
 from .consensus import BaseConsensus
@@ -6,6 +10,18 @@ from .network import BaseTransport
 
 
 log = logging.getLogger(__name__)
+
+
+def get_node_id_from_addr(a):
+    query = urlparse(a).query
+    if len(query) < 1:
+        return a
+
+    parsed = parse_qs(query)
+    if len(parsed) < 1 or 'name' not in parsed or len(parsed['name']) < 1:
+        return a
+
+    return parsed['name'][0]
 
 
 class Node:
@@ -29,6 +45,8 @@ class Node:
         self.consensus.set_node(self)
         self.consensus.initialize()
 
+        self.validator_ids = list(map(get_node_id_from_addr, self.validators))
+
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.node_id, self.endpoint)
 
@@ -48,7 +66,7 @@ class Node:
 
     @property
     def endpoint(self):
-        return 'http://%s:%s' % tuple(self.address)
+        return 'http://%s:%s?name=%s' % (self.address[0], self.address[1], self.node_id)
 
     def to_dict(self):
         return dict(
@@ -83,13 +101,16 @@ class Node:
 
     def receive_message_from_client(self, message):
         assert isinstance(message, str)
+
+        ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
+        self.consensus.node_state.handle_ballot(ballot)
+
         self.broadcast(message.strip('"\''))
         return
 
     def broadcast(self, message):
-        log.debug('[%s] begin broadcast to everyone' % self.node_id)
+        log.debug('[%s] [%s] begin broadcast to everyone', self.node_id, self.consensus.node_state)
         ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
-        self.transport.send(self.endpoint, ballot.to_dict())
         for addr in self.validators.keys():
             self.transport.send(addr, ballot.to_dict())
 
@@ -97,13 +118,27 @@ class Node:
 
     def receive_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
-        log.debug('[%s] receive ballot from %s ' % (self.node_id, ballot.node_id))
+        from_outside = ballot.node_id not in self.validator_ids
+        log.debug(
+            '[%s] [%s] receive ballot from %s%s',
+            self.node_id,
+            self.consensus.node_state,
+            ballot.node_id,
+            '(outside: %s)' % self.validator_ids if from_outside else '',
+        )
+
         self.consensus.node_state.handle_ballot(ballot)
 
-    def store(self, ballot):
+    def store(self, ballot, node_id=None):
         # [TODO] when receive different message?
         if self.consensus.node_state.kind <= ballot.node_state_kind:
-            self.validator_ballots[ballot.node_id] = ballot
+            if node_id is not None:
+                node_id = node_id
+            else:
+                node_id = ballot.node_id
+
+            self.validator_ballots[node_id] = ballot
+
         return
 
     def save_message(self, message):
