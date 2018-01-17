@@ -1,49 +1,22 @@
 import argparse
 import collections
-import colorlog
 import configparser
-import logging
 import pathlib
 import uuid
-import datetime
 
-from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.consensus import get_consensus_module
-from bos_consensus.node import Node
+from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.node import Illnode
-from bos_consensus.util import get_local_ipaddress
+from bos_consensus.node import Node
+from bos_consensus.util import get_local_ipaddress, logger
 
-log_record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='[%(levelname)s|%(filename)s:%(lineno)s] '
-           '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-)
-
-log_handler = colorlog.StreamHandler()
-log_handler.setFormatter(
-    colorlog.ColoredFormatter(
-        '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        reset=True,
-        log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'red,bg_white',
-        },
-    ),
-)
-
-log = logging.getLogger(__name__)
-logging.root.handlers = [log_handler]
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-debug', action='store_true')
-parser.add_argument('-info', action='store_true')
-parser.add_argument('-log', action='store_true')
 parser.add_argument('conf', help='ini config file for server node')
+
+log = None
+
+logger.set_argparse(parser)
 
 
 def main(options):
@@ -60,11 +33,7 @@ def main(options):
 
     conf = configparser.ConfigParser()
     conf.read(options.conf)
-    if parser.parse_args().log:
-        log_file_handler = logging.FileHandler(
-            'node_' + str(conf['node']['id']) + '_'
-            + log_record_time + '_.log')
-        logging.root.addHandler(log_file_handler)
+
     log.info('conf file, `%s` was loaded', options.conf)
 
     config = config._replace(node_id=conf['node']['id'])
@@ -105,22 +74,23 @@ def main(options):
             consensus,
         )
 
+    log.metric(node=nd.node_id, data=nd.to_dict())
+
     network_module = get_network_module('default_http')
     transport = network_module.Transport(bind=('0.0.0.0', config.port))
-    BaseServer(nd, transport).start()
+    server = BaseServer(nd, transport)
+    server.start()
+
+    return
 
 
 if __name__ == '__main__':
-    log_level = logging.ERROR
-
     options = parser.parse_args()
-    if options.debug:
-        log_level = logging.DEBUG
-    if options.info:
-        log_level = logging.INFO
+    logger.from_argparse(logger, options)
 
-
-    log.root.setLevel(log_level)
+    log = logger.get_logger(__name__)
 
     log.debug('options: %s', options)
+    log.debug('log settings: %s', logger.info)
+
     main(options)

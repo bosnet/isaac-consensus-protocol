@@ -21,12 +21,17 @@ log = logging.getLogger(__name__)
 
 
 class Ping(threading.Thread):
+    node = None
+    event = None
+
     def __init__(self, node):
         super(Ping, self).__init__()
         self.node = node
+        self.event = threading.Event()
+        self.event.set()
 
     def run(self):
-        while True:
+        while self.event.is_set():
             time.sleep(1)
 
             if self.node.all_validators_connected():
@@ -113,6 +118,8 @@ class NodeManager():
 
 
 class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
+    ping = None
+
     def __init__(self, node, *a, **kw):
         assert isinstance(node, Node)
 
@@ -122,14 +129,13 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
         self.lqueue = LockedQueue()
         self.node = node
         self.node_manager = NodeManager(self.node)
-
-        self.start_ping()
+        self.ping = self.start_ping()
 
     def start_ping(self):
-        t = Ping(self.node)
-        t.start()
+        ping = Ping(self.node)
+        ping.start()
 
-        return
+        return ping
 
     def finish_request(self, request, client_address):
         self.RequestHandlerClass(request, client_address, self)
@@ -191,12 +197,16 @@ class Transport(BaseTransport):
     http_server_class = BOSNetHTTPServer
     http_request_handler_class = BOSNetHTTPServerRequestHandler
 
+    server = None
+
     def __init__(self, **config):
         super(Transport, self).__init__(**config)
 
         assert 'bind' in config
         assert hasattr(config['bind'], '__getitem__')
         assert type(config['bind'][1]) in (int,)
+
+        self.server = None
 
     def _start(self):
         self.server = self.http_server_class(
@@ -210,6 +220,9 @@ class Transport(BaseTransport):
         return
 
     def stop(self):
+        if self.server.ping is not None:
+            self.server.ping.event.clear()
+
         self.server.server_close()
 
         return

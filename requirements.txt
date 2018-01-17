@@ -1,3 +1,4 @@
-requests
 colorlog
 graphviz
+python-json-logger
+requests
