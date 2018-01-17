@@ -1,13 +1,6 @@
 import argparse
-import collections
-import json
-import logging
-import requests
-import time
-import urllib
 import colorlog
-
-from bos_consensus.consensus import get_consensus_module
+import logging
 
 from client.client import (
     MessageInfo,
@@ -84,4 +77,3 @@ if __name__ == '__main__':
     message_info = MessageInfo(options.ip, options.port, options.message)
 
     send_message(message_info)
-
