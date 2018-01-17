@@ -101,7 +101,7 @@ class LogStreamHandler(logging.StreamHandler):
 
         prefix = ''
         if self.in_terminal:
-            prefix = '●  '
+            prefix = '● '
 
         line = ''
         if self.in_terminal and self.logger.is_show_line:
