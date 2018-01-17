@@ -233,9 +233,9 @@ class Transport(BaseTransport):
         try:
             response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
             if response.status_code == 200:
-                log.debug('[%s] sent to %s!' % (self.node.node_id, addr))
+                log.debug('[%s] sent to %s' % (self.node.node_id, addr))
         except requests.exceptions.ConnectionError:
-            log.error('[%s] Connection to %s Refused!' % (self.node.node_id, addr))
+            log.error('[%s] Connection to %s Refused' % (self.node.node_id, addr))
 
         return
 

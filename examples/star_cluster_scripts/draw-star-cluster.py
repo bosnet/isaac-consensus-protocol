@@ -86,11 +86,11 @@ if __name__ == '__main__':
 
         unary = False
         if key[0] in unary_links and unary_links[key[0]] == key[1]:
-            arrowtail = 'dot'
+            arrowhead = 'dot'
             unary = True
 
         if key[1] in unary_links and unary_links[key[1]] == key[0]:
-            arrowhead = 'dot'
+            arrowtail = 'dot'
             unary = True
 
         count = len(vs)

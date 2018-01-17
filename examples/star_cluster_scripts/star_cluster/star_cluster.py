@@ -9,29 +9,27 @@ NodeInfo = collections.namedtuple(
 )
 
 
+BASE_PORT = 5000
+
+
 def push_node(nodes, node_info):
     assert isinstance(node_info, NodeInfo)
     if node_info.name not in nodes:
         nodes[node_info.name] = node_info
 
 
-def load(node_infos, key, out):
-    if key in node_infos:
-        out = node_infos[key]
-
-
-def set_nodes(nodes, name, node_infos):
+def set_nodes(nodes, name, node_infos, count):
     assert isinstance(node_infos, dict)
-    ip = 'http://localhost'
-    port = 0
-    threshold = 51
-    bad_behavior_percent = 0
 
-    load(node_infos, 'ip', ip)
-    load(node_infos, 'port', port)
-    load(node_infos, 'threshold', threshold)
-    load(node_infos, 'bad_behavior_percent', bad_behavior_percent)
-    new_node = NodeInfo(name, 0, threshold, [], 'http://localhost', 0, bad_behavior_percent)
+    new_node = NodeInfo(
+        name,
+        name,
+        node_infos.get('threshold', 51),
+        [],
+        'http://localhost',
+        BASE_PORT + count,
+        node_infos.get('bad_behavior_percent', 0),
+    )
     push_node(nodes, new_node)
 
     return
@@ -69,9 +67,9 @@ def get_nodes(data):
     nodes = {}
     if 'nodes' in data:
         defined_nodes = data['nodes']
-        for node_name, node_infos in defined_nodes.items():
+        for count, (node_name, node_infos) in enumerate(defined_nodes.items()):
             assert isinstance(node_infos, dict)
-            set_nodes(nodes, node_name, node_infos)
+            set_nodes(nodes, node_name, node_infos, count)
 
     if 'groups' in data:
         groups = data['groups']
@@ -99,7 +97,6 @@ def get_nodes(data):
             to_list = unary_link[1]
             link_from_to(nodes, from_list, to_list)
 
-    set_sequence_info(nodes)
     set_validator_endpoint(nodes)
     return nodes
 
@@ -121,17 +118,6 @@ def print_to_ini_files(output_path, nodes):
         output_file_path = '%s/%s.ini' % (output_path, name)
         with open(output_file_path, 'w') as output_file:
             config.write(output_file)
-
-
-def set_sequence_info(nodes):
-    assert isinstance(nodes, dict)
-    PORT_AREA = 5000
-    sequence = 1
-    for name, node_info in nodes.items():
-        assert isinstance(node_info, NodeInfo)
-        if node_info.port == 0:
-            nodes[name] = nodes[name]._replace(id=sequence, port=PORT_AREA + sequence)
-        sequence += 1
 
 
 def set_validator_endpoint(nodes):
