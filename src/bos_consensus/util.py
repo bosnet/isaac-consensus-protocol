@@ -7,7 +7,11 @@ import sys
 from termcolor import colored
 
 
-_, TERMINAL_COLUMNS = os.popen('stty size', 'r').read().split()
+try:
+    _, TERMINAL_COLUMNS = os.popen('stty size', 'r').read().split()
+except ValueError:
+    TERMINAL_COLUMNS = 0
+
 AVAILABLE_LOGGING_LEVELS = tuple(map(
     lambda x: x.lower(),
     filter(lambda x: x not in ('NOTSET',), logging._nameToLevel.keys()),
@@ -251,6 +255,18 @@ class Logger:
         logger.setLevel(self.level)
 
         return PartialLog(logger, **extras)
+
+
+class LoggingMixin:
+    log = None
+
+    def __init__(self):
+        self.log = None
+
+    def set_logging(self, logger_name, **extras):
+        self.log = logger.get_logger(logger_name, **extras)
+
+        return
 
 
 logger = Logger()

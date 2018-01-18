@@ -1,11 +1,8 @@
 import enum
-import logging
 
 from ..base import BaseConsensus
 from ...ballot import Ballot
-
-
-log = logging.getLogger(__name__)
+from ...util import LoggingMixin
 
 
 class StateKind(enum.IntEnum):
@@ -16,7 +13,7 @@ class StateKind(enum.IntEnum):
     ALLCONFIRM = enum.auto()
 
 
-class BaseState:
+class BaseState(LoggingMixin):
     kind = None
 
     def __new__(cls, *a, **kw):
@@ -25,6 +22,10 @@ class BaseState:
         return super(BaseState, cls).__new__(cls)
 
     def __init__(self, consensus, node):
+        super(BaseState, self).__init__()
+
+        self.set_logging('consensus', node=node.node_id)
+
         self.consensus = consensus
         self.node = node
 
@@ -56,7 +57,7 @@ class BaseState:
             if self.kind <= node_ballot.node_state_kind:
                 validator_th -= 1
 
-        log.debug(
+        self.log.debug(
             '[%s] ballot.node_id=%s validator_th=%s minimum_number_of_agreement=%s ballots=%s',
             self.node.node_id,
             ballot.node_id,
@@ -155,7 +156,7 @@ class Consensus(BaseConsensus):
         self.node_state = self.state_none
 
     def set_init(self):
-        log.info('[%s] state to INIT', self.node.node_id)
+        self.log.info('[%s] state to INIT', self.node.node_id)
         self.node.clear_validator_ballots()
         self.node_state = self.state_init
         self.node.validator_ballots = dict()
@@ -163,19 +164,19 @@ class Consensus(BaseConsensus):
         return
 
     def set_sign(self):
-        log.info('[%s] state to SIGN', self.node.node_id)
+        self.log.info('[%s] state to SIGN', self.node.node_id)
         self.node_state = self.state_sign
 
         return
 
     def set_accept(self):
-        log.info('[%s] state to ACCEPT', self.node.node_id)
+        self.log.info('[%s] state to ACCEPT', self.node.node_id)
         self.node_state = self.state_accept
 
         return
 
     def set_all_confirm(self):
-        log.info('[%s] state to ALLCONFIRM', self.node.node_id)
+        self.log.info('[%s] state to ALLCONFIRM', self.node.node_id)
         self.node_state = self.state_all_confirm
         self.node.save_message(self.node.validator_ballots[self.node.node_id].message)
 

@@ -1,5 +1,7 @@
 import importlib
 
+from ..util import LoggingMixin
+
 
 def get_network_module(name):
     try:
@@ -8,13 +10,15 @@ def get_network_module(name):
         return None
 
 
-class BaseTransport:
+class BaseTransport(LoggingMixin):
     node = None
     config = None
 
     message_received_callback = None
 
     def __init__(self, **config):
+        super(BaseTransport, self).__init__()
+
         self.config = config
 
     def receive(self, data):
@@ -30,6 +34,8 @@ class BaseTransport:
         from ..node import Node
         assert isinstance(node, Node)
 
+        self.set_logging('network', node=node.node_id)
+
         self.node = node
         self.message_received_callback = message_received_callback
 
@@ -44,13 +50,17 @@ class BaseTransport:
         raise NotImplementedError()
 
 
-class BaseServer:
+class BaseServer(LoggingMixin):
     node = None
     transport = None
 
     config = None
 
     def __init__(self, node, transport, **config):
+        super(BaseServer, self).__init__()
+
+        self.set_logging('network', node=node.node_id)
+
         self.node = node
         self.transport = transport
         self.node.set_transport(transport)

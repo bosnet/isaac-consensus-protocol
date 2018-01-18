@@ -15,9 +15,7 @@ from ..base import (
     BaseServer,
 )
 from ...node import Node
-
-
-log = logging.getLogger(__name__)
+from ...util import logger
 
 
 class Ping(threading.Thread):
@@ -26,9 +24,12 @@ class Ping(threading.Thread):
 
     def __init__(self, node):
         super(Ping, self).__init__()
+
         self.node = node
         self.event = threading.Event()
         self.event.set()
+
+        self.log = logger.get_logger('ping', node=self.node.node_id)
 
     def run(self):
         while self.event.is_set():
@@ -50,12 +51,12 @@ class Ping(threading.Thread):
                     get_node_response = requests.get(urllib.parse.urljoin(addr, '/get_node'))
                     get_node_response.raise_for_status()
                     self.node.validators[addr] = True
-                    log.info("Validator information received from '%s'" % addr)
+                    self.log.info("Validator information received from '%s'" % addr)
 
                 except requests.exceptions.ConnectionError:
-                    log.warn("ConnectionError occurred during validator connection to '%s'!" % addr)
+                    self.log.warn("ConnectionError occurred during validator connection to '%s'!" % addr)
                 except requests.exceptions.HTTPError:
-                    log.warn("HTTPError occurred during validator connection to '%s'!" % addr)
+                    self.log.warn("HTTPError occurred during validator connection to '%s'!" % addr)
                     continue
 
         return True
@@ -83,9 +84,13 @@ class Executor(threading.Thread):
     def __init__(self, node, action_queue):
         assert isinstance(node, Node)
         assert isinstance(action_queue, LockedQueue)
+
         super(Executor, self).__init__()
+
         self.node = node
         self.action_queue = action_queue
+
+        self.log = logger.get_logger('executor', node=self.node.node_id)
 
     def run(self):
         while True:
@@ -98,13 +103,13 @@ class Executor(threading.Thread):
                 arg = element[1]
 
                 if not hasattr(self.node, func_name):
-                    log.error('%s method is not exist in Node object' % func_name)
+                    self.log.error('%s method is not exist in Node object' % func_name)
                 func = getattr(self.node, func_name)
                 func(arg)
         return True
 
 
-class NodeManager():
+class NodeManager:
     def __init__(self, node):
         assert isinstance(node, Node)
 
@@ -138,7 +143,8 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
         return ping
 
     def finish_request(self, request, client_address):
-        self.RequestHandlerClass(request, client_address, self)
+        self.RequestHandlerClass(self.node, request, client_address, self)
+
         return
 
     @property
@@ -150,11 +156,17 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
-    def __init__(self, *a, **kw):
+    node = None
+    log = None
+
+    def __init__(self, node, *a, **kw):
+        self.node = node
+        self.log = logger.get_logger('network', node=self.node.node_id)
+
         super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
 
     def do_GET(self):
-        log.debug('> start request: %s', self.path)
+        self.log.debug('> start request: %s', self.path)
         parsed = urlparse(self.path)
         func = None
         query = parsed.path[1:]
@@ -162,7 +174,7 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
             query = 'status'
         func = handler.HTTP_HANDLERS.get(query.split('/')[0], handler.not_found_handler)
         r = func(self, parsed)
-        log.debug('< pushed request in queue: %s', self.path)
+        self.log.debug('< pushed request in queue: %s', self.path)
         return r
 
     do_POST = do_GET
@@ -188,8 +200,9 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
         return self.response(status_code, message, **headers)
 
     def log_message(self, *a, **kw):
-        if log.level == logging.DEBUG:
+        if self.log.getLevel() == logging.DEBUG:
             super(BOSNetHTTPServerRequestHandler, self).log_message(*a, **kw)
+
         return
 
 
@@ -228,14 +241,14 @@ class Transport(BaseTransport):
         return
 
     def send(self, addr, message):
-        log.debug('[%s] begin send_to %s' % (self.node.node_id, addr))
+        self.log.debug('[%s] begin send_to %s' % (self.node.node_id, addr))
         post_data = json.dumps(message)
         try:
             response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
             if response.status_code == 200:
-                log.debug('[%s] sent to %s' % (self.node.node_id, addr))
+                self.log.debug('[%s] sent to %s' % (self.node.node_id, addr))
         except requests.exceptions.ConnectionError:
-            log.error('[%s] Connection to %s Refused' % (self.node.node_id, addr))
+            self.log.error('[%s] Connection to %s Refused' % (self.node.node_id, addr))
 
         return
 

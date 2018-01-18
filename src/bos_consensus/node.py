@@ -1,4 +1,3 @@
-import logging
 from urllib.parse import (
     urlparse,
     parse_qs,
@@ -7,9 +6,7 @@ from urllib.parse import (
 from .ballot import Ballot
 from .consensus import BaseConsensus
 from .network import BaseTransport
-
-
-log = logging.getLogger(__name__)
+from .util import LoggingMixin
 
 
 def get_node_id_from_addr(a):
@@ -24,7 +21,7 @@ def get_node_id_from_addr(a):
     return parsed['name'][0]
 
 
-class Node:
+class Node(LoggingMixin):
     node_id = None
     transport = None
 
@@ -33,7 +30,12 @@ class Node:
         assert type(address[0]) in (str,) and type(address[1]) in (int,)
         assert isinstance(consensus, BaseConsensus)
 
+        super(Node, self).__init__()
+
         self.node_id = node_id
+
+        self.set_logging('node', node=self.node_id)
+
         self.address = address
         self.validators = dict((key, False) for key in validator_addrs)
         self.threshold = threshold
@@ -109,7 +111,7 @@ class Node:
         return
 
     def broadcast(self, message):
-        log.debug('[%s] [%s] begin broadcast to everyone', self.node_id, self.consensus.node_state)
+        self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_id, self.consensus.node_state)
         ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
         for addr in self.validators.keys():
             self.transport.send(addr, ballot.to_dict())
@@ -119,7 +121,7 @@ class Node:
     def receive_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
         from_outside = ballot.node_id not in self.validator_ids
-        log.debug(
+        self.log.debug(
             '[%s] [%s] receive ballot from %s%s',
             self.node_id,
             self.consensus.node_state,
@@ -166,4 +168,4 @@ class Illnode(Node):
         if not self.is_bad_behavior(self.bad_behavior_percent):
             Node.receive_ballot(self, ballot)
         else:
-            log.debug('[%s] is not receiving the ballot from %s' % (self.node_id, ballot.node_id))
+            self.log.debug('[%s] is not receiving the ballot from %s' % (self.node_id, ballot.node_id))
