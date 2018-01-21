@@ -1,3 +1,4 @@
+import enum
 from urllib.parse import (
     urlparse,
     parse_qs,
@@ -19,6 +20,26 @@ def get_node_id_from_addr(a):
         return a
 
     return parsed['name'][0]
+
+
+class FaultyNodeKind(enum.Enum):
+    # failed to connect to the node or failed to get the proper response from
+    # the node.
+    NodeUnreachable = enum.auto()
+
+    # in single phase of consensus, the node does not send voting messages.
+    NoVoting = enum.auto()
+
+    # the node sends the duplicated, but same messages.
+    DuplicatedMessageSent = enum.auto()
+
+    # in single phase of consensus, the node sends different voting with the
+    # other nodes on the same message.
+    DivergentVoting = enum.auto()
+
+    # the node broadcasts some state of ballot, but he sends again with the
+    # previous state of ballot.
+    StateRegression = enum.auto()
 
 
 class Node(LoggingMixin):
