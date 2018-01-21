@@ -2,3 +2,4 @@ colorlog
 graphviz
 python-json-logger
 requests
+termcolor
