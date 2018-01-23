@@ -5,8 +5,9 @@ import pathlib
 
 
 NodeInfo = collections.namedtuple(
-        'NodeInfo',
-        ['name', 'threshold', 'validators'])
+    'NodeInfo',
+    ['name', 'threshold', 'validators'],
+)
 
 DEFAULT_THRESHOLD = 51
 
@@ -124,7 +125,7 @@ def main(options):
     with open(input_file) as data_file:
         data = json.load(data_file)
 
-    nodes = get_nodes(data)
+    get_nodes(data)
 
 
 if __name__ == '__main__':

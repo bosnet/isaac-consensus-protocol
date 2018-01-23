@@ -12,9 +12,9 @@ from bos_consensus.network import (
     BOSNetHTTPServer,
     BOSNetHTTPServerRequestHandler,
 )
+from bos_consensus.consensus import get_consensus_module
 from bos_consensus.node import Node
 from bos_consensus.util import get_local_ipaddress
-from bos_consensus.consensus import get_consensus_module
 
 
 logging.basicConfig(
@@ -76,7 +76,7 @@ def test_fba(options):
 
     config = config._replace(validators=validator_list)
     log.debug('Validators: %s' % config.validators)
-    
+
     consensus_module = get_consensus_module('simple_fba')
     consensus = consensus_module.Consensus()
 

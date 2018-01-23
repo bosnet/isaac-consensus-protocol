@@ -1,45 +1,20 @@
 import argparse
-import colorlog
 import json
-import logging
 import pathlib
-import sys
 import threading
 
 from bos_consensus.consensus import get_consensus_module
 from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.node import Node
-from bos_consensus.util import get_local_ipaddress
+from bos_consensus.util import (
+    get_local_ipaddress,
+    logger,
+)
 from star_cluster.star_cluster import (
     get_nodes,
     NodeInfo
 )
 
-
-logging.basicConfig(
-    level=logging.ERROR,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-)
-
-if sys.stdout.isatty():
-    log_handler = colorlog.StreamHandler()
-    log_handler.setFormatter(
-        colorlog.ColoredFormatter(
-            '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            reset=True,
-            log_colors={
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red,bg_white',
-            },
-        ),
-    )
-
-    logging.root.handlers = [log_handler]
-
-log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -49,8 +24,9 @@ parser.add_argument(
     help='Json format file that include node and quorum informations',
     type=str,
 )
-parser.add_argument('-debug', help='debug log level', action='store_true')
-parser.add_argument('-info', help='info log level', action='store_true')
+
+log = None
+logger.set_argparse(parser)
 
 
 def run_node(node_info):
@@ -86,17 +62,6 @@ def run_all(nodes):
 
 
 def main(options):
-    log_level = logging.ERROR
-
-    if options.debug is True:
-        log_level = logging.DEBUG
-    if options.info is True:
-        log_level = logging.INFO
-
-    log.root.setLevel(log_level)
-    logging.getLogger('http').setLevel(logging.ERROR)
-    logging.getLogger('urllib3').setLevel(logging.ERROR)
-
     input_path = options.input
     if not pathlib.Path(input_path).exists():
         parser.error('json file, `%s` does not exists.' % input_path)
@@ -113,4 +78,11 @@ def main(options):
 
 if __name__ == '__main__':
     options = parser.parse_args()
+
+    logger.from_argparse(logger, options)
+    log = logger.get_logger(__name__)
+
+    log.debug('options: %s', options)
+    log.debug('log settings: %s', logger.info)
+
     main(options)

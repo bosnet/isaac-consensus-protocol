@@ -1,14 +1,10 @@
 import argparse
-import collections
-import configparser
 import json
 import pathlib
 import os
 
-
 from star_cluster.star_cluster import (
     get_nodes,
-    NodeInfo,
     print_to_ini_files
 )
 

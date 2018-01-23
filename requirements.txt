@@ -1,3 +1,6 @@
-requests
 colorlog
+essential_generators
 graphviz
+python-json-logger
+requests
+termcolor

@@ -1,9 +1,3 @@
-import logging
-
-
-log = logging.getLogger(__name__)
-
-
 class Ballot:
     def __init__(self, num, node_id, message, node_state_kind):
         self.ballot_num = num

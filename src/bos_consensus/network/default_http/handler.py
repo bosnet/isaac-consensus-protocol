@@ -1,11 +1,7 @@
 import json
-import logging
 
 from ...ballot import Ballot
 from ...consensus import get_consensus_module
-
-
-log = logging.getLogger(__name__)
 
 
 def not_found_handler(handler, parsed):
