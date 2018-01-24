@@ -3,6 +3,8 @@ import logging
 from pythonjsonlogger import jsonlogger
 import os
 import socket
+import time
+import uuid
 import sys
 from termcolor import colored
 
@@ -17,12 +19,18 @@ AVAILABLE_LOGGING_LEVELS = tuple(map(
     filter(lambda x: x not in ('NOTSET',), logging._nameToLevel.keys()),
 ))
 
+LOG_LEVEL_METRIC = logging.CRITICAL + 10
+
 
 def get_local_ipaddress():
     return socket.gethostbyname('localhost')
 
 
-LOG_LEVEL_METRIC = logging.CRITICAL + 10
+CLOCK_SEQ = int(time.time() * 1000000)
+
+
+def get_uuid():
+    return uuid.uuid1(clock_seq=CLOCK_SEQ).hex
 
 
 class PartialLog:

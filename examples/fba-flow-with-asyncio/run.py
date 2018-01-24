@@ -1,5 +1,3 @@
-import json  # noqa
-import time  # noqa
 import argparse
 import asyncio
 import collections

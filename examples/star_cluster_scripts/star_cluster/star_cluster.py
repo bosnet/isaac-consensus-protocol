@@ -1,6 +1,5 @@
 import collections
 import configparser
-from pprint import pprint  # noqa
 
 
 NodeInfo = collections.namedtuple(

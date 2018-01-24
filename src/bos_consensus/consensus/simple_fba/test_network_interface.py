@@ -12,6 +12,7 @@ from bos_consensus.ballot import Ballot
 from bos_consensus.network import get_network_module
 from .. import get_consensus_module
 from ...node import Node
+from ...message import Message
 
 
 def find_free_port():
@@ -195,10 +196,10 @@ class SendMessage(Client):
 
     def run_impl(self):
         url = 'http://localhost:%d' % self.port
-        post_data = json.dumps({'message': self.message})
+
         response = requests.post(
             urllib.parse.urljoin(url, '/send_message'),
-            data=post_data,
+            data=Message.new(self.message).serialize(to_string=True),
         )
 
         self.response_code = response.status_code
@@ -223,7 +224,7 @@ class SendBallot(Client):
     def run_impl(self):
         url = 'http://localhost:%d' % self.port
 
-        post_data = json.dumps(self.ballot.to_dict())
+        post_data = self.ballot.serialize(None, to_string=True)
         response = requests.post(
             urllib.parse.urljoin(url, '/send_ballot'),
             data=post_data,
@@ -237,7 +238,8 @@ class SendBallot(Client):
 def test_handler_send_ballot(setup_server):
     StateKind = get_consensus_module('simple_fba').StateKind
 
-    ballot = Ballot(1, NODE_ID, 'message', StateKind.INIT)
+    message = Message.new('message')
+    ballot = Ballot.new(NODE_ID, message, StateKind.INIT)
     client_ping_thread = SendBallot(PORT, ballot)
     client_ping_thread.daemon = True
     client_ping_thread.start()

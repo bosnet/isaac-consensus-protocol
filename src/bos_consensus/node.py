@@ -6,6 +6,7 @@ from urllib.parse import (
 
 from .ballot import Ballot
 from .consensus import BaseConsensus
+from .message import Message
 from .network import BaseTransport
 from .util import LoggingMixin
 
@@ -45,6 +46,8 @@ class FaultyNodeKind(enum.Enum):
 class Node(LoggingMixin):
     node_id = None
     transport = None
+    messages = None
+    message_ids = None
 
     def __init__(self, node_id, address, threshold, validator_addrs, consensus):
         assert type(address) in (list, tuple) and len(address) == 2
@@ -62,7 +65,8 @@ class Node(LoggingMixin):
         self.threshold = threshold
         self.minimum_number_of_agreement = (1 + len(self.validators)) * self.threshold // 100
         self.validator_ballots = {}
-        self.messages = []
+        self.messages = list()
+        self.message_ids = list()
 
         self.consensus = consensus
         self.consensus.set_node(self)
@@ -99,7 +103,7 @@ class Node(LoggingMixin):
             address=self.address,
             endpoint=self.endpoint,
             validator_addrs=self.validators,
-            messages=self.messages
+            messages=self.message_ids,
         )
 
     def __eq__(self, rhs):
@@ -123,24 +127,36 @@ class Node(LoggingMixin):
         self.validator_ballots.clear()
 
     def receive_message_from_client(self, message):
-        assert isinstance(message, str)
+        assert isinstance(message, Message)
 
-        ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
+        if message.message_id in self.message_ids:
+            self.log.debug('message already stored: %s', message)
+            return
+
+        ballot = Ballot.new(self.node_id, message, self.consensus.node_state.kind)
         self.consensus.node_state.handle_ballot(ballot)
 
-        self.broadcast(message.strip('"\''))
+        self.broadcast(ballot)
         return
 
-    def broadcast(self, message):
+    def broadcast(self, ballot):
+        assert isinstance(ballot, Ballot)
+
+        ballot.node_state_kind = self.consensus.node_state.kind
+
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_id, self.consensus.node_state)
-        ballot = Ballot(1, self.node_id, message, self.consensus.node_state.kind)
         for addr in self.validators.keys():
-            self.transport.send(addr, ballot.to_dict())
+            self.transport.send(addr, ballot.serialize(self.node_id, to_string=False))
 
         return
 
     def receive_ballot(self, ballot):
         assert isinstance(ballot, Ballot)
+
+        if ballot.message.message_id in self.message_ids:
+            self.log.debug('message already stored: %s', ballot.message)
+            return
+
         from_outside = ballot.node_id not in self.validator_ids
         self.log.debug(
             '[%s] [%s] receive ballot from %s%s',
@@ -153,6 +169,8 @@ class Node(LoggingMixin):
         self.consensus.node_state.handle_ballot(ballot)
 
     def store(self, ballot, node_id=None):
+        assert isinstance(ballot, Ballot)
+
         # [TODO] when receive different message?
         if self.consensus.node_state.kind <= ballot.node_state_kind:
             if node_id is not None:
@@ -166,6 +184,7 @@ class Node(LoggingMixin):
 
     def save_message(self, message):
         self.messages.append(message)
+        self.message_ids.append(message.message_id)
 
     def all_validators_connected(self):
         for _, connected in self.validators.items():

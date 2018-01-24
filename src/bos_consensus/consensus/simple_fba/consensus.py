@@ -84,7 +84,7 @@ class InitState(BaseState):
 
     def handle_ballot_impl(self, ballot):
         if self.node.node_id not in self.node.validator_ballots or self.node.validator_ballots[self.node.node_id] != ballot:  # noqa
-            self.node.broadcast(ballot.message)
+            self.node.broadcast(ballot)
             if ballot.node_id != self.node.node_id:
                 self.node.store(ballot, node_id=self.node.node_id)
 
@@ -93,7 +93,7 @@ class InitState(BaseState):
 
         if self.check_threshold(ballot):
             self.consensus.set_sign()
-            self.node.broadcast(ballot.message)
+            self.node.broadcast(ballot)
 
 
 class SignState(BaseState):
@@ -108,7 +108,7 @@ class SignState(BaseState):
 
         if self.check_threshold(ballot):
             self.consensus.set_accept()
-            self.node.broadcast(ballot.message)
+            self.node.broadcast(ballot)
 
 
 class AcceptState(BaseState):
@@ -123,7 +123,9 @@ class AcceptState(BaseState):
 
         if self.check_threshold(ballot):
             self.consensus.set_all_confirm()
-            self.node.broadcast(ballot.message)
+            self.node.broadcast(ballot)
+
+        return
 
 
 class AllConfirmState(BaseState):

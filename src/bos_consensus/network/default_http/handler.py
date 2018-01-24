@@ -1,7 +1,7 @@
 import json
 
 from ...ballot import Ballot
-from ...consensus import get_consensus_module
+from ...message import Message
 
 
 def not_found_handler(handler, parsed):
@@ -52,9 +52,10 @@ def handle_send_message(handler, parsed):
         return
 
     length = int(handler.headers['Content-Length'])
-    post_data = json.loads(handler.rfile.read(length).decode('utf-8'))
+    data = handler.rfile.read(length).decode('utf-8')
 
-    handler.server.node_sequence_executor('receive_message_from_client', post_data['message'])
+    message = Message.from_string(data)
+    handler.server.node_sequence_executor('receive_message_from_client', message)
 
     return handler.response(200, None)
 
@@ -65,16 +66,7 @@ def handle_send_ballot(handler, parsed):
         return
 
     length = int(handler.headers['Content-Length'])
-    post_data = json.loads(handler.rfile.read(length).decode('utf-8'))
-
-    ballot_num = post_data['ballot_num']
-    node_id = post_data['node_id']
-    message = post_data['message']
-
-    StateKind = get_consensus_module('simple_fba').StateKind
-    state_kind = StateKind[post_data['node_state_kind']]
-
-    ballot = Ballot(ballot_num, node_id, message, state_kind)
+    ballot = Ballot.from_string(handler.rfile.read(length).decode('utf-8'))
     handler.server.node_sequence_executor('receive_ballot', ballot)
 
     return handler.response(200, None)
