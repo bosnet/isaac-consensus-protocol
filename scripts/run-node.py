@@ -1,4 +1,3 @@
-import argparse
 import collections
 import configparser
 import pathlib
@@ -8,10 +7,14 @@ from bos_consensus.consensus import get_consensus_module
 from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.node import Illnode
 from bos_consensus.node import Node
-from bos_consensus.util import get_local_ipaddress, logger
+from bos_consensus.util import (
+    get_local_ipaddress,
+    logger,
+    ArgumentParserShowDefaults,
+)
 
 
-parser = argparse.ArgumentParser()
+parser = ArgumentParserShowDefaults()
 parser.add_argument('conf', help='ini config file for server node')
 
 log = None

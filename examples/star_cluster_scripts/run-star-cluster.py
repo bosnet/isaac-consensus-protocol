@@ -1,4 +1,3 @@
-import argparse
 import json
 import pathlib
 import threading
@@ -7,6 +6,7 @@ from bos_consensus.consensus import get_consensus_module
 from bos_consensus.network import get_network_module, BaseServer
 from bos_consensus.node import Node
 from bos_consensus.util import (
+    ArgumentParserShowDefaults,
     get_local_ipaddress,
     logger,
 )
@@ -16,7 +16,7 @@ from star_cluster.star_cluster import (
 )
 
 
-parser = argparse.ArgumentParser()
+parser = ArgumentParserShowDefaults()
 parser.add_argument(
     '-i',
     '--input',

@@ -240,6 +240,7 @@ def test_handler_send_ballot(setup_server):
 
     message = Message.new('message')
     ballot = Ballot.new(NODE_ID, message, StateKind.INIT)
+
     client_ping_thread = SendBallot(PORT, ballot)
     client_ping_thread.daemon = True
     client_ping_thread.start()

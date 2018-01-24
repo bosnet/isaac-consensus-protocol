@@ -33,6 +33,13 @@ def get_uuid():
     return uuid.uuid1(clock_seq=CLOCK_SEQ).hex
 
 
+class ArgumentParserShowDefaults(argparse.ArgumentParser):
+    def __init__(self, *a, **kw):
+        super(ArgumentParserShowDefaults, self).__init__(*a, **kw)
+
+        self.formatter_class = argparse.ArgumentDefaultsHelpFormatter
+
+
 class PartialLog:
     extras = None
 

@@ -1,7 +1,7 @@
-import argparse
 from essential_generators import DocumentGenerator
 
 from bos_consensus.util import (
+    ArgumentParserShowDefaults,
     logger,
 )
 
@@ -10,7 +10,7 @@ from client.client import (
     send_message
 )
 
-parser = argparse.ArgumentParser()
+parser = ArgumentParserShowDefaults()
 
 log = None
 logger.set_argparse(parser)

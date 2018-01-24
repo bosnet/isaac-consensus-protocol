@@ -137,6 +137,7 @@ class Node(LoggingMixin):
         self.consensus.node_state.handle_ballot(ballot)
 
         self.broadcast(ballot)
+
         return
 
     def broadcast(self, ballot):
@@ -151,7 +152,23 @@ class Node(LoggingMixin):
         return
 
     def receive_ballot(self, ballot):
+        # filtering rules, for same `ballot_id` or `message_id`
+        #  1. if `message_id` is already saved in `self.message_ids`, it will be passed
+        #  1. if `ballot` is same,
+        #       - node_state_kind
+        #       - same message
+        #   it will be passed.
+        #  1. if `ballot` is same except `ballot_id`, it will be passed
+
         assert isinstance(ballot, Ballot)
+
+        if ballot.node_id in self.validator_ballots:
+            existing = self.validator_ballots[ballot.node_id]
+            if ballot == existing:
+                return
+
+            if ballot.has_different_ballot_id(existing):
+                return
 
         if ballot.message.message_id in self.message_ids:
             self.log.debug('message already stored: %s', ballot.message)
@@ -167,6 +184,8 @@ class Node(LoggingMixin):
         )
 
         self.consensus.node_state.handle_ballot(ballot)
+
+        return
 
     def store(self, ballot, node_id=None):
         assert isinstance(ballot, Ballot)

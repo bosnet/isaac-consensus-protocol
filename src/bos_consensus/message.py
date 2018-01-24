@@ -1,3 +1,4 @@
+import copy
 import json
 
 from .util import get_uuid
@@ -13,6 +14,15 @@ class Message:
 
     def __repr__(self):
         return '<Message: message_id=%(message_id)s data=%(data)s>' % self.__dict__
+
+    def __eq__(self, a):
+        return self.message_id == a.message_id
+
+    def __copy__(self):
+        return self.__class__(
+            self.message_id,
+            copy.copy(self.data),
+        )
 
     def serialize(self, to_string=False):
         o = dict(

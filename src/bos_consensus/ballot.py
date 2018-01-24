@@ -64,7 +64,7 @@ class Ballot:
 
         StateKind = get_consensus_module('simple_fba').StateKind
 
-        return Ballot(
+        return cls(
             o['ballot_id'],
             o['node_id'],
             Message.from_dict(o['message']),
