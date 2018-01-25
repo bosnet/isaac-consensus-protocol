@@ -3,10 +3,10 @@ import configparser
 import pathlib
 import uuid
 
-from bos_consensus.consensus import get_consensus_module
+from bos_consensus.blockchain import Blockchain
+from bos_consensus.consensus import get_fba_module
 from bos_consensus.network import get_network_module, BaseServer
-from bos_consensus.node import Illnode
-from bos_consensus.node import Node
+from bos_consensus.common.node import node_factory
 from bos_consensus.util import (
     get_local_ipaddress,
     logger,
@@ -16,7 +16,6 @@ from bos_consensus.util import (
 
 parser = ArgumentParserShowDefaults()
 parser.add_argument('conf', help='ini config file for server node')
-
 log = None
 
 logger.set_argparse(parser)
@@ -25,7 +24,7 @@ logger.set_argparse(parser)
 def main(options):
     config = collections.namedtuple(
         'Config',
-        ('node_id', 'port', 'threshold', 'validators', 'bad_behavior_percent'),
+        ('node_name', 'port', 'threshold', 'validators', 'faulty_percent'),
     )(uuid.uuid1().hex, 8001, 51, [], 0)
 
     if not pathlib.Path(options.conf).exists():
@@ -36,15 +35,14 @@ def main(options):
 
     conf = configparser.ConfigParser()
     conf.read(options.conf)
-
     log.info('conf file, `%s` was loaded', options.conf)
 
-    config = config._replace(node_id=conf['node']['id'])
+    config = config._replace(node_name=conf['node']['name'])
     config = config._replace(port=int(conf['node']['port']))
     config = config._replace(threshold=int(conf['node']['threshold_percent']))
 
-    if conf.has_option('bad', 'bad_behavior_percent'):
-        config = config._replace(bad_behavior_percent=int(conf['bad']['bad_behavior_percent']))
+    if conf.has_option('faulty', 'faulty_percent'):
+        config = config._replace(faulty_percent=int(conf['faulty']['faulty_percent']))
 
     log.debug('loaded conf: %s', config)
 
@@ -56,33 +54,27 @@ def main(options):
     config = config._replace(validators=validator_list)
     log.debug('Validators: %s' % config.validators)
 
-    consensus_module = get_consensus_module('simple_fba')
-    consensus = consensus_module.Consensus()
+    node = node_factory(
+        config.node_name,
+        (get_local_ipaddress(), config.port),
+        config.faulty_percent
+    )
 
-    if conf.has_option('bad', 'bad_behavior_percent'):
-        nd = Illnode(
-            config.node_id,
-            (get_local_ipaddress(), config.port),
-            config.threshold,
-            config.validators,
-            consensus,
-            config.bad_behavior_percent,
-        )
-    else:
-        nd = Node(
-            config.node_id,
-            (get_local_ipaddress(), config.port),
-            config.threshold,
-            config.validators,
-            consensus,
-        )
+    consensus_module = get_fba_module('isaac')
+    consensus = consensus_module.IsaacConsensus(
+        node,
+        config.threshold,
+        config.validators
+    )
 
-    log.metric(node=nd.node_id, data=nd.to_dict())
+    log.metric(node=node.name, data=node.to_dict())
 
     network_module = get_network_module('default_http')
     transport = network_module.Transport(bind=('0.0.0.0', config.port))
-    server = BaseServer(nd, transport)
-    server.start()
+
+    blockchain = Blockchain(consensus, transport)
+    base_server = BaseServer(blockchain)
+    base_server.start()
 
     return
 

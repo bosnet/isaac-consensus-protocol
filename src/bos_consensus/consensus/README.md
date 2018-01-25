@@ -4,16 +4,15 @@ The consensus module was designed to be configurable and replaceable, so we expe
 
 ## How To Write New Consensus Module
 
-`bos_consensus.consensus.simple_fba` will be the good example. Basically,
+`bos_consensus.consensus.isaac.py` will be the good example. Basically,
 
-* The consensus module must have `class Consensus`
-* `class Consensus` must be inherited from `class bos_consensus.consensus.BaseConsensus`
-* the module can be accessed thru `func bos_consensus.consensus.get_consensus_module(<consensus name>)`
+* `class ~Consensus` must be inherited from `class bos_consensus.consensus.base.BaseConsensus`
 
 To manage clearly, the each consensus module is under directory like this,
 ```
-bos_consensus/consensus/<consensus name>/
+bos_consensus/consensus/
     __init__.py
-    consensus.py
+    base.py
+    <name>_consensus.py
     ...
 ```

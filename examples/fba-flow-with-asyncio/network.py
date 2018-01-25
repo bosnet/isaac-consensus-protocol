@@ -197,7 +197,6 @@ class Node:
     def __init__(self, name, endpoint_string, quorum):
         self.name = name
         self.endpoint = Endpoint.from_uri(endpoint_string)
-
         if quorum is not None and quorum.is_inside(self):
             quorum.remove(self)
 

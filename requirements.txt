@@ -1,6 +1,6 @@
 colorlog
-essential_generators
 graphviz
+lorem
 python-json-logger
 requests
 termcolor

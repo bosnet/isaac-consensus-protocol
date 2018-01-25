@@ -2,15 +2,16 @@ import json
 import pathlib
 import threading
 
-from bos_consensus.consensus import get_consensus_module
+from bos_consensus.blockchain import Blockchain
+from bos_consensus.consensus import get_fba_module
 from bos_consensus.network import get_network_module, BaseServer
-from bos_consensus.node import Node
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
     get_local_ipaddress,
     logger,
 )
-from star_cluster.star_cluster import (
+from bos_consensus.common.node import node_factory
+from star_cluster import (
     get_nodes,
     NodeInfo
 )
@@ -31,20 +32,25 @@ logger.set_argparse(parser)
 
 def run_node(node_info):
     assert isinstance(node_info, NodeInfo)
-    consensus_module = get_consensus_module('simple_fba')
-    consensus = consensus_module.Consensus()
 
-    nd = Node(
-        node_info.id,
+    node = node_factory(
+        node_info.name,
         (get_local_ipaddress(), node_info.port),
+        node_info.faulty_percent
+    )
+    consensus_module = get_fba_module('isaac')
+    consensus = consensus_module.IsaacConsensus(
+        node,
         node_info.threshold,
         node_info.validators,
-        consensus,
     )
 
     network_module = get_network_module('default_http')
     transport = network_module.Transport(bind=('0.0.0.0', node_info.port))
-    BaseServer(nd, transport).start()
+
+    blockchain = Blockchain(consensus, transport)
+    base_server = BaseServer(blockchain)
+    base_server.start()
 
 
 def run_all(nodes):

@@ -1,7 +1,8 @@
 import argparse
+import importlib
 import logging
-from pythonjsonlogger import jsonlogger
 import os
+from pythonjsonlogger import jsonlogger
 import socket
 import time
 import uuid
@@ -107,9 +108,6 @@ class LogStreamHandler(logging.StreamHandler):
         self.stream_metric = None
 
     def emit(self, record):
-        if self.in_terminal:
-            _, columns = os.popen('stty size', 'r').read().split()
-
         if record.levelno == LOG_LEVEL_METRIC:
             record.msg['created'] = record.created
             formatted = self.json_formatter.format(record)
@@ -286,3 +284,10 @@ class LoggingMixin:
 
 logger = Logger()
 log = logger.get_logger('util')
+
+
+def get_module(name, package=None):
+    try:
+        return importlib.import_module(name, package=package)
+    except ModuleNotFoundError:
+        return None

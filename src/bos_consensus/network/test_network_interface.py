@@ -8,11 +8,14 @@ import time
 import traceback
 import urllib
 
-from bos_consensus.ballot import Ballot
-from bos_consensus.network import get_network_module
-from .. import get_consensus_module
-from ...node import Node
-from ...message import Message
+from ..common.ballot import Ballot
+from ..blockchain import Blockchain
+from ..network import get_network_module
+from ..consensus import get_fba_module
+from ..consensus.fba.isaac import IsaacConsensus
+from ..consensus.fba.isaac import IsaacState
+from ..common.message import Message
+from ..common.node import node_factory
 
 
 def find_free_port():
@@ -22,29 +25,20 @@ def find_free_port():
 
 
 PORT = find_free_port()
-NODE_ID = 52
+NODE_NAME = 'n1'
 
 
 class Server(threading.Thread):
     server = None
 
-    def __init__(self, port, node_id):
+    def __init__(self, port, node_name):
         super(Server, self).__init__()
         self.port = port
-        self.node_id = node_id
+        self.node_name = node_name
 
         self.server = None
 
     def run(self):
-        consensus_module = get_consensus_module('simple_fba')
-        node = Node(
-            self.node_id,
-            ('localhost', self.port),
-            100,
-            ['localhost:5002', 'localhost:5003'],
-            consensus_module.Consensus(),
-        )
-
         network_module = get_network_module('default_http')
 
         class TestBOSNetHTTPServer(network_module.BOSNetHTTPServer):
@@ -54,10 +48,20 @@ class Server(threading.Thread):
         class TestTransport(network_module.Transport):
             http_server_class = TestBOSNetHTTPServer
 
-        self.server = network_module.Server(
+        node = node_factory(self.node_name, ('localhost', self.port))
+        consensus = IsaacConsensus(
             node,
-            TestTransport(bind=('localhost', self.port)),
+            100,
+            ['localhost:5002', 'localhost:5003']
         )
+
+        transport = TestTransport(bind=('localhost', self.port))
+        blockchain = Blockchain(
+            consensus,
+            transport
+        )
+
+        self.server = network_module.Server(blockchain)
         self.server.start()
 
         return True
@@ -112,7 +116,7 @@ class Ping(Client):
 
 @pytest.fixture(scope='function')
 def setup_server(request):
-    server_thread = Server(PORT, NODE_ID)
+    server_thread = Server(PORT, NODE_NAME)
     server_thread.daemon = True
     server_thread.start()
 
@@ -137,19 +141,19 @@ def test_handler_ping(setup_server):
 class Status(Client):
     def __init__(self, port):
         super(Status, self).__init__(port)
-        self.node_id = 0
+        self.node_name = None
 
     def run_impl(self):
         response = requests.get(
             urllib.parse.urljoin(self.url_format % self.port, '/status'),
         )
         self.response_code = response.status_code
-        self.node_id = json.loads(response.text)['Node']['node_id']
+        self.node_name = json.loads(response.text)['blockchain']['node']['name']
 
         return True
 
-    def get_node_id(self):
-        return self.node_id
+    def get_node_name(self):
+        return self.node_name
 
 
 def test_handler_status(setup_server):
@@ -158,13 +162,13 @@ def test_handler_status(setup_server):
     client_ping_thread.start()
     client_ping_thread.join()
     assert client_ping_thread.get_response_code() == 200
-    assert client_ping_thread.get_node_id() == NODE_ID
+    assert client_ping_thread.get_node_name() == NODE_NAME
 
 
 class GetNode(Client):
     def __init__(self, port):
         super(GetNode, self).__init__(port)
-        self.node_id = 0
+        self.node_name = 0
 
     def run_impl(self):
         url = 'http://localhost:%d' % self.port
@@ -172,12 +176,12 @@ class GetNode(Client):
             urllib.parse.urljoin(url, '/get_node'),
         )
         self.response_code = response.status_code
-        self.node_id = json.loads(response.text)['node_id']
+        self.node_name = json.loads(response.text)['name']
 
         return True
 
-    def get_node_id(self):
-        return self.node_id
+    def get_node_name(self):
+        return self.node_name
 
 
 def test_handler_get_node(setup_server):
@@ -186,7 +190,7 @@ def test_handler_get_node(setup_server):
     client_ping_thread.start()
     client_ping_thread.join()
     assert client_ping_thread.get_response_code() == 200
-    assert client_ping_thread.get_node_id() == NODE_ID
+    assert client_ping_thread.get_node_name() == NODE_NAME
 
 
 class SendMessage(Client):
@@ -224,7 +228,7 @@ class SendBallot(Client):
     def run_impl(self):
         url = 'http://localhost:%d' % self.port
 
-        post_data = self.ballot.serialize(None, to_string=True)
+        post_data = self.ballot.serialize(to_string=True)
         response = requests.post(
             urllib.parse.urljoin(url, '/send_ballot'),
             data=post_data,
@@ -236,10 +240,8 @@ class SendBallot(Client):
 
 
 def test_handler_send_ballot(setup_server):
-    StateKind = get_consensus_module('simple_fba').StateKind
-
     message = Message.new('message')
-    ballot = Ballot.new(NODE_ID, message, StateKind.INIT)
+    ballot = Ballot.new(NODE_NAME, message, IsaacState.INIT)
 
     client_ping_thread = SendBallot(PORT, ballot)
     client_ping_thread.daemon = True

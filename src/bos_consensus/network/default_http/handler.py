@@ -1,7 +1,7 @@
 import json
 
-from ...ballot import Ballot
-from ...message import Message
+from bos_consensus.common.ballot import Ballot
+from bos_consensus.common.message import Message
 
 
 def not_found_handler(handler, parsed):
@@ -20,8 +20,8 @@ def handle_status(handler, parsed):
         return
 
     info = json.dumps({
-        'Version': handler.server.version,
-        'Node': handler.server.node.to_dict(),
+        'version': handler.server.version,
+        'blockchain': handler.server.blockchain.to_dict(),
     }, indent=True)
     handler.response(200, info)
 
@@ -43,7 +43,7 @@ def handle_get_node(handler, parsed):
         handler.response(405, None)
         return
 
-    return handler.json_response(200, handler.server.node.to_dict())
+    return handler.json_response(200, handler.server.blockchain.node.to_dict())
 
 
 def handle_send_message(handler, parsed):
@@ -55,7 +55,7 @@ def handle_send_message(handler, parsed):
     data = handler.rfile.read(length).decode('utf-8')
 
     message = Message.from_string(data)
-    handler.server.node_sequence_executor('receive_message_from_client', message)
+    handler.server.blockchain_sequence_executor('receive_message_from_client', message)
 
     return handler.response(200, None)
 
@@ -67,7 +67,7 @@ def handle_send_ballot(handler, parsed):
 
     length = int(handler.headers['Content-Length'])
     ballot = Ballot.from_string(handler.rfile.read(length).decode('utf-8'))
-    handler.server.node_sequence_executor('receive_ballot', ballot)
+    handler.server.blockchain_sequence_executor('receive_ballot', ballot)
 
     return handler.response(200, None)
 

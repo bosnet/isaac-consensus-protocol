@@ -53,15 +53,14 @@
             ]
         },
     {
-        "name": "run_node using node.ini",
+        "name": "run-blockchain using node5001.ini",
         "type": "python",
         "request": "launch",
         "stopOnEntry": false,
-        //"pythonPath": "${config:python.pythonPath}",
-        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",        
-        "program": "${workspaceRoot}/scripts/run-node.py",
+        "pythonPath": "${config:python.pythonPath}",
+        "program": "${workspaceRoot}/scripts/run-blockchain.py",
         "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/examples/node5001.ini", "-debug"],
+        "args": ["${workspaceRoot}/examples/node5001.ini", "-log-level", "debug"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [
@@ -71,7 +70,7 @@
         ]
     },
     {
-        "name": "test_node_state",
+        "name": "test_blockchain",
         "type": "python",
         "request": "launch",
         "stopOnEntry": false,
@@ -80,7 +79,45 @@
         "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
         "program": "${file}",
         "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/src/bos_consensus/consensus/simple_fba/test_node_state.py"],
+        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_blockchain.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
+        "name": "test_already_received_messages",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_already_received_messages.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
+        "name": "test_isaac",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/src/bos_consensus/consensus/test_isaac.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [
@@ -95,11 +132,10 @@
         "request": "launch",
         "stopOnEntry": false,
         "module": "pytest",
-        //"pythonPath": "${config:python.pythonPath}",
-        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "pythonPath": "${config:python.pythonPath}",
         "program": "${file}",
         "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/tests/test_network_interface.py"],
+        "args": ["${workspaceRoot}/src/bos_consensus/network/test_network_interface.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [

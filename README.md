@@ -2,33 +2,6 @@
 
 Validate the consensus model of the FBA
 
-## Technical Stacks
-
-- Written in Python
-- HTTP-based Messaging
-- Simple and In-Memory Storage
-- etc.
-
-## Features
-
-- Command Line Interface
-- Consensus
-- Networking
-
-## Non-functional requirements
-
-### Performance
-- Scale-up
-
-### User Experience
-
-- Simple Configuration
-
-### Code Quality
-- TDD
-
-### Logging System
-
 ## Installation
 
 To install and deploy the source, you need to install these packages,
@@ -54,8 +27,8 @@ $ python setup.py develop
 ## Deployment
 
 ```
-$ run-node.py -h
-usage: run-node.py [-h] [-debug] conf
+$ run-blockchain.py -h
+usage: run-blockchain.py [-h] [-debug] conf
 
 positional arguments:
   conf        ini config file
@@ -69,7 +42,7 @@ optional arguments:
 
 Set the config file.
 ```
-$ run-node.py examples/node5001.ini
+$ run-blockchain.py examples/node5001.ini
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node ID: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node PORT: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Validators: ['localhost:5002', 'localhost:5003']
@@ -77,16 +50,41 @@ $ run-node.py examples/node5001.ini
 
 Run the other nodes like this.
 ```
-$ python run-node.py examples/node5002.ini
-$ python run-node.py examples/node5003.ini
+$ python run-blockchain.py examples/node5002.ini
+$ python run-blockchain.py examples/node5003.ini
 ```
 
-### Running Message Client
+### Running Message Client, `run-client.py`
+
+```
+$ run-client.py  -h
+usage: run-client.py [-h] [-verbose]
+                     [-log-level {critical,fatal,error,warn,warning,info,debug}]
+                     [-log-output LOG_OUTPUT]
+                     [-log-output-metric LOG_OUTPUT_METRIC] [-log-show-line]
+                     [-log-no-color] [-m MESSAGE] [-i IP] [-p PORT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -verbose              verbose log
+  -log-level {critical,fatal,error,warn,warning,info,debug}
+                        set log level
+  -log-output LOG_OUTPUT
+                        set log output file
+  -log-output-metric LOG_OUTPUT_METRIC
+                        set metric output file
+  -log-show-line        show seperate lines in log
+  -log-no-color         disable colorized log message by level
+  -m MESSAGE, --message MESSAGE
+                        Messages you want to send to the server
+  -i IP, --ip IP        Server IP you want to send the message to
+  -p PORT, --port PORT  Server port you want to send the message to
+```
 
 After checking node state in cmd line, then run client like this.
 Send one message to `5001`
 ```
-$ python scripts/run-client.py --ip "localhost" --port 5001 -message "message"
+$ python scripts/run-client.py --ip "localhost" --port 5001 --message "message"
 ```
 
 Send five messages at a time every 4 seconds to `5001`
@@ -166,7 +164,9 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
     {
         "Node Name":
         {
-            "threshold": threshold
+            "threshold": integer,
+            "faulty_percent": integer,
+            "faulty_kind": string
         },
         "Node Name": {} // default threshold 51
     },
@@ -218,11 +218,12 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
         "n3":
         {
             "threshold": 80,
-            "bad_behavior_percent": 20
+            "faulty_percent": 20,
+            "faulty_kind": "node_unreachable"
         },
         "n4":
         {
-            "bad_behavior_percent": 20
+            "faulty_percent": 20
         },
         "n5":
         {

@@ -1,4 +1,3 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import logging
 from queue import Queue
@@ -7,39 +6,50 @@ from socketserver import ThreadingMixIn
 import threading
 import time
 import urllib
-from urllib.parse import urlparse
 
-from . import handler
+from bos_consensus.blockchain.base import BaseBlockchain
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from ..base import (
-    BaseTransport,
     BaseServer,
+    BaseTransport,
 )
-from ...node import Node
+from . import handler
 from ...util import logger
+from bos_consensus.common.node import Node
 
 
 class Ping(threading.Thread):
-    node = None
+    blockchain = None
     event = None
 
-    def __init__(self, node):
+    def __init__(self, blockchain):
+        assert isinstance(blockchain, BaseBlockchain)
+
         super(Ping, self).__init__()
 
-        self.node = node
+        self.blockchain = blockchain
         self.event = threading.Event()
         self.event.set()
 
-        self.log = logger.get_logger('ping', node=self.node.node_id)
+        self.log = logger.get_logger('ping', node=self.blockchain.node.name)
+
+    def get_node(self, response):
+        data = json.loads(response.text)
+        return Node(data['name'], data['endpoint'])
 
     def run(self):
+        consensus = self.blockchain.consensus
+        connection_check = {endpoint: False for endpoint in consensus.validator_endpoints}
+
         while self.event.is_set():
             time.sleep(1)
 
-            if self.node.all_validators_connected():
-                self.node.init_node()
+            if consensus.all_validators_connected():
+                self.log.info(consensus.validators)
+                consensus.init()
                 break
 
-            for addr, connected in self.node.validators.items():
+            for addr, connected in connection_check.items():
                 if connected:
                     continue
 
@@ -50,8 +60,8 @@ class Ping(threading.Thread):
                     # validation check
                     get_node_response = requests.get(urllib.parse.urljoin(addr, '/get_node'))
                     get_node_response.raise_for_status()
-                    self.node.validators[addr] = True
-                    self.log.info("Validator information received from '%s'" % addr)
+
+                    consensus.add_to_validators(self.get_node(get_node_response))
 
                 except requests.exceptions.ConnectionError:
                     self.log.warn("ConnectionError occurred during validator connection to '%s'!" % addr)
@@ -81,16 +91,15 @@ class LockedQueue(Queue):
 
 
 class Executor(threading.Thread):
-    def __init__(self, node, action_queue):
-        assert isinstance(node, Node)
+    def __init__(self, blockchain, action_queue):
+        assert isinstance(blockchain, BaseBlockchain)
         assert isinstance(action_queue, LockedQueue)
 
         super(Executor, self).__init__()
-
-        self.node = node
+        self.blockchain = blockchain
         self.action_queue = action_queue
 
-        self.log = logger.get_logger('executor', node=self.node.node_id)
+        self.log = logger.get_logger('executor', node=self.blockchain.node.name)
 
     def run(self):
         while True:
@@ -102,20 +111,20 @@ class Executor(threading.Thread):
                 func_name = element[0]
                 arg = element[1]
 
-                if not hasattr(self.node, func_name):
-                    self.log.error('%s method is not exist in Node object' % func_name)
-                func = getattr(self.node, func_name)
+                if not hasattr(self.blockchain, func_name):
+                    self.log.error('%s method is not exist in Consensus object' % func_name)
+                func = getattr(self.blockchain, func_name)
                 func(arg)
         return True
 
 
-class NodeManager:
-    def __init__(self, node):
-        assert isinstance(node, Node)
+class BlockchainManager():
+    def __init__(self, blockchain):
+        assert isinstance(blockchain, BaseBlockchain)
 
-        self.node = node
+        self.blockchain = blockchain
         self.action_queue = LockedQueue()
-        t = Executor(self.node, self.action_queue)
+        t = Executor(self.blockchain, self.action_queue)
         t.start()
 
     def push_element(self, func_name, arg):
@@ -125,49 +134,51 @@ class NodeManager:
 class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
     ping = None
 
-    def __init__(self, node, *a, **kw):
-        assert isinstance(node, Node)
+    def __init__(self, blockchain, *a, **kw):
+        assert isinstance(blockchain, BaseBlockchain)
 
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
         self.version = '0.8.1'
         self.lqueue = LockedQueue()
-        self.node = node
-        self.node_manager = NodeManager(self.node)
-        self.ping = self.start_ping()
+        self.blockchain = blockchain
+        self.node_name = blockchain.node_name
+        self.blockchain_manager = BlockchainManager(self.blockchain)
+
+        self.start_ping()
 
     def start_ping(self):
-        ping = Ping(self.node)
-        ping.start()
+        self.ping = Ping(self.blockchain)
+        self.ping.start()
 
-        return ping
+        return
 
     def finish_request(self, request, client_address):
-        self.RequestHandlerClass(self.node, request, client_address, self)
+        self.RequestHandlerClass(self.node_name, request, client_address, self)
 
         return
 
     @property
     def endpoint(self):
-        return self.node.endpoint
+        return self.blockchain.endpoint
 
-    def node_sequence_executor(self, func_name, arg):
-        self.node_manager.push_element(func_name, arg)
+    def blockchain_sequence_executor(self, func_name, arg):
+        self.blockchain_manager.push_element(func_name, arg)
 
 
 class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
     node = None
     log = None
 
-    def __init__(self, node, *a, **kw):
-        self.node = node
-        self.log = logger.get_logger('network', node=self.node.node_id)
+    def __init__(self, node_name, *a, **kw):
+        self.node_name = node_name
+        self.log = logger.get_logger('network', node=self.node_name)
 
         super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
 
     def do_GET(self):
         self.log.debug('> start request: %s', self.path)
-        parsed = urlparse(self.path)
+        parsed = urllib.parse.urlparse(self.path)
         func = None
         query = parsed.path[1:]
         if len(query) == 0:
@@ -223,7 +234,7 @@ class Transport(BaseTransport):
 
     def _start(self):
         self.server = self.http_server_class(
-            self.node,
+            self.blockchain,
             self.config['bind'],
             self.http_request_handler_class,
         )
@@ -240,15 +251,16 @@ class Transport(BaseTransport):
 
         return
 
-    def send(self, addr, message):
-        self.log.debug('[%s] begin send_to %s' % (self.node.node_id, addr))
-        post_data = json.dumps(message)
+    def send(self, addr, data):
+        node_name = self.blockchain.node_name
+        self.log.debug('[%s] begin send_to %s' % (node_name, addr))
+        post_data = json.dumps(data)
         try:
             response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
             if response.status_code == 200:
-                self.log.debug('[%s] sent to %s' % (self.node.node_id, addr))
+                self.log.debug('[%s] sent to %s' % (node_name, addr))
         except requests.exceptions.ConnectionError:
-            self.log.error('[%s] Connection to %s Refused' % (self.node.node_id, addr))
+            self.log.error('[%s] Connection to %s Refused' % (node_name, addr))
 
         return
 

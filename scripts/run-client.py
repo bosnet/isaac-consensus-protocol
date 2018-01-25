@@ -1,4 +1,6 @@
 from essential_generators import DocumentGenerator
+import argparse
+import lorem
 
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
@@ -18,22 +20,22 @@ logger.set_argparse(parser)
 parser.add_argument(
     '-m',
     '--message',
-    default=DocumentGenerator().sentence(),
-    help='Messages you want to send to the server.',
+    default=lorem.sentence(),
+    help='Messages you want to send to the server',
     type=str,
 )
 parser.add_argument(
     '-i',
     '--ip',
     default='localhost',
-    help='Server IP you want to send the message to.',
+    help='Server IP you want to send the message to',
     type=str,
 )
 parser.add_argument(
     '-p',
     '--port',
     default=5001,
-    help='Server port you want to send the message to.',
+    help='Server port you want to send the message to',
     type=int,
 )
 
@@ -41,7 +43,6 @@ parser.add_argument(
 if __name__ == '__main__':
     options = parser.parse_args()
     logger.from_argparse(logger, options)
-
     log = logger.get_logger(__name__)
 
     log.debug('options: %s', options)

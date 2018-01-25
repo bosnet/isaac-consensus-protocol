@@ -3,7 +3,7 @@ import json
 import pathlib
 import time
 
-from client.client import (
+from .client.client import (
     MessageInfo,
     send_message
 )

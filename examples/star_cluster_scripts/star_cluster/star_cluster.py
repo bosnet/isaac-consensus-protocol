@@ -4,7 +4,7 @@ import configparser
 
 NodeInfo = collections.namedtuple(
     'NodeInfo',
-    ['name', 'id', 'threshold', 'validators', 'ip', 'port', 'bad_behavior_percent'],
+    ['name', 'threshold', 'validators', 'ip', 'port', 'faulty_percent'],
 )
 
 
@@ -22,12 +22,11 @@ def set_nodes(nodes, name, node_infos, count):
 
     new_node = NodeInfo(
         name,
-        name,
         node_infos.get('threshold', 51),
         [],
         'http://localhost',
         BASE_PORT + count,
-        node_infos.get('bad_behavior_percent', 0),
+        node_infos.get('faulty_percent', 0),
     )
     push_node(nodes, new_node)
 

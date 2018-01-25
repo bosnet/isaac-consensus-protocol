@@ -1,17 +1,15 @@
-import importlib
-
-from ..util import LoggingMixin
+from ..util import (
+    get_module,
+    LoggingMixin,
+)
 
 
 def get_network_module(name):
-    try:
-        return importlib.import_module('.' + name, package='bos_consensus.network')
-    except ModuleNotFoundError:
-        return None
+    return get_module('.' + name, package='bos_consensus.network')
 
 
 class BaseTransport(LoggingMixin):
-    node = None
+    blockchain = None
     config = None
 
     message_received_callback = None
@@ -30,13 +28,13 @@ class BaseTransport(LoggingMixin):
     def send(self, addr, message):
         raise NotImplementedError()
 
-    def start(self, node, message_received_callback):
-        from ..node import Node
-        assert isinstance(node, Node)
+    def start(self, blockchain, message_received_callback):
+        from ..blockchain.base import BaseBlockchain
+        assert isinstance(blockchain, BaseBlockchain)
 
-        self.set_logging('network', node=node.node_id)
+        self.set_logging('network', node=blockchain.node_name)
 
-        self.node = node
+        self.blockchain = blockchain
         self.message_received_callback = message_received_callback
 
         self._start()
@@ -51,24 +49,21 @@ class BaseTransport(LoggingMixin):
 
 
 class BaseServer(LoggingMixin):
-    node = None
+    blockchain = None
     transport = None
 
     config = None
 
-    def __init__(self, node, transport, **config):
+    def __init__(self, blockchain, **config):
         super(BaseServer, self).__init__()
 
-        self.set_logging('network', node=node.node_id)
+        self.set_logging('network', node=blockchain.node_name)
 
-        self.node = node
-        self.transport = transport
-        self.node.set_transport(transport)
-
+        self.blockchain = blockchain
         self.config = config
 
     def start(self):
-        self.transport.start(self.node, self.message_received_callback)
+        self.blockchain.consensus.transport.start(self.blockchain, self.message_received_callback)
 
         return
 
@@ -76,6 +71,6 @@ class BaseServer(LoggingMixin):
         raise NotImplementedError()
 
     def stop(self):
-        self.transport.stop()
+        self.blockchain.consensus.transport.stop()
 
         return

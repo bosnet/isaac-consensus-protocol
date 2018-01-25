@@ -12,11 +12,12 @@
         "n3":
         {
             "threshold": 80,
-            "bad_behavior_percent": 20
+            "faulty_percent": 20,
+            "faulty_kind": "node_unreachable"
         },
         "n4":
         {
-            "bad_behavior_percent": 20
+            "faulty_percent": 20
         },
         "n5":
         {

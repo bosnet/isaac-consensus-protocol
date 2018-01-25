@@ -1,7 +1,7 @@
 import copy
 import json
 
-from .util import get_uuid
+from bos_consensus.util import get_uuid
 
 
 class Message:

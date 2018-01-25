@@ -8,7 +8,7 @@ import colorlog
 import requests
 
 from bos_consensus.consensus import get_consensus_module
-from bos_consensus.message import Message
+from bos_consensus.common.message import Message
 
 
 logging.basicConfig(
@@ -46,29 +46,16 @@ def send_message(message_info):
     assert isinstance(message_info, MessageInfo)
     log.debug('loaded message: %s', message_info)
 
-    consensus_module = get_consensus_module('simple_fba')
-
-    url = 'http://%s:%s' % (message_info.ip, message_info.port)
+    endpoint = 'http://%s:%s' % (message_info.ip, message_info.port)
     try:
-        while(True):
-            get_node_response = requests.get(urllib.parse.urljoin(url, '/get_node'))
-            get_node_response.raise_for_status()
-            json_data = json.loads(get_node_response.text)
-            status = consensus_module.StateKind[json_data['status']]
-            if status not in (consensus_module.StateKind.ALLCONFIRM, consensus_module.StateKind.INIT):
-                time.sleep(1)
-                continue
-
-            message = Message.new(message_info.message)
-            response = requests.post(
-                urllib.parse.urljoin(url, '/send_message'),
-                data=message.serialize(to_string=True),
-            )
-            response.raise_for_status()
-            log.debug('message sent!')
-
-            break
+        message = Message.new(message_info.message)
+        response = requests.post(
+            urllib.parse.urljoin(endpoint, '/send_message'),
+            data=message.serialize(to_string=True),
+        )
+        response.raise_for_status()
+        log.debug('message sent!')
     except requests.exceptions.ConnectionError:
-        log.warn("ConnectionError occurred during client send message to '%s'!" % url)
+        log.warn("ConnectionError occurred during client send message to '%s'!" % endpoint)
     except requests.exceptions.HTTPError:
-        log.warn("HTTPError occurred during client send message to '%s'!" % url)
+        log.warn("HTTPError occurred during client send message to '%s'!" % endpoint)

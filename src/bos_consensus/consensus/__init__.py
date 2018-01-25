@@ -1,10 +1,9 @@
-import importlib
-
-from .base import BaseConsensus  # noqa
+from ..util import get_module
 
 
 def get_consensus_module(name):
-    try:
-        return importlib.import_module('.' + name, package='bos_consensus.consensus')
-    except ModuleNotFoundError:
-        return None
+    return get_module('.' + name, package='bos_consensus.consensus')
+
+
+def get_fba_module(name):
+    return get_module('.' + name, package='bos_consensus.consensus.fba')
