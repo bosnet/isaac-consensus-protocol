@@ -6,6 +6,7 @@ from ..common.node import node_factory
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus
 
+
 class StubTransport(BaseTransport):
     def send(self, _, __):
         return

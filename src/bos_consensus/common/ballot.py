@@ -6,6 +6,7 @@ from ..consensus import get_fba_module
 from ..util import get_uuid
 from .message import Message
 
+
 class Ballot:
     ballot_id = None
     node_name = None
@@ -32,7 +33,7 @@ class Ballot:
 
     def has_different_ballot_id(self, rhs):
         if rhs is None:
-            return False 
+            return False
         assert isinstance(rhs, self.__class__)
         return self.ballot_id != rhs.ballot_id and self.state == rhs.state and self.message == rhs.message  # noqa
 

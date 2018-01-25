@@ -7,6 +7,7 @@ from .util import StubTransport, blockchain_factory
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus
 
+
 def test_consensus_instantiation():
     blockchain = blockchain_factory(
         'n1',
@@ -30,4 +31,3 @@ def test_state_init():
 
 
 IsaacConsensus.transport = StubTransport()
-

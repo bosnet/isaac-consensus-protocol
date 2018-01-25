@@ -61,7 +61,6 @@ def test_state_lifecycle():
     assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.SIGN
     assert bc1.get_state() == IsaacState.SIGN
 
-
     bc2.receive_ballot(ballot_init_1)
     bc2.receive_ballot(ballot_init_2)
     bc2.receive_ballot(ballot_init_3)

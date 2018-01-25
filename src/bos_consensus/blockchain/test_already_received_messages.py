@@ -21,6 +21,7 @@ IsaacConsensus = get_fba_module('isaac').IsaacConsensus
 IsaacState = get_fba_module('isaac').IsaacState
 Transport = get_network_module('default_http').Transport
 
+
 class StubTransport(Transport):
     def __init__(self, *a, **kw):
         super(StubTransport, self).__init__(*a, **kw)
@@ -160,7 +161,7 @@ def test_same_message_after_init():
     # node state still remains the previous state
     assert blockchain1.consensus.state == IsaacState.SIGN
 
-    assert len(list(filter(lambda x: x['ballot'].ballot_id == ballot1.ballot_id, blockchain1.consensus.validators.values()))) < 1
+    assert len(list(filter(lambda x: x['ballot'].ballot_id == ballot1.ballot_id, blockchain1.consensus.validators.values()))) < 1  # noqa
 
     current_ballot_ids = set(map(lambda x: x['ballot'].ballot_id, blockchain1.consensus.validators.values()))
 
