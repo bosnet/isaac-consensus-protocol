@@ -7,6 +7,11 @@ from ..util import get_uuid
 from .message import Message
 
 class Ballot:
+    ballot_id = None
+    node_name = None
+    message = None
+    state = None
+
     def __init__(self, ballot_id, node_name, message, state=None):
         assert isinstance(message, Message)
         if state is not None:
