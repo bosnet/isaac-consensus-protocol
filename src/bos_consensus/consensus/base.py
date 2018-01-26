@@ -1,3 +1,4 @@
+from ..network import BaseTransport
 from ..util import LoggingMixin
 
 
@@ -5,6 +6,7 @@ class BaseConsensus(LoggingMixin):
     node = None
     messages = None
     message_ids = None
+    transport = None
 
     def __init__(self, node):
         super(BaseConsensus, self).__init__()
@@ -17,7 +19,11 @@ class BaseConsensus(LoggingMixin):
         raise NotImplementedError()
 
     def set_transport(self, transport):
-        raise NotImplementedError()
+        assert isinstance(transport, BaseTransport)
+
+        self.transport = transport
+
+        return
 
     @property
     def node_name(self):

@@ -18,7 +18,6 @@ class Fba(BaseConsensus):
     threshold = None
     validators = None
     validator_endpoints = None
-    transport = None
 
     def __init__(self, node, threshold, validator_endpoints):
         assert isinstance(node, Node)
@@ -58,13 +57,6 @@ class Fba(BaseConsensus):
     def set_state(self, state):
         self.state = state
         self.log.info('[%s] state to %s', self.node_name, self.state)
-        return
-
-    def set_transport(self, transport):
-        assert isinstance(transport, BaseTransport)
-
-        self.transport = transport
-
         return
 
     def add_to_validators(self, node):
