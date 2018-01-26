@@ -1,4 +1,6 @@
 from .isaac import (  # noqa
     IsaacState,
-    IsaacConsensus
+    IsaacConsensus,
 )
+
+Consensus = IsaacConsensus

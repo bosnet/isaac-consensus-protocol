@@ -1,5 +1,3 @@
-from essential_generators import DocumentGenerator
-import argparse
 import lorem
 
 from bos_consensus.util import (
@@ -20,7 +18,7 @@ logger.set_argparse(parser)
 parser.add_argument(
     '-m',
     '--message',
-    default=lorem.sentence(),
+    default=lorem.sentence().split()[0],
     help='Messages you want to send to the server',
     type=str,
 )

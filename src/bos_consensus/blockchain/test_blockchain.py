@@ -1,5 +1,5 @@
 from ..common.ballot import Ballot
-from ..network import BaseTransport
+from ..network import BaseTransport, Endpoint
 from ..blockchain import Blockchain
 from ..consensus import get_fba_module
 from ..common.node import node_factory
@@ -15,9 +15,15 @@ class StubTransport(BaseTransport):
         return
 
 
-def blockchain_factory(name, address, threshold, validator_endpoints):
-    node = node_factory(name, address)
-    consensus = IsaacConsensus(node, threshold, validator_endpoints)
+def blockchain_factory(name, address, threshold, validator_endpoint_uris):
+    node = node_factory(name, Endpoint.from_uri(address))
+    validators = list()
+    for uri in validator_endpoint_uris:
+        validators.append(
+            node_factory(uri, Endpoint.from_uri(uri)),
+        )
+
+    consensus = IsaacConsensus(node, threshold, validators)
     return Blockchain(
         consensus,
         StubTransport()
@@ -27,19 +33,19 @@ def blockchain_factory(name, address, threshold, validator_endpoints):
 def test_consensus_instantiation():
     blockchain = blockchain_factory(
         'n1',
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         ['http://localhost:5002', 'http://localhost:5003'])
 
     assert blockchain.node_name == 'n1'
-    assert blockchain.endpoint == 'http://localhost:5001?name=n1'
+    assert blockchain.endpoint.uri_full == 'http://localhost:5001?name=n1'
     assert blockchain.consensus.threshold == 100
 
 
 def test_state_init():
     blockchain = blockchain_factory(
         'n1',
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         ['http://localhost:5002', 'http://localhost:5003'])
 
@@ -56,21 +62,21 @@ def test_state_init_to_sign():
 
     bc1 = blockchain_factory(
         node_name_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_name_2, node_name_3]
     )
 
     bc2 = blockchain_factory(
         node_name_2,
-        ('localhost', 5002),
+        'http://localhost:5002',
         100,
         [node_name_1, node_name_3]
     )
 
     bc3 = blockchain_factory(
         node_name_3,
-        ('localhost', 5003),
+        'http://localhost:5003',
         100,
         [node_name_1, node_name_2]
     )
@@ -98,21 +104,21 @@ def test_state_init_to_all_confirm_sequence():
 
     bc1 = blockchain_factory(
         node_name_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_name_2, node_name_3],
     )
 
     bc2 = blockchain_factory(
         node_name_2,
-        ('localhost', 5002),
+        'http://localhost:5002',
         100,
         [node_name_1, node_name_3],
     )
 
     bc3 = blockchain_factory(
         node_name_3,
-        ('localhost', 5003),
+        'http://localhost:5003',
         100,
         [node_name_1, node_name_2],
     )
@@ -199,28 +205,28 @@ def test_state_jump_from_init():
 
     bc1 = blockchain_factory(
         node_name_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_name_2, node_name_3, node_name_4],
     )
 
     bc2 = blockchain_factory(
         node_name_2,
-        ('localhost', 5002),
+        'http://localhost:5002',
         100,
         [node_name_1, node_name_3, node_name_4],
     )
 
     bc3 = blockchain_factory(
         node_name_3,
-        ('localhost', 5003),
+        'http://localhost:5003',
         100,
         [node_name_1, node_name_2, node_name_4],
     )
 
     bc4 = blockchain_factory(
         node_name_4,
-        ('localhost', 5004),
+        'http://localhost:5004',
         100,
         [node_name_1, node_name_2, node_name_3],
     )
@@ -268,28 +274,28 @@ def test_next_message():
 
     bc1 = blockchain_factory(
         node_name_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_name_2, node_name_3, node_name_4],
     )
 
     bc2 = blockchain_factory(
         node_name_2,
-        ('localhost', 5002),
+        'http://localhost:5002',
         100,
         [node_name_1, node_name_3, node_name_4],
     )
 
     bc3 = blockchain_factory(
         node_name_3,
-        ('localhost', 5003),
+        'http://localhost:5003',
         100,
         [node_name_1, node_name_2, node_name_4],
     )
 
     bc4 = blockchain_factory(
         node_name_4,
-        ('localhost', 5004),
+        'http://localhost:5004',
         100,
         [node_name_1, node_name_2, node_name_3],
     )

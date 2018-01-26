@@ -1,3 +1,5 @@
+import urllib.parse
+
 from ..util import (
     get_module,
     LoggingMixin,
@@ -32,7 +34,7 @@ class BaseTransport(LoggingMixin):
         from ..blockchain.base import BaseBlockchain
         assert isinstance(blockchain, BaseBlockchain)
 
-        self.set_logging('network', node=blockchain.node_name)
+        self.set_logging('transport', node=blockchain.node_name)
 
         self.blockchain = blockchain
         self.message_received_callback = message_received_callback
@@ -74,3 +76,53 @@ class BaseServer(LoggingMixin):
         self.blockchain.consensus.transport.stop()
 
         return
+
+
+class Endpoint:
+    scheme = None
+    host = None
+    port = None
+    extras = None
+
+    @classmethod
+    def from_uri(cls, uri):
+        parsed = urllib.parse.urlparse(uri)
+
+        return cls(parsed.scheme, parsed.hostname, parsed.port, **urllib.parse.parse_qs(parsed.query))
+
+    def __init__(self, scheme, host, port, **extras):
+        assert type(host) in (str,)
+        assert type(port) in (int,)
+
+        self.scheme = scheme
+        self.host = host
+        self.port = port
+        self.extras = extras
+
+    @property
+    def uri_full(self):
+        extras = None
+        if self.extras:
+            extras = '?%s' % urllib.parse.urlencode(self.extras)
+
+        return '%s%s' % (self.uri, extras)
+
+    @property
+    def uri(self):
+        return '%(scheme)s://%(host)s:%(port)d' % self.__dict__
+
+    def __repr__(self):
+        return '<Endpoint: %s>' % self.uri_full
+
+    def __eq__(self, b):
+        assert isinstance(b, self.__class__)
+
+        return self.host == b.host and self.port == b.port
+
+    def update(self, **extras):
+        self.extras.update(extras)
+
+        return
+
+    def serialize(self):
+        return self.uri_full

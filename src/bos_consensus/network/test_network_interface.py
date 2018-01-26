@@ -1,8 +1,6 @@
-from contextlib import closing
 import json
 import pytest
 import requests
-import socket
 import threading
 import time
 import traceback
@@ -10,21 +8,15 @@ import urllib
 
 from ..common.ballot import Ballot
 from ..blockchain import Blockchain
-from ..network import get_network_module
-from ..consensus import get_fba_module
+from ..network import Endpoint, get_network_module
 from ..consensus.fba.isaac import IsaacConsensus
 from ..consensus.fba.isaac import IsaacState
 from ..common.message import Message
 from ..common.node import node_factory
+from ..util import get_free_port
 
 
-def find_free_port():
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
-
-
-PORT = find_free_port()
+PORT = get_free_port()
 NODE_NAME = 'n1'
 
 
@@ -48,12 +40,14 @@ class Server(threading.Thread):
         class TestTransport(network_module.Transport):
             http_server_class = TestBOSNetHTTPServer
 
-        node = node_factory(self.node_name, ('localhost', self.port))
-        consensus = IsaacConsensus(
-            node,
-            100,
-            ['localhost:5002', 'localhost:5003']
-        )
+        node = node_factory(self.node_name, Endpoint('http', 'localhost', self.port))
+
+        validators = list()
+        validators_endpoint_uris = ['http://localhost:5002', 'http://localhost:5003']
+        for uri in validators_endpoint_uris:
+            validators.append(node_factory(uri, Endpoint.from_uri(uri)))
+
+        consensus = IsaacConsensus(node, 100, validators)
 
         transport = TestTransport(bind=('localhost', self.port))
         blockchain = Blockchain(
@@ -121,6 +115,9 @@ def setup_server(request):
     server_thread.start()
 
     def teardown():
+        if server_thread is None:
+            return
+
         server_thread.server.stop()
 
         return
