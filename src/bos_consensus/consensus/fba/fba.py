@@ -4,7 +4,6 @@ import math
 
 
 from ...common.ballot import Ballot
-from ...network import BaseTransport
 from ...consensus.base import BaseConsensus
 from ...common.node import Node
 
