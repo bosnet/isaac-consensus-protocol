@@ -1,6 +1,8 @@
 import argparse
+from calendar import timegm
 from collections import namedtuple
 from contextlib import closing
+import datetime
 import importlib
 import logging
 import os
@@ -106,13 +108,17 @@ class LogStreamHandler(logging.StreamHandler):
         super(LogStreamHandler, self).__init__(*a, **kw)
 
         self.logger = logger
-        self.json_formatter = JsonFormatter()
+        self.json_formatter = JsonFormatter(json_indent=2)
+        self.json_formatter_output = JsonFormatter()
         self.stream_metric = None
 
     def emit(self, record):
+        formatted = None
+        formatted_output = None
         if record.levelno == LOG_LEVEL_METRIC:
             record.msg['created'] = record.created
             formatted = self.json_formatter.format(record)
+            formatted_output = self.json_formatter_output.format(record)
             level_name = 'METRI'
         else:
             formatted = self.format(record)
@@ -126,7 +132,7 @@ class LogStreamHandler(logging.StreamHandler):
         if self.in_terminal and self.logger.is_show_line:
             line = self.terminator + '%s' % ('─' * int(TERMINAL_COLUMNS))
 
-        msg = '%s%0.8f - %-5s - %s%s' % (prefix, record.created, level_name, formatted, line)
+        msg = '%s%0.8f - %s - %-5s - %s%s' % (prefix, record.created, record.name, level_name, formatted, line)
 
         if self.in_terminal and self.logger.is_show_color:
             color = self.logger.colors.get(record.levelno)
@@ -146,7 +152,7 @@ class LogStreamHandler(logging.StreamHandler):
             if self.stream_metric is None:
                 self.stream_metric = open(self.logger.output_metric, 'a')
 
-            self.stream_metric.write(formatted)
+            self.stream_metric.write(formatted_output)
             self.stream_metric.write(self.terminator)
             self.stream_metric.flush()
 
@@ -307,10 +313,15 @@ def get_module(name, package=None):
 
 
 def convert_dict_to_namedtuple(d):
+    if type(d) not in (dict,):
+        return d
+
     n = dict()
     for k, v in d.items():
         if type(v) in (dict,):
             n[k] = convert_dict_to_namedtuple(v)
+        elif type(v) in (list, tuple):
+            n[k] = list(map(convert_dict_to_namedtuple, v))
         else:
             n[k] = v
 
@@ -318,6 +329,9 @@ def convert_dict_to_namedtuple(d):
 
 
 def convert_namedtuple_to_dict(v):
+    if not hasattr(v, '_asdict'):
+        return v
+
     n = dict()
     for k, v in v._asdict().items():
         if v.__class__.__name__ in ('BOSDict',):
@@ -332,3 +346,11 @@ def get_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(('', 0))
         return s.getsockname()[1]
+
+
+def utcnow():
+    return datetime.datetime.now().utcnow()
+
+
+def datetime_to_timestamp(d):
+    return timegm(d.utctimetuple())

@@ -54,6 +54,8 @@ class IsaacConsensus(Fba):
                 func = getattr(self, '_handle_%s' % self.state.name.lower())
                 func(ballot)
 
+        return
+
     def _new_ballot(self, ballot):
         if self.node_name not in self.validators or not self.validators[self.node_name]:
             return True

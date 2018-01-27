@@ -1,13 +1,12 @@
 ---
 common:
-    consensus: isaac
+    # consensus: isaac
     network: default_http
-    threshold: 70
+    threshold: 60
 
 nodes:
     n0:
         quorum:
-            threshold: 61
             validators:
                 - n1
                 - n2
@@ -16,11 +15,13 @@ nodes:
                 - n5
                 - n6
     n1:
+        port: 54320
         quorum:
             validators:
                 - n0
                 - n2
                 - n3
+                - n7
     n2:
         quorum:
             validators:
@@ -58,6 +59,7 @@ nodes:
     n7:
         quorum:
             validators:
+                - n1
                 - n2
                 - n5
                 - n6
@@ -67,9 +69,9 @@ faulties:
         - case:  # multiple cases can be set
             kind: NoVoting  # Check [`FaultyNodeKind`](https://github.com/owlchain/bosnet-prototype-fba/blob/master/src/bos_consensus/common/node.py#L42)
             frequency:
-                per_consensus: 0.3  # means, this node will be faulty node 3 times of 10 consensus.
+                per_consensus: 1.0  # means, this node will be faulty node in every time
     n7:
         - case:
             kind: NoVoting
             frequency:
-                per_consensus: 0.4
+                per_consensus: 1.0
