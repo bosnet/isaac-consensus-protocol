@@ -28,14 +28,28 @@ $ python setup.py develop
 
 ```
 $ run-blockchain.py -h
-usage: run-blockchain.py [-h] [-debug] conf
+usage: run-blockchain.py [-h] [-verbose]
+                         [-log-level {critical,fatal,error,warn,warning,info,debug}]
+                         [-log-output LOG_OUTPUT]
+                         [-log-output-metric LOG_OUTPUT_METRIC]
+                         [-log-show-line] [-log-no-color]
+                         conf
 
 positional arguments:
-  conf        ini config file
+  conf                  ini config file for server node
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -debug
+  -h, --help            show this help message and exit
+  -verbose              verbose log (default: False)
+  -log-level {critical,fatal,error,warn,warning,info,debug}
+                        set log level (default: debug)
+  -log-output LOG_OUTPUT
+                        set log output file (default: None)
+  -log-output-metric LOG_OUTPUT_METRIC
+                        set metric output file (default: None)
+  -log-show-line        show seperate lines in log (default: False)
+  -log-no-color         disable colorized log message by level (default:
+                        False)
 ```
 
 ### Running Node Server
@@ -66,19 +80,23 @@ usage: run-client.py [-h] [-verbose]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -verbose              verbose log
+  -verbose              verbose log (default: False)
   -log-level {critical,fatal,error,warn,warning,info,debug}
-                        set log level
+                        set log level (default: debug)
   -log-output LOG_OUTPUT
-                        set log output file
+                        set log output file (default: None)
   -log-output-metric LOG_OUTPUT_METRIC
-                        set metric output file
-  -log-show-line        show seperate lines in log
-  -log-no-color         disable colorized log message by level
+                        set metric output file (default: None)
+  -log-show-line        show seperate lines in log (default: False)
+  -log-no-color         disable colorized log message by level (default:
+                        False)
   -m MESSAGE, --message MESSAGE
-                        Messages you want to send to the server
-  -i IP, --ip IP        Server IP you want to send the message to
-  -p PORT, --port PORT  Server port you want to send the message to
+                        Messages you want to send to the server (default:
+                        Quaerat)
+  -i IP, --ip IP        Server IP you want to send the message to (default:
+                        localhost)
+  -p PORT, --port PORT  Server port you want to send the message to (default:
+                        5001)
 ```
 
 After checking node state in cmd line, then run client like this.
