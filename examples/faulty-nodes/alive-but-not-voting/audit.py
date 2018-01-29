@@ -27,7 +27,7 @@ class NoVotingAuditor(threading.Thread):
 
         self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.blockchain.consensus.node.name)
 
-    def _wait_for_connecgting_validators(self):
+    def _wait_for_connecting_validators(self):
         if not self.blockchain.consensus.all_validators_connected():
             return False
 
@@ -44,11 +44,11 @@ class NoVotingAuditor(threading.Thread):
         1. if ready, check received ballots
         1. if node(`node_state`) is not reached to the final state, ALLCONFIRM, keep watching
         1. if reached, collect the node to send ballot, which has the same `ballot_id`
-        1. remmeber the `checkpoint`
+        1. remember the `checkpoint`
         1. print log metric
         '''
         self.log.debug('waiting for connecting validators')
-        while not self._wait_for_connecgting_validators():
+        while not self._wait_for_connecting_validators():
             time.sleep(2)
 
         self.log.debug('validators connected')
@@ -60,28 +60,28 @@ class NoVotingAuditor(threading.Thread):
                 continue
 
             # find the latest final state, `ALLCONFIRM`
-            last_allcofirm = None
+            last_allconfirm = None
             for index in range(len(histories) - 1, -1, -1):
                 history = histories[index]
                 if history['node_state'] not in (CONSENSUS_MODULE.IsaacState.ALLCONFIRM,):
                     continue
 
-                last_allcofirm = index
+                last_allconfirm = index
                 break
 
-            if last_allcofirm is None:
+            if last_allconfirm is None:
                 continue
 
-            last_allcofirm_history = histories[last_allcofirm]
+            last_allconfirm_history = histories[last_allconfirm]
             now = datetime_to_timestamp(utcnow())
-            if now - last_allcofirm_history['received'] < AUDITING_TIMEOUT:
+            if now - last_allconfirm_history['received'] < AUDITING_TIMEOUT:
                 continue
 
             prev_checkpoint = self.checkpoint
             self.checkpoint = len(self.blockchain.voting_histories)
 
             voted_nodes = set()
-            for i in filter(lambda x: x['ballot_id'] == last_allcofirm_history['ballot_id'], histories):
+            for i in filter(lambda x: x['ballot_id'] == last_allconfirm_history['ballot_id'], histories):
                 if i['node'] in voted_nodes:
                     continue
 
