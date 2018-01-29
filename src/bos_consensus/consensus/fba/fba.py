@@ -3,7 +3,6 @@ import math
 
 
 from ...common.ballot import Ballot
-from ...network import BaseTransport
 from ...consensus.base import BaseConsensus
 from ...common.node import Node
 
@@ -57,13 +56,6 @@ class Fba(BaseConsensus):
     def set_state(self, state):
         self.state = state
         self.log.info('[%s] state to %s', self.node_name, self.state)
-        return
-
-    def set_transport(self, transport):
-        assert isinstance(transport, BaseTransport)
-
-        self.transport = transport
-
         return
 
     def add_to_validators(self, node):
