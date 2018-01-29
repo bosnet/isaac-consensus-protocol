@@ -22,7 +22,7 @@ from common import SometimesNoVotingBlockchain
 from audit import NoVotingAuditor
 
 
-AUDITING_TIMEOUT = 5  # 3 seconds
+AUDITING_TIMEOUT = 5  # 5 seconds
 
 
 log = None
