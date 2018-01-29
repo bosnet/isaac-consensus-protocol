@@ -142,7 +142,6 @@ if __name__ == '__main__':
         NodeRunner(blockchain).start()
         NoVotingAuditor(blockchain).start()
 
-    n = 0
     prev = None
     while True:
         time.sleep(1)
@@ -163,5 +162,3 @@ if __name__ == '__main__':
                     validators=list(map(lambda x: x.name, node_design.quorum.validators)),
                 ),
             )
-
-        n += 1
