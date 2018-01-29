@@ -2,7 +2,7 @@ import enum
 import math
 
 
-from ...common.ballot import Ballot
+from ...common.ballot import Ballot, BallotVotingResult
 from ...consensus.base import BaseConsensus
 from ...common.node import Node
 
@@ -99,7 +99,7 @@ class Fba(BaseConsensus):
 
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
 
-        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state)
+        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
         self.store(new)
 
         for name, validator in self.validators.items():
