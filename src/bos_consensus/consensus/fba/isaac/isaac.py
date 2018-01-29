@@ -50,37 +50,27 @@ class IsaacConsensus(Fba):
         )
 
         if not from_outside:
-            if self.node.check_faulty():
-                msg = '[%s] does not handle ballot from %s because of bad behavior'
-                self.log.debug(msg % (self.node.name, ballot.node_name))
-            else:
-                func = getattr(self, '_handle_%s' % self.state.name.lower())
-                func(ballot)
+            func = getattr(self, '_handle_%s' % self.state.name.lower())
+            func(ballot)
 
         return
 
-    def _new_ballot(self, ballot):
-        if self.node_name not in self.validators or not self.validators[self.node_name]:
-            return True
-        old_ballot = self.validators[self.node_name]['ballot']
-        return not old_ballot or old_ballot.message.data != ballot.message.data  # noqa
-
     def _handle_init(self, ballot):
-        if self._new_ballot(ballot):  # noqa
-            self.broadcast(ballot)
+        if self._is_new_ballot(ballot):  # noqa
+            self.broadcast(self._get_new_ballot(ballot))
 
         self.store(ballot)
 
         if self._check_threshold():
             self.set_state(IsaacState.SIGN)
-            self.broadcast(ballot)
+            self.broadcast(self._get_new_ballot(ballot))
 
     def _handle_sign(self, ballot):
         self.store(ballot)
 
         if self._check_threshold():
             self.set_state(IsaacState.ACCEPT)
-            self.broadcast(ballot)
+            self.broadcast(self._get_new_ballot(ballot))
 
     def _handle_accept(self, ballot):
         self.store(ballot)
@@ -88,12 +78,12 @@ class IsaacConsensus(Fba):
         if self._check_threshold():
             self.set_state(IsaacState.ALLCONFIRM)  # [TODO]set_next_state
             self.save_message(ballot.message)
-            self.broadcast(ballot)
+            self.broadcast(self._get_new_ballot(ballot))
 
         return
 
     def _handle_allconfirm(self, ballot):
-        if self._new_ballot(ballot):
+        if self._is_new_ballot(ballot):
             self.init()
             self.handle_ballot(ballot)
 

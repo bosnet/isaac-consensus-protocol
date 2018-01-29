@@ -94,17 +94,23 @@ class Fba(BaseConsensus):
     def handle_ballot(self, ballot):
         raise NotImplementedError()
 
+    def _is_new_ballot(self, ballot):
+        if self.node_name not in self.validators or not self.validators[self.node_name]:
+            return True
+        old_ballot = self.validators[self.node_name]['ballot']
+        return not old_ballot or old_ballot.message.data != ballot.message.data  # noqa
+
+    def _get_new_ballot(self, ballot):
+        return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state)
+
     def broadcast(self, ballot):
         assert isinstance(ballot, Ballot)
 
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
-
-        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state)
-        self.store(new)
-
+        self.store(ballot)
         for name, validator in self.validators.items():
             if name is not self.node_name:
-                self.transport.send(validator['node'].endpoint, new.serialize(to_string=False))
+                self.transport.send(validator['node'].endpoint, ballot.serialize(to_string=False))
 
         return
 
