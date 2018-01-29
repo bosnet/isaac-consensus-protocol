@@ -50,6 +50,9 @@ class Fba(BaseConsensus):
     def get_init_state(self):
         raise NotImplementedError()
 
+    def get_last_state(self):
+        raise NotImplementedError()
+
     def __repr__(self):
         return '<Quorum: threshold=%(threshold)s validators=%(validators)s>' % self.__dict__
 

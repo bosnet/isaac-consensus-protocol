@@ -30,7 +30,7 @@ class SometimesNoVotingBlockchain(Blockchain):
 class SometimesNoVotingMiddleware(BaseMiddleware):
     def received_ballot(self, ballot):
         consensus = self.blockchain.consensus
-        if consensus.state in (consensus_module.IsaacState.INIT,):
+        if consensus.state in (consensus.get_init_state(),):
             if ballot.ballot_id not in self.blockchain.no_voting_ballot_ids and self.blockchain.faulty_frequency > 0.0:
                 if random.choices(range(10))[0] / 10 < self.blockchain.faulty_frequency:
                     self.log.info('[%s] no voting for ballot, %s in %s', consensus.node.name, ballot, consensus.state)

@@ -63,7 +63,7 @@ class NoVotingAuditor(threading.Thread):
             last_allconfirm = None
             for index in range(len(histories) - 1, -1, -1):
                 history = histories[index]
-                if history['node_state'] not in (CONSENSUS_MODULE.IsaacState.ALLCONFIRM,):
+                if history['node_state'] not in (self.blockchain.consensus.get_last_state(),):
                     continue
 
                 last_allconfirm = index

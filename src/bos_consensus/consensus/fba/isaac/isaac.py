@@ -16,6 +16,9 @@ class IsaacConsensus(Fba):
     def get_init_state(self):
         return IsaacState.INIT
 
+    def get_last_state(self):
+        return IsaacState.ALLCONFIRM
+
     def handle_ballot(self, ballot):
         # filtering rules, for same `ballot_id` or `message_id`
         #  1. if `message_id` is already saved in `self.message_ids`, it will be passed
