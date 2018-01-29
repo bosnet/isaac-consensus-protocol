@@ -1,4 +1,4 @@
-from .node import node_factory
+from . import node_factory
 
 
 def test_node():

@@ -15,7 +15,7 @@ from ..consensus import get_fba_module
 from ..consensus.fba.isaac import IsaacConsensus
 from ..consensus.fba.isaac import IsaacState
 from ..common.message import Message
-from ..common.node import node_factory
+from ..common import node_factory
 
 
 def find_free_port():

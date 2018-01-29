@@ -1,5 +1,5 @@
 from ..blockchain.base import BaseBlockchain
-from ..common.node import node_factory
+from ..common import node_factory
 
 
 def test_base():

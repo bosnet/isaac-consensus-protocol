@@ -162,6 +162,25 @@
             "WaitOnNormalExit",
             "RedirectOutput"
         ]
+    },
+    {
+        "name": "test_faulty_node",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/examples/star_cluster_scripts/test_faulty_node.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
     }
     ]
 }

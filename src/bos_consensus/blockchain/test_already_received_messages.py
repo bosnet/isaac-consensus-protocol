@@ -4,7 +4,7 @@ from bos_consensus.common.ballot import Ballot
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.common.message import Message
 from bos_consensus.network import get_network_module
-from bos_consensus.common.node import node_factory
+from bos_consensus.common import node_factory
 from .blockchain import Blockchain
 
 

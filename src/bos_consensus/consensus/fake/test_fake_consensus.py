@@ -1,4 +1,4 @@
-from bos_consensus.common.node import node_factory
+from bos_consensus.common import node_factory
 from .fake import FakeConsensus
 
 
