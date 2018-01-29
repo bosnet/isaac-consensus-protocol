@@ -10,7 +10,7 @@ from bos_consensus.util import (
     get_local_ipaddress,
     logger,
 )
-from bos_consensus.common.node import node_factory
+from bos_consensus.common import node_factory
 from star_cluster import (
     get_nodes,
     NodeInfo
@@ -36,6 +36,7 @@ def run_node(node_info):
     node = node_factory(
         node_info.name,
         (get_local_ipaddress(), node_info.port),
+        node_info.faulty_kind,
         node_info.faulty_percent
     )
     consensus_module = get_fba_module('isaac')

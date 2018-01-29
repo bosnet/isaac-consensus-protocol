@@ -4,7 +4,7 @@
 
 ```
 $ cd examples/star_cluster_scripts
-$ python run-star-cluster.py -i star_cluster_conf.json -debug
+$ python run-star-cluster.py -i star_cluster_conf.json -log-level debug
 ```
 
 ## Run Quorum Nodes Ini Files Generator Example

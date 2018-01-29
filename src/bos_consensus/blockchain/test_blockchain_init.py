@@ -11,7 +11,8 @@ def test_consensus_instantiation():
         'n1',
         'http://localhost:5001',
         100,
-        ['http://localhost:5002', 'http://localhost:5003'])
+        ['http://localhost:5002', 'http://localhost:5003'],
+    )
 
     assert blockchain.node_name == 'n1'
     assert blockchain.endpoint.uri_full == 'http://localhost:5001?name=n1'

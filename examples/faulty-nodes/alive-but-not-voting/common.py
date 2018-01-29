@@ -20,7 +20,7 @@ class SometimesNoVotingBlockchain(Blockchain):
 
         self.middlewares.insert(0, SometimesNoVotingMiddleware)
 
-        assert type(faulty_frequency) in (float,)
+        assert type(faulty_frequency) in (int,)
         assert faulty_frequency >= 0 and faulty_frequency <= 100
 
         self.faulty_frequency = faulty_frequency

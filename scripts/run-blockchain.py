@@ -6,7 +6,8 @@ import uuid
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.network import get_network_module, BaseServer
-from bos_consensus.common.node import node_factory
+from bos_consensus.common import node_factory
+
 from bos_consensus.util import (
     get_local_ipaddress,
     logger,

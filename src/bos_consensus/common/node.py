@@ -1,6 +1,3 @@
-import enum
-from random import randint
-
 from ..network import Endpoint
 
 
@@ -34,39 +31,12 @@ class Node:
         return False
 
 
-class FaultyNodeKind(enum.Enum):
-    # failed to connect to the node or failed to get the proper response from
-    # the node.
-    NodeUnreachable = enum.auto()
-
-    # in single phase of consensus, the node does not send voting messages.
-    NoVoting = enum.auto()
-
-    # the node sends the duplicated, but same messages.
-    DuplicatedMessageSent = enum.auto()
-
-    # in single phase of consensus, the node sends different voting with the
-    # other nodes on the same message.
-    DivergentVoting = enum.auto()
-
-    # the node broadcasts some state of ballot, but he sends again with the
-    # previous state of ballot.
-    StateRegression = enum.auto()
-
-
-class FaultyNode(Node):
-    def __init__(self, name, endpoint, faulty_percent):
-        super(FaultyNode, self).__init__(name, endpoint)
-        self.faulty_percent = faulty_percent
-
-    def check_faulty(self):
-        return self.faulty_percent >= randint(1, 100)
-
-
-def node_factory(name, endpoint, faulty_percent=0):
+def node_factory(name, endpoint, faulty_percent=0, faulty_kind=None):
     assert isinstance(endpoint, Endpoint)
+
+    from .faulty_node import FaultyNode
 
     if faulty_percent == 0:
         return Node(name, endpoint)
     else:
-        return FaultyNode(name, endpoint, faulty_percent)
+        return FaultyNode(name, endpoint, faulty_percent, faulty_kind)
