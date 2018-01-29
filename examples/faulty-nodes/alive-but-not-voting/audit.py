@@ -27,7 +27,7 @@ class NoVotingAuditor(threading.Thread):
 
         self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.blockchain.consensus.node.name)
 
-    def _wait_for_connecgting_validators(self):
+    def _wait_for_connecting_validators(self):
         if not self.blockchain.consensus.all_validators_connected():
             return False
 
@@ -44,11 +44,11 @@ class NoVotingAuditor(threading.Thread):
         1. if ready, check received ballots
         1. if node(`node_state`) is not reached to the final state, ALLCONFIRM, keep watching
         1. if reached, collect the node to send ballot, which has the same `ballot_id`
-        1. remmeber the `checkpoint`
+        1. remember the `checkpoint`
         1. print log metric
         '''
         self.log.debug('waiting for connecting validators')
-        while not self._wait_for_connecgting_validators():
+        while not self._wait_for_connecting_validators():
             time.sleep(2)
 
         self.log.debug('validators connected')
