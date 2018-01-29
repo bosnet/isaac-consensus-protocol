@@ -109,14 +109,14 @@ if __name__ == '__main__':
     for node_design in design.nodes:
         name = node_design.node.name
 
-        faulty_frequency = 0.0
+        faulty_frequency = 0
         faulty = getattr(design.faulties, name, None)
         if faulty is not None:
             for case in faulty:
                 if case.case.kind not in ('NoVoting',):
                     continue
 
-                faulty_frequency = float(case.case.frequency.per_consensus)
+                faulty_frequency = int(case.case.frequency.per_consensus)
 
         faulty_nodes[name] = faulty_frequency
 
@@ -132,7 +132,7 @@ if __name__ == '__main__':
                 node_design.node.endpoint.port,
             ),
         )
-        if faulty_frequency > 0.0:
+        if faulty_frequency > 0:
             blockchain = SometimesNoVotingBlockchain(faulty_frequency, consensus, transport)
         else:
             blockchain = Blockchain(consensus, transport)

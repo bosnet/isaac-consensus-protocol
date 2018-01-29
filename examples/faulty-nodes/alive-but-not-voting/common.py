@@ -21,7 +21,7 @@ class SometimesNoVotingBlockchain(Blockchain):
         self.middlewares.insert(0, SometimesNoVotingMiddleware)
 
         assert type(faulty_frequency) in (float,)
-        assert faulty_frequency >= 0 and faulty_frequency <= 1.0
+        assert faulty_frequency >= 0 and faulty_frequency <= 100
 
         self.faulty_frequency = faulty_frequency
         self.no_voting_ballot_ids = list()
@@ -31,8 +31,8 @@ class SometimesNoVotingMiddleware(BaseMiddleware):
     def received_ballot(self, ballot):
         consensus = self.blockchain.consensus
         if consensus.state in (consensus.get_init_state(),):
-            if ballot.ballot_id not in self.blockchain.no_voting_ballot_ids and self.blockchain.faulty_frequency > 0.0:
-                if random.choices(range(10))[0] / 10 < self.blockchain.faulty_frequency:
+            if ballot.ballot_id not in self.blockchain.no_voting_ballot_ids and self.blockchain.faulty_frequency > 0:
+                if self.blockchain.faulty_frequency == 100 or random.randint(0, 100) < self.blockchain.faulty_frequency:
                     self.log.info('[%s] no voting for ballot, %s in %s', consensus.node.name, ballot, consensus.state)
                     self.blockchain.no_voting_ballot_ids.append(ballot.ballot_id)
 
