@@ -4,3 +4,4 @@ lorem
 python-json-logger
 requests
 termcolor
+pyyaml
