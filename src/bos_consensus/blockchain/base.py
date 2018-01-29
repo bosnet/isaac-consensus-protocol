@@ -5,7 +5,6 @@ from ..util import LoggingMixin
 
 class BaseBlockchain(LoggingMixin):
     node = None
-    transport = None
 
     def __init__(self, node):
         assert isinstance(node, Node)
@@ -26,13 +25,6 @@ class BaseBlockchain(LoggingMixin):
     @property
     def endpoint(self):
         return self.node.endpoint
-
-    def set_transport(self, transport):
-        assert isinstance(transport, BaseTransport)
-
-        self.transport = transport
-
-        return
 
     def to_dict(self):
         return dict(
