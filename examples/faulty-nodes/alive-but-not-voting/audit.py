@@ -13,7 +13,7 @@ from bos_consensus.util import (
 
 CONSENSUS_MODULE = get_fba_module('isaac')
 
-AUDITING_TIMEOUT = 5  # 3 seconds
+AUDITING_TIMEOUT = 5  # 5 seconds
 
 
 class NoVotingAuditor(threading.Thread):
