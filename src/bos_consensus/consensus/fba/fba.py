@@ -2,7 +2,7 @@ import enum
 import math
 
 
-from ...common.ballot import Ballot
+from ...common.ballot import Ballot, BallotVotingResult
 from ...consensus.base import BaseConsensus
 from ...common.node import Node
 
@@ -101,7 +101,7 @@ class Fba(BaseConsensus):
         return not old_ballot or old_ballot.message.data != ballot.message.data  # noqa
 
     def _get_new_ballot(self, ballot):
-        return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state)
+        return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
 
     def broadcast(self, ballot):
         assert isinstance(ballot, Ballot)
