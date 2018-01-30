@@ -21,7 +21,7 @@ class DivergentVotingConsensus(IsaacConsensus):
         self.faulty_frequency = faulty_frequency
         self.faulty_ballot_ids = list()
 
-    def _make_self_ballot(self, ballot):
+    def make_self_ballot(self, ballot):
         if self.state in (self.get_init_state(),):
             if ballot.ballot_id not in self.faulty_ballot_ids and self.faulty_frequency > 0:
                 if self.faulty_frequency > random.randint(0, 100):
