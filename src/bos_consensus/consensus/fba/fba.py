@@ -100,7 +100,7 @@ class Fba(BaseConsensus):
         old_ballot = self.validators[self.node_name]['ballot']
         return not old_ballot or old_ballot.message.data != ballot.message.data  # noqa
 
-    def _get_new_ballot(self, ballot):
+    def _make_self_ballot(self, ballot):
         return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
 
     def broadcast(self, ballot):

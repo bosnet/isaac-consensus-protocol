@@ -4,7 +4,7 @@ import threading
 
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.consensus import get_fba_module
-from bos_consensus.network import get_network_module, BaseServer
+from bos_consensus.network import Endpoint, get_network_module, BaseServer
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
     get_local_ipaddress,
@@ -32,13 +32,10 @@ logger.set_argparse(parser)
 
 def run_node(node_info):
     assert isinstance(node_info, NodeInfo)
+    network_module = get_network_module('default_http')
 
-    node = node_factory(
-        node_info.name,
-        (get_local_ipaddress(), node_info.port),
-        node_info.faulty_kind,
-        node_info.faulty_percent
-    )
+    endpoint = Endpoint(network_module, get_local_ipaddress(), node_info.port, name=node_info.name)
+    node = node_factory(node_info.name, endpoint)
     consensus_module = get_fba_module('isaac')
     consensus = consensus_module.IsaacConsensus(
         node,

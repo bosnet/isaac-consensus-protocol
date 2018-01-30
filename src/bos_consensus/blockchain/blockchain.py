@@ -1,4 +1,4 @@
-from ..common.ballot import Ballot
+from ..common.ballot import Ballot, BallotVotingResult
 from ..common.message import Message
 from ..blockchain.base import BaseBlockchain
 from ..network import BaseTransport
@@ -44,7 +44,7 @@ class Blockchain(BaseBlockchain):
     def receive_message_from_client(self, message):
         assert isinstance(message, Message)
 
-        ballot = Ballot.new(self.node_name, message, self.consensus.state)
+        ballot = Ballot.new(self.node_name, message, self.consensus.state, BallotVotingResult.agree)  # noqa
         self.receive_ballot(ballot)
 
         return

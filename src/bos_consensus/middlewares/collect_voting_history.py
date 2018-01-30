@@ -13,6 +13,7 @@ class Middleware(BaseMiddleware):
             node=ballot.node_name,
             node_state=self.blockchain.get_state(),
             ballot_state=ballot.state,
+            result=ballot.result,
         ))
 
         return

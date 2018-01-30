@@ -56,21 +56,21 @@ class IsaacConsensus(Fba):
         return
 
     def _handle_init(self, ballot):
-        if self._is_new_ballot(ballot):  # noqa
-            self.broadcast(self._get_new_ballot(ballot))
+        if self._is_new_ballot(ballot):
+            self.broadcast(self._make_self_ballot(ballot))
 
         self.store(ballot)
 
         if self._check_threshold():
             self.set_state(IsaacState.SIGN)
-            self.broadcast(self._get_new_ballot(ballot))
+            self.broadcast(self._make_self_ballot(ballot))
 
     def _handle_sign(self, ballot):
         self.store(ballot)
 
         if self._check_threshold():
             self.set_state(IsaacState.ACCEPT)
-            self.broadcast(self._get_new_ballot(ballot))
+            self.broadcast(self._make_self_ballot(ballot))
 
     def _handle_accept(self, ballot):
         self.store(ballot)
@@ -78,7 +78,7 @@ class IsaacConsensus(Fba):
         if self._check_threshold():
             self.set_state(IsaacState.ALLCONFIRM)  # [TODO]set_next_state
             self.save_message(ballot.message)
-            self.broadcast(self._get_new_ballot(ballot))
+            self.broadcast(self._make_self_ballot(ballot))
 
         return
 

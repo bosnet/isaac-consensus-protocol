@@ -8,9 +8,6 @@ from bos_consensus.middlewares import (
 )
 
 
-consensus_module = get_fba_module('isaac')
-
-
 class SometimesNoVotingBlockchain(Blockchain):
     faulty_frequency = None
     no_voting_ballot_ids = None  # store the ballot to be skipped
