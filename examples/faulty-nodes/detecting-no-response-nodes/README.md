@@ -23,7 +23,7 @@ $ python run-case.py -log-level info alive-but-not-voting detecting-no-response-
 
 The `detecting-no-response-nodes/example.yml` indicates that 'n5' will be the (sometimes) dead node.
 
-```
+```yaml
 ...
 
 faulties:
