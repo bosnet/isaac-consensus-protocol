@@ -2,6 +2,7 @@ colorlog
 graphviz
 lorem
 python-json-logger
+pyyaml
 requests
 termcolor
 pyyaml

@@ -107,6 +107,7 @@ class Fba(BaseConsensus):
         assert isinstance(ballot, Ballot)
 
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
+
         self.store(ballot)
         for name, validator in self.validators.items():
             if name is not self.node_name:
