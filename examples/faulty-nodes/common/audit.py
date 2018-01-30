@@ -3,7 +3,6 @@ import sys  # noqa
 import threading
 import time
 
-from bos_consensus.consensus import get_fba_module
 from bos_consensus.util import (
     datetime_to_timestamp,
     logger,
@@ -11,28 +10,25 @@ from bos_consensus.util import (
 )
 
 
-CONSENSUS_MODULE = get_fba_module('isaac')
-
 AUDITING_TIMEOUT = 5  # 5 seconds
 
 
-class NoVotingAuditor(threading.Thread):
+class NoVotingAutidior(threading.Thread):
     checkpoint = None
 
     def __init__(self, blockchain):
-        super(NoVotingAuditor, self).__init__()
+        super(NoVotingAutidior, self).__init__()
 
         self.blockchain = blockchain
         self.checkpoint = 0
 
         self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.blockchain.consensus.node.name)
 
+        self.validator_names = set(map(lambda x: x.name, self.blockchain.consensus.validator_candidates))
+
     def _wait_for_connecting_validators(self):
         if not self.blockchain.consensus.all_validators_connected():
             return False
-
-        self.validator_names = set(map(lambda x: x['node'].name, self.blockchain.consensus.validators.values()))
-        self.validator_names.remove(self.blockchain.consensus.node.name)
 
         return True
 
@@ -47,11 +43,12 @@ class NoVotingAuditor(threading.Thread):
         1. remember the `checkpoint`
         1. print log metric
         '''
+
         self.log.debug('waiting for connecting validators')
         while not self._wait_for_connecting_validators():
             time.sleep(2)
 
-        self.log.debug('validators connected')
+        self.log.debug('started to audit; validators connected')
 
         while True:
             time.sleep(2)
@@ -93,5 +90,23 @@ class NoVotingAuditor(threading.Thread):
                 voted_nodes=list(voted_nodes),
                 no_voting_nodes=list(self.validator_names - voted_nodes),
             )
+
+        return
+
+
+AUDITORS = (
+    NoVotingAutidior,
+)
+
+
+class FaultyNodeAutidior:
+    def __init__(self, blockchain):
+        self.blockchain = blockchain
+
+        self.log = logger.get_logger('audit.faulty-node', node=self.blockchain.consensus.node.name)
+
+    def start(self):
+        for auditor in AUDITORS:
+            auditor(self.blockchain).start()
 
         return

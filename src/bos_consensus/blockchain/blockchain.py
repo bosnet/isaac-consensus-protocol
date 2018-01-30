@@ -2,7 +2,6 @@ from ..common.ballot import Ballot
 from ..common.message import Message
 from ..blockchain.base import BaseBlockchain
 from ..network import BaseTransport
-from ..network.default_http import Transport
 from ..middlewares import (
     load_middlewares,
     NoFurtherMiddlewares,
@@ -21,7 +20,11 @@ class Blockchain(BaseBlockchain):
         if transport:
             self.consensus.set_transport(transport)
         else:
-            self.consensus.set_transport(Transport(bind=('0.0.0.0', consensus.node.port)))
+            from ..network.default_http import Transport
+            self.consensus.set_transport(Transport(bind=(
+                '0.0.0.0',
+                consensus.node.endpoint.port,
+            )))
 
         self.middlewares = load_middlewares()
         self.voting_histories = list()

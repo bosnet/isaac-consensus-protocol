@@ -30,6 +30,7 @@ class Fba(BaseConsensus):
 
         self.threshold = threshold
         self.validator_candidates = validator_candidates
+        self.validator_node_names = tuple([node.name] + list(map(lambda x: x.name, self.validator_candidates)))
         self.validators = dict()
         self.init()
 
@@ -59,16 +60,35 @@ class Fba(BaseConsensus):
     def set_state(self, state):
         self.state = state
         self.log.info('[%s] state to %s', self.node_name, self.state)
+
         return
 
     def add_to_validators(self, node):
+        is_new = node.name not in self.validators
+
         self.validators[node.name] = {'node': node, 'ballot': None}
 
-    def from_outside(self, name):
-        return name not in self.validator_node_names()
+        return
+        if is_new:
+            self.log.debug('added to validators: is_new=%s node=%s', is_new, node)
+            self.log.metric(action='connected', target=node.name, validators=list(self.validators.keys()))
 
-    def validator_node_names(self):
-        return self.validators.keys()
+        return
+
+    def remove_from_validators(self, node):
+        if node.name not in self.validators:
+            return
+
+        del self.validators[node.name]
+
+        return
+        self.log.debug('removed from validators: %s', node)
+        self.log.metric(action='removed', target=node.name, validators=list(self.validators.keys()))
+
+        return
+
+    def from_outside(self, name):
+        return name not in self.validator_node_names
 
     def clear_validator_ballots(self):
         for key in self.validators.keys():

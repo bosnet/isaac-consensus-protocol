@@ -21,10 +21,13 @@ from bos_consensus.common.node import Node
 
 SCHEME = 'http'
 
+MAX_INITIAL_TRIES = 3
+
 
 class Ping(threading.Thread):
     blockchain = None
     event = None
+    initialized = None
 
     def __init__(self, blockchain):
         assert isinstance(blockchain, BaseBlockchain)
@@ -32,6 +35,8 @@ class Ping(threading.Thread):
         super(Ping, self).__init__()
 
         self.blockchain = blockchain
+        self.initialized = False
+
         self.event = threading.Event()
         self.event.set()
 
@@ -46,13 +51,24 @@ class Ping(threading.Thread):
 
         connected_nodes = list()
 
+        prev = set()
+        n = -1
         while self.event.is_set():
-            time.sleep(1)
+            n += 1
+            time.sleep(2)
 
-            if consensus.all_validators_connected():
-                self.log.debug(consensus.validators)
+            now = set(consensus.validators.keys())
+            if now != prev:
+                if consensus.all_validators_connected():
+                    self.log.debug('[%d] all nodes were connected: %s -> %s', n, prev, now)
+                else:
+                    self.log.debug('[%s] the set of connected validators was changed: %s -> %s', n, prev, now)
+
+            if not self.initialized and (n > MAX_INITIAL_TRIES or consensus.all_validators_connected()):
                 consensus.init()
-                break
+                self.initialized = True
+
+                self.log.debug('consensus was initialized')
 
             for node in consensus.validator_candidates:
                 if node in connected_nodes:
@@ -65,14 +81,18 @@ class Ping(threading.Thread):
                     # validation check
                     get_node_response = requests.get(urllib.parse.urljoin(node.endpoint.uri, '/get_node'))
                     get_node_response.raise_for_status()
+                except Exception as e:
+                    if node.name not in prev:
+                        self.log.error("[%d] failed to connect to %s: %s", n, node, e)
 
+                    consensus.remove_from_validators(node)
+                else:
                     consensus.add_to_validators(self.get_node(get_node_response))
 
-                except requests.exceptions.ConnectionError:
-                    self.log.warn("ConnectionError occurred during validator connection to '%s'!" % node)
-                except requests.exceptions.HTTPError:
-                    self.log.warn("HTTPError occurred during validator connection to '%s'!" % node)
-                    continue
+                    if node.name not in prev:
+                        self.log.debug("[%d] successfully connected to %s", n, node)
+
+            prev = now
 
         return True
 
@@ -181,14 +201,22 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
 
         super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
 
-    def do_GET(self):
-        self.log.debug('start request: %s', self.path)
-
+    def _parse_request(self):
         parsed = urllib.parse.urlparse(self.path)
-        func = None
         query = parsed.path[1:]
         if len(query) == 0:
             query = 'status'
+
+        return (query, parsed)
+
+    def do_GET(self):
+        self.log.debug('start request: %s', self.path)
+
+        query, parsed = self._parse_request()
+        if query is None:
+            self.log.debug('pushed request in queue: %s', self.path)
+            return self.response(404, 'unknown request')
+
         func = handler.HTTP_HANDLERS.get(query.split('/')[0], handler.not_found_handler)
         r = func(self, parsed)
 
