@@ -13,11 +13,11 @@ from bos_consensus.util import (
 AUDITING_TIMEOUT = 5  # 5 seconds
 
 
-class NoVotingAutidior(threading.Thread):
+class NoVotingAuditor(threading.Thread):
     checkpoint = None
 
     def __init__(self, blockchain):
-        super(NoVotingAutidior, self).__init__()
+        super(NoVotingAuditor, self).__init__()
 
         self.blockchain = blockchain
         self.checkpoint = 0
@@ -95,7 +95,7 @@ class NoVotingAutidior(threading.Thread):
 
 
 AUDITORS = (
-    NoVotingAutidior,
+    NoVotingAuditor,
 )
 
 
