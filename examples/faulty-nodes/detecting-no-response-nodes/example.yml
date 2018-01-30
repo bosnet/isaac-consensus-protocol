@@ -60,4 +60,4 @@ faulties:
         - case:
             kind: node_unreachable
             frequency: 10  # how often stop response for `/ping`
-            duration: 3  # when stopping respoinse, how long will sustain the no response state
+            duration: 3  # when stopping response, how long will sustain the no response state
