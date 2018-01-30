@@ -99,7 +99,7 @@ AUDITORS = (
 )
 
 
-class FaultyNodeAutidior:
+class FaultyNodeAuditor:
     def __init__(self, blockchain):
         self.blockchain = blockchain
 

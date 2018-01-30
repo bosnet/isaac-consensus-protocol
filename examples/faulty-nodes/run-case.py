@@ -19,7 +19,7 @@ from common import (
     load_design,
     NodeRunner,
 )
-from common.audit import FaultyNodeAutidior
+from common.audit import FaultyNodeAuditor
 
 
 CONSENSUS_MODULE = get_fba_module('isaac')
@@ -58,7 +58,7 @@ def run(options, design):
         blockchains.append(blockchain)
 
         NodeRunner(blockchain).start()
-        FaultyNodeAutidior(blockchain).start()
+        FaultyNodeAuditor(blockchain).start()
 
     return blockchains
 
