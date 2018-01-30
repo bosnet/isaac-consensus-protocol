@@ -50,7 +50,6 @@ class Ping(threading.Thread):
         consensus = self.blockchain.consensus
 
         connected_nodes = list()
-
         prev = set()
         n = -1
         while self.event.is_set():
