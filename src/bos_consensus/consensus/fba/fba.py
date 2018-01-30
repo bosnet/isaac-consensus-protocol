@@ -1,7 +1,6 @@
 import enum
 import math
 
-
 from ...common.ballot import Ballot, BallotVotingResult
 from ...consensus.base import BaseConsensus
 from ...common.node import Node

@@ -28,8 +28,9 @@ CONSENSUS_MODULE = get_fba_module('isaac')
 parser = ArgumentParserShowDefaults()
 logger.set_argparse(parser)
 parser.add_argument(
-    'case',
+    '-case',
     help='set the case name',
+    default=None,
     type=str,
 )
 
@@ -79,20 +80,17 @@ if __name__ == '__main__':
 
     log.debug('trying to run %d / %d (faulty nodes / all nodes)', len(design.faulties), len(design.nodes))
 
-    try:
-        os.chdir(pathlib.Path(options.case).absolute())
-        sys.path.insert(0, '.')
+    run_func = run
+    if options.case is not None:
+        try:
+            os.chdir(pathlib.Path(options.case).absolute())
+            sys.path.insert(0, '.')
 
-        run_func = getattr(get_module('main'), 'run', None)
-    except FileNotFoundError:
-        run_func = None
-
-    if run_func is None:
-        log.debug('failed to load case, %s', options.case)
-
-        run_func = run
-
-    log.debug('loaded case from %s', options.case)
+            run_func = getattr(get_module('main'), 'run', None)
+        except (FileNotFoundError, AttributeError):
+            log.debug('failed to load case, %s', options.case)
+        else:
+            log.debug('loaded case from %s', options.case)
 
     blockchains = run_func(options, design)
 

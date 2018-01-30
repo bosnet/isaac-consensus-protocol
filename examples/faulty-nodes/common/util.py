@@ -18,6 +18,7 @@ from .no_voting import NoVotingMiddleware
 from .node_unreachable import (
     NodeUnreachableTransport,
 )
+from .state_regression import StateRegressionTransport
 
 
 NETWORK_MODULE = get_network_module('default_http')
@@ -29,12 +30,20 @@ def load_design(filename):
     with open(filename) as f:
         design = convert_dict_to_namedtuple(yaml.load(f.read()))
 
+    defined_ports = list()
+    for name, config in design.nodes._asdict().items():
+        port = getattr(config, 'port', None)
+        if port is None:
+            continue
+
+        defined_ports.append(port)
+
     faulty_nodes = dict()
     nodes = dict()
     for name, config in design.nodes._asdict().items():
         port = getattr(config, 'port', None)
         if port is None:
-            port = get_free_port()
+            port = get_free_port(defined_ports)
 
         endpoint = Endpoint(NETWORK_MODULE.SCHEME, get_local_ipaddress(), port, name=name)
         node = node_factory(name, endpoint, 0)
@@ -92,21 +101,35 @@ class FaultyBlockchain(Blockchain):
     no_voting_ballot_ids = None  # store the ballot to be skipped
 
     def __init__(self, faulties, consensus, transport=None):
-        found_node_unreachable_faulty = False
+        found_node_unreachable_faulty = None
+        found_state_regression_faulty = None
         transport = None
         for faulty in faulties:
-            if faulty.kind not in (FaultyNodeKind.NodeUnreachable,):
+            if faulty.kind in (FaultyNodeKind.NodeUnreachable,):
+                found_node_unreachable_faulty = faulty
                 continue
 
+            if faulty.kind in (FaultyNodeKind.StateRegression,):
+                found_state_regression_faulty = faulty
+                continue
+
+        if found_node_unreachable_faulty is not None:
             transport = NodeUnreachableTransport(
-                faulty,
+                found_node_unreachable_faulty,
                 bind=(
                     consensus.node.endpoint.host,
                     consensus.node.endpoint.port,
                 ),
             )
-            found_node_unreachable_faulty = True
-            break
+
+        if found_state_regression_faulty is not None:
+            transport = StateRegressionTransport(
+                found_state_regression_faulty,
+                bind=(
+                    consensus.node.endpoint.host,
+                    consensus.node.endpoint.port,
+                ),
+            )
 
         super(FaultyBlockchain, self).__init__(consensus, transport)
 

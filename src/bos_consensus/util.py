@@ -344,10 +344,17 @@ def convert_namedtuple_to_dict(v):
     return n
 
 
-def get_free_port():
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
+def get_free_port(defined=None):
+    if defined is None:
+        defined = list()
+
+    port = None
+    while port is None or port in defined:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.bind(('', 0))
+            port = s.getsockname()[1]
+
+    return port
 
 
 def utcnow():
