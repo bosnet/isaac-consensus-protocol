@@ -1,5 +1,3 @@
-import pprint  # noqa
-import sys  # noqa
 import threading
 import time
 
