@@ -1,6 +1,9 @@
 import collections
 import configparser
 
+from bos_consensus.common.node import Node
+from bos_consensus.network import Endpoint
+
 
 NodeInfo = collections.namedtuple(
     'NodeInfo',
@@ -125,6 +128,6 @@ def set_validator_endpoint(nodes):
         assert isinstance(node_info, NodeInfo)
         validator_list = []
         for validator_name in node_info.validators:
-            endpoint = '%s:%d?name=%s' % (nodes[validator_name].ip, nodes[validator_name].port, validator_name)
-            validator_list.append(endpoint)
+            endpoint = Endpoint('http', nodes[validator_name].ip, nodes[validator_name].port)
+            validator_list.append(Node(validator_name, endpoint))
         nodes[name] = nodes[name]._replace(validators=validator_list)
