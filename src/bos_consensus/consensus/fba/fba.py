@@ -2,7 +2,7 @@ import enum
 import math
 
 
-from ...common.ballot import Ballot
+from ...common.ballot import Ballot, BallotVotingResult
 from ...consensus.base import BaseConsensus
 from ...common.node import Node
 
@@ -68,7 +68,6 @@ class Fba(BaseConsensus):
 
         self.validators[node.name] = {'node': node, 'ballot': None}
 
-        return
         if is_new:
             self.log.debug('added to validators: is_new=%s node=%s', is_new, node)
             self.log.metric(action='connected', target=node.name, validators=list(self.validators.keys()))
@@ -81,7 +80,6 @@ class Fba(BaseConsensus):
 
         del self.validators[node.name]
 
-        return
         self.log.debug('removed from validators: %s', node)
         self.log.metric(action='removed', target=node.name, validators=list(self.validators.keys()))
 
@@ -119,7 +117,7 @@ class Fba(BaseConsensus):
 
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
 
-        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state)
+        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
         self.store(new)
 
         for name, validator in self.validators.items():
