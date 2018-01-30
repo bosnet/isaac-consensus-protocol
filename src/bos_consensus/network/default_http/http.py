@@ -61,7 +61,7 @@ class Ping(threading.Thread):
                 if consensus.all_validators_connected():
                     self.log.debug('[%d] all nodes were connected: %s -> %s', n, prev, now)
                 else:
-                    self.log.debug('[%s] the set of connected validators was changed: %s -> %s', n, prev, now)
+                    self.log.debug('[%d] the set of connected validators was changed: %s -> %s', n, prev, now)
 
             if not self.initialized and (n > MAX_INITIAL_TRIES or consensus.all_validators_connected()):
                 consensus.init()
