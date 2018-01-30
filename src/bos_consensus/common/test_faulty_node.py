@@ -1,4 +1,5 @@
-from . import node_factory
+from ..network import Endpoint
+from .node import node_factory
 from .faulty_node import FaultyNodeKind
 
 
@@ -11,5 +12,5 @@ def test_get_faulty_kind():
 
 
 def test_instanciation():
-    faulty_node = node_factory('n1', ('localhost', 5001), 'no_voting', 10)
+    faulty_node = node_factory('n1', Endpoint.from_uri('http://localhost:5001'), 10, 'no_voting')
     assert str(faulty_node) == '<FaultyNode: name=n1 endpoint=http://localhost:5001?name=n1 faulty_kind=FaultyNodeKind.NoVoting faulty_percent=10]>'  # noqa

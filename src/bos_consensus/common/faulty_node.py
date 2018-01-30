@@ -46,7 +46,7 @@ class FaultyNode(Node):
     faulty_kind = None
     faulty_percent = 0
 
-    def __init__(self, name, address, faulty_kind_str, faulty_percent):
+    def __init__(self, name, address, faulty_percent, faulty_kind_str):
         super(FaultyNode, self).__init__(name, address)
         self.faulty_kind = FaultyNodeKind.get_faulty_kind(faulty_kind_str)
         self.faulty_percent = faulty_percent
@@ -55,4 +55,7 @@ class FaultyNode(Node):
         return self.faulty_percent >= randint(1, 100)
 
     def __repr__(self):
-        return ('<FaultyNode: name=%(name)s endpoint=%(endpoint)s faulty_kind=%(faulty_kind)s faulty_percent=%(faulty_percent)s]>' % self.__dict__)
+        d = self.__dict__.copy()
+        d['endpoint'] = self.endpoint.uri_full
+
+        return ('<FaultyNode: name=%(name)s endpoint=%(endpoint)s faulty_kind=%(faulty_kind)s faulty_percent=%(faulty_percent)s]>' % d)  # noqa

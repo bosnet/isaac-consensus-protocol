@@ -10,12 +10,16 @@ import urllib
 from bos_consensus.blockchain.base import BaseBlockchain
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from ..base import (
+    Endpoint,
     BaseServer,
     BaseTransport,
 )
 from . import handler
 from ...util import logger
 from bos_consensus.common.node import Node
+
+
+SCHEME = 'http'
 
 
 class Ping(threading.Thread):
@@ -35,38 +39,39 @@ class Ping(threading.Thread):
 
     def get_node(self, response):
         data = json.loads(response.text)
-        return Node(data['name'], data['endpoint'])
+        return Node(data['name'], Endpoint.from_uri(data['endpoint']))
 
     def run(self):
         consensus = self.blockchain.consensus
-        connection_check = {endpoint: False for endpoint in consensus.validator_endpoints}
+
+        connected_nodes = list()
 
         while self.event.is_set():
             time.sleep(1)
 
             if consensus.all_validators_connected():
-                self.log.info(consensus.validators)
+                self.log.debug(consensus.validators)
                 consensus.init()
                 break
 
-            for addr, connected in connection_check.items():
-                if connected:
+            for node in consensus.validator_candidates:
+                if node in connected_nodes:
                     continue
 
                 try:
-                    ping_response = requests.get(urllib.parse.urljoin(addr, '/ping'))
+                    ping_response = requests.get(urllib.parse.urljoin(node.endpoint.uri, '/ping'))
                     ping_response.raise_for_status()
 
                     # validation check
-                    get_node_response = requests.get(urllib.parse.urljoin(addr, '/get_node'))
+                    get_node_response = requests.get(urllib.parse.urljoin(node.endpoint.uri, '/get_node'))
                     get_node_response.raise_for_status()
 
                     consensus.add_to_validators(self.get_node(get_node_response))
 
                 except requests.exceptions.ConnectionError:
-                    self.log.warn("ConnectionError occurred during validator connection to '%s'!" % addr)
+                    self.log.warn("ConnectionError occurred during validator connection to '%s'!" % node)
                 except requests.exceptions.HTTPError:
-                    self.log.warn("HTTPError occurred during validator connection to '%s'!" % addr)
+                    self.log.warn("HTTPError occurred during validator connection to '%s'!" % node)
                     continue
 
         return True
@@ -172,12 +177,13 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
 
     def __init__(self, node_name, *a, **kw):
         self.node_name = node_name
-        self.log = logger.get_logger('network', node=self.node_name)
+        self.log = logger.get_logger('http', node=self.node_name)
 
         super(BOSNetHTTPServerRequestHandler, self).__init__(*a, **kw)
 
     def do_GET(self):
-        self.log.debug('> start request: %s', self.path)
+        self.log.debug('start request: %s', self.path)
+
         parsed = urllib.parse.urlparse(self.path)
         func = None
         query = parsed.path[1:]
@@ -185,7 +191,8 @@ class BOSNetHTTPServerRequestHandler(BaseHTTPRequestHandler):
             query = 'status'
         func = handler.HTTP_HANDLERS.get(query.split('/')[0], handler.not_found_handler)
         r = func(self, parsed)
-        self.log.debug('< pushed request in queue: %s', self.path)
+
+        self.log.debug('pushed request in queue: %s', self.path)
         return r
 
     do_POST = do_GET
@@ -251,16 +258,16 @@ class Transport(BaseTransport):
 
         return
 
-    def send(self, addr, data):
+    def send(self, endpoint, data):
         node_name = self.blockchain.node_name
-        self.log.debug('[%s] begin send_to %s' % (node_name, addr))
+        self.log.debug('[%s] begin send_to %s' % (node_name, endpoint))
         post_data = json.dumps(data)
         try:
-            response = requests.post(urllib.parse.urljoin(addr, '/send_ballot'), data=post_data)
+            response = requests.post(urllib.parse.urljoin(endpoint.uri, '/send_ballot'), data=post_data)
             if response.status_code == 200:
-                self.log.debug('[%s] sent to %s' % (node_name, addr))
+                self.log.debug('[%s] sent to %s' % (node_name, endpoint))
         except requests.exceptions.ConnectionError:
-            self.log.error('[%s] Connection to %s Refused' % (node_name, addr))
+            self.log.error('[%s] Connection to %s Refused' % (node_name, endpoint))
 
         return
 

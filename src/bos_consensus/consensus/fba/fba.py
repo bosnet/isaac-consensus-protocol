@@ -2,7 +2,7 @@ import enum
 import math
 
 
-from ...common.ballot import Ballot
+from ...common.ballot import Ballot, BallotVotingResult
 from ...consensus.base import BaseConsensus
 from ...common.node import Node
 
@@ -15,20 +15,21 @@ class Fba(BaseConsensus):
     state = None
     threshold = None
     validators = None
-    validator_endpoints = None
+    validator_candidates = None
+    transport = None
 
-    def __init__(self, node, threshold, validator_endpoints):
+    def __init__(self, node, threshold, validator_candidates):
         assert isinstance(node, Node)
         super(Fba, self).__init__(node)
         assert type(threshold) in (float, int)
         assert threshold <= 100 and threshold > 0  # threshold must be percentile
-        assert isinstance(validator_endpoints, list)
+        assert isinstance(validator_candidates, list)
         assert len(
-            list(filter(lambda x: not isinstance(x, str), validator_endpoints))
+            list(filter(lambda x: not isinstance(x, Node), validator_candidates))
         ) < 1
 
         self.threshold = threshold
-        self.validator_endpoints = validator_endpoints
+        self.validator_candidates = validator_candidates
         self.validators = dict()
         self.init()
 
@@ -49,6 +50,9 @@ class Fba(BaseConsensus):
     def get_init_state(self):
         raise NotImplementedError()
 
+    def get_last_state(self):
+        raise NotImplementedError()
+
     def __repr__(self):
         return '<Quorum: threshold=%(threshold)s validators=%(validators)s>' % self.__dict__
 
@@ -58,7 +62,7 @@ class Fba(BaseConsensus):
         return
 
     def add_to_validators(self, node):
-        self.validators[node.name] = {'endpoint': node.endpoint, 'ballot': None}
+        self.validators[node.name] = {'node': node, 'ballot': None}
 
     def from_outside(self, name):
         return name not in self.validator_node_names()
@@ -76,16 +80,16 @@ class Fba(BaseConsensus):
         '''
         the required minimum quorum will be round *up*
         '''
-        return math.ceil((len(self.validator_endpoints) + 1) * (self.threshold / 100))
+        return math.ceil((len(self.validator_candidates) + 1) * (self.threshold / 100))
 
     def to_dict(self, simple=True):
         return dict(
-            validator_endpoints=self.validator_endpoints,
+            validator_candidates=list(map(lambda x: x.to_dict(), self.validator_candidates)),
             threshold=self.threshold,
         )
 
     def all_validators_connected(self):
-        return len(self.validator_endpoints) + 1 == len(self.validators)
+        return len(self.validator_candidates) + 1 == len(self.validators)
 
     def handle_ballot(self, ballot):
         raise NotImplementedError()
@@ -95,12 +99,12 @@ class Fba(BaseConsensus):
 
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
 
-        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state)
+        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
         self.store(new)
 
-        for name, node in self.validators.items():
+        for name, validator in self.validators.items():
             if name is not self.node_name:
-                self.transport.send(node['endpoint'], new.serialize(to_string=False))
+                self.transport.send(validator['node'].endpoint, new.serialize(to_string=False))
 
         return
 

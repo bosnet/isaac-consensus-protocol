@@ -2,7 +2,7 @@ from ..common.ballot import Ballot
 from ..consensus import get_fba_module
 from ..consensus.fba.isaac import IsaacState
 from ..common.message import Message
-from .util import StubTransport, blockchain_factory
+from .util import blockchain_factory
 
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus
@@ -16,28 +16,28 @@ def test_state_jump():
 
     bc1 = blockchain_factory(
         node_name_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_name_2, node_name_3, node_name_4],
     )
 
     bc2 = blockchain_factory(
         node_name_2,
-        ('localhost', 5002),
+        'http://localhost:5002',
         100,
         [node_name_1, node_name_3, node_name_4],
     )
 
     bc3 = blockchain_factory(
         node_name_3,
-        ('localhost', 5003),
+        'http://localhost:5003',
         100,
         [node_name_1, node_name_2, node_name_4],
     )
 
     bc4 = blockchain_factory(
         node_name_4,
-        ('localhost', 5004),
+        'http://localhost:5004',
         100,
         [node_name_1, node_name_2, node_name_3],
     )

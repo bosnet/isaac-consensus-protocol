@@ -1,13 +1,17 @@
 import argparse
+from calendar import timegm
+from collections import namedtuple
+from contextlib import closing
+import datetime
 import importlib
 import logging
 import os
 from pythonjsonlogger import jsonlogger
 import socket
-import time
-import uuid
 import sys
 from termcolor import colored
+import time
+import uuid
 
 
 try:
@@ -104,13 +108,17 @@ class LogStreamHandler(logging.StreamHandler):
         super(LogStreamHandler, self).__init__(*a, **kw)
 
         self.logger = logger
-        self.json_formatter = JsonFormatter()
+        self.json_formatter = JsonFormatter(json_indent=2)
+        self.json_formatter_output = JsonFormatter()
         self.stream_metric = None
 
     def emit(self, record):
+        formatted = None
+        formatted_output = None
         if record.levelno == LOG_LEVEL_METRIC:
             record.msg['created'] = record.created
             formatted = self.json_formatter.format(record)
+            formatted_output = self.json_formatter_output.format(record)
             level_name = 'METRI'
         else:
             formatted = self.format(record)
@@ -124,7 +132,7 @@ class LogStreamHandler(logging.StreamHandler):
         if self.in_terminal and self.logger.is_show_line:
             line = self.terminator + '%s' % ('─' * int(TERMINAL_COLUMNS))
 
-        msg = '%s%0.8f - %-5s - %s%s' % (prefix, record.created, level_name, formatted, line)
+        msg = '%s%0.8f - %s - %-5s - %s%s' % (prefix, record.created, record.name, level_name, formatted, line)
 
         if self.in_terminal and self.logger.is_show_color:
             color = self.logger.colors.get(record.levelno)
@@ -144,7 +152,7 @@ class LogStreamHandler(logging.StreamHandler):
             if self.stream_metric is None:
                 self.stream_metric = open(self.logger.output_metric, 'a')
 
-            self.stream_metric.write(formatted)
+            self.stream_metric.write(formatted_output)
             self.stream_metric.write(self.terminator)
             self.stream_metric.flush()
 
@@ -154,6 +162,7 @@ class LogStreamHandler(logging.StreamHandler):
 class Logger:
     log_format = '%%(msecs)f - %%(name)s - %%(message)s'
     level = None
+    levels = None
     output = None
     output_metric = None
     is_show_line = None
@@ -171,7 +180,13 @@ class Logger:
     @classmethod
     def set_argparse(cls, parser):
         parser.add_argument('-verbose', action='store_true', default=False, help='verbose log')
-        parser.add_argument('-log-level', type=str, help='set log level', choices=AVAILABLE_LOGGING_LEVELS)
+        parser.add_argument(
+            '-log-level',
+            default='debug',
+            type=str,
+            help='set log level',
+            choices=AVAILABLE_LOGGING_LEVELS,
+        )
         parser.add_argument('-log-output', type=str, help='set log output file')
         parser.add_argument('-log-output-metric', type=str, help='set metric output file')
         parser.add_argument('-log-show-line', action='store_true', default=False, help='show seperate lines in log')
@@ -192,8 +207,6 @@ class Logger:
             logger.set_level(logging.DEBUG)
         elif options.log_level:
             logger.set_level(logging.getLevelName(options.log_level.upper()))
-        else:
-            logger.set_level(logging.ERROR)
 
         if options.log_output:
             logger.set_output(options.log_output)
@@ -211,6 +224,7 @@ class Logger:
 
     def __init__(self):
         self.level = logging.ERROR
+        self.levels = dict()
         self.output = None
         self.output_metric = None
         self.is_show_line = False
@@ -232,7 +246,12 @@ class Logger:
             show_line=self.is_show_line,
         )
 
-    def set_level(self, level):
+    def set_level(self, level, name=None):
+        if name is not None:
+            self.levels[name] = level
+
+            return
+
         self.level = level
 
         return
@@ -265,7 +284,7 @@ class Logger:
 
     def get_logger(self, name, **extras):
         logger = logging.getLogger(name)
-        logger.setLevel(self.level)
+        logger.setLevel(self.levels.get(name, self.level))
 
         return PartialLog(logger, **extras)
 
@@ -291,3 +310,47 @@ def get_module(name, package=None):
         return importlib.import_module(name, package=package)
     except ModuleNotFoundError:
         return None
+
+
+def convert_dict_to_namedtuple(d):
+    if type(d) not in (dict,):
+        return d
+
+    n = dict()
+    for k, v in d.items():
+        if type(v) in (dict,):
+            n[k] = convert_dict_to_namedtuple(v)
+        elif type(v) in (list, tuple):
+            n[k] = list(map(convert_dict_to_namedtuple, v))
+        else:
+            n[k] = v
+
+    return namedtuple('BOSDict', n.keys())(**n)
+
+
+def convert_namedtuple_to_dict(v):
+    if not hasattr(v, '_asdict'):
+        return v
+
+    n = dict()
+    for k, v in v._asdict().items():
+        if v.__class__.__name__ in ('BOSDict',):
+            n[k] = convert_namedtuple_to_dict(v)
+        else:
+            n[k] = v
+
+    return n
+
+
+def get_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
+
+
+def utcnow():
+    return datetime.datetime.now().utcnow()
+
+
+def datetime_to_timestamp(d):
+    return timegm(d.utctimetuple())

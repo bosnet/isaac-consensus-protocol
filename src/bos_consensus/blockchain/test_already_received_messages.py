@@ -3,8 +3,8 @@ import copy
 from bos_consensus.common.ballot import Ballot
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.common.message import Message
-from bos_consensus.network import get_network_module
-from bos_consensus.common import node_factory
+from bos_consensus.network import Endpoint, get_network_module
+from bos_consensus.common.node import node_factory
 from .blockchain import Blockchain
 
 
@@ -41,11 +41,17 @@ class SimpleBlockchain(Blockchain):
         return
 
 
-def simple_blockchain_factory(name, address, threshold, validator_endpoints):
-    node = node_factory(name, address)
-    consensus = IsaacConsensus(node, threshold, validator_endpoints)
+def simple_blockchain_factory(name, address, threshold, validator_endpoint_uris):
+    node = node_factory(name, Endpoint.from_uri(address))
 
-    network_module = get_network_module('default_http')
+    validators = list()
+    for uri in validator_endpoint_uris:
+        validators.append(
+            node_factory(uri, Endpoint(uri, uri, 0)),
+        )
+
+    consensus = IsaacConsensus(node, threshold, validators)
+
     transport = StubTransport(bind=('0.0.0.0', 5001))
 
     return SimpleBlockchain(consensus, transport)
@@ -58,13 +64,13 @@ def test_same_message_after_allconfirm():
 
     blockchain1 = simple_blockchain_factory(
         node_id_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_id_2, node_id_3],
     )
 
-    node2 = node_factory(node_id_2, ('localhost', 5002))
-    node3 = node_factory(node_id_3, ('localhost', 5003))
+    node2 = node_factory(node_id_2, Endpoint.from_uri('http://localhost:5002'))
+    node3 = node_factory(node_id_3, Endpoint.from_uri('http://localhost:5003'))
 
     blockchain1.consensus.add_to_validators(node2)
     blockchain1.consensus.add_to_validators(node3)
@@ -124,13 +130,13 @@ def test_same_message_after_init():
 
     blockchain1 = simple_blockchain_factory(
         node_id_1,
-        ('localhost', 5001),
+        'http://localhost:5001',
         100,
         [node_id_2, node_id_3],
     )
 
-    node2 = node_factory(node_id_2, ('localhost', 5002))
-    node3 = node_factory(node_id_3, ('localhost', 5003))
+    node2 = node_factory(node_id_2, Endpoint.from_uri('http://localhost:5002'))
+    node3 = node_factory(node_id_3, Endpoint.from_uri('http://localhost:5003'))
 
     blockchain1.consensus.add_to_validators(node2)
     blockchain1.consensus.add_to_validators(node3)
@@ -161,7 +167,9 @@ def test_same_message_after_init():
     # node state still remains the previous state
     assert blockchain1.consensus.state == IsaacState.SIGN
 
-    assert len(list(filter(lambda x: x['ballot'].ballot_id == ballot1.ballot_id, blockchain1.consensus.validators.values()))) < 1  # noqa
+    assert len(list(filter(
+        lambda x: x['ballot'].ballot_id == ballot1.ballot_id, blockchain1.consensus.validators.values()
+    ))) < 1
 
     current_ballot_ids = set(map(lambda x: x['ballot'].ballot_id, blockchain1.consensus.validators.values()))
 

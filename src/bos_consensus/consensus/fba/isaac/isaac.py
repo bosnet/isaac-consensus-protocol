@@ -16,6 +16,9 @@ class IsaacConsensus(Fba):
     def get_init_state(self):
         return IsaacState.INIT
 
+    def get_last_state(self):
+        return IsaacState.ALLCONFIRM
+
     def handle_ballot(self, ballot):
         # filtering rules, for same `ballot_id` or `message_id`
         #  1. if `message_id` is already saved in `self.message_ids`, it will be passed
@@ -53,6 +56,8 @@ class IsaacConsensus(Fba):
             else:
                 func = getattr(self, '_handle_%s' % self.state.name.lower())
                 func(ballot)
+
+        return
 
     def _new_ballot(self, ballot):
         if self.node_name not in self.validators or not self.validators[self.node_name]:
