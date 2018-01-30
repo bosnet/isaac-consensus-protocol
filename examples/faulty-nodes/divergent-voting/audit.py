@@ -15,47 +15,6 @@ CONSENSUS_MODULE = get_fba_module('isaac')
 AUDITING_TIMEOUT = 5  # 5 seconds
 
 
-def get_voting_nodes(histories):
-    normal = set(list())
-    divergent = set(list())
-
-    ballot_dict = dict()
-
-    for ballot in histories:
-        ballot_id = ballot['ballot_id']
-        node_name = ballot['node']
-        result = ballot['result']
-
-        if ballot_id not in ballot_dict:
-            ballot_dict[ballot_id] = list()
-            
-        ballot_dict[ballot_id].append(ballot)
-
-    for _, ballot_list in ballot_dict.items():
-        agree_list = set(list())
-        disagree_list = set(list())
-        for ballot in ballot_list:
-            node_name = ballot['node']
-            result = ballot['result']
-            if result == BallotVotingResult.agree:
-                agree_list.add(node_name)
-            else:
-                disagree_list.add(node_name)
-
-        if len(agree_list) > 1 and len(disagree_list) == 1:
-            normal.update(agree_list)
-            divergent.update(disagree_list)
-        elif len(agree_list) == 1 and len(disagree_list) > 1:
-            normal.update(disagree_list)
-            divergent.update(agree_list)
-        elif len(disagree_list) == 0:
-            normal.update(agree_list)
-        elif len(agree_list) == 0:
-            normal.update(disagree_list)
-
-    return normal, divergent
-
-
 class DivergentAuditor(threading.Thread):
     checkpoint = None
 
@@ -120,7 +79,7 @@ class DivergentAuditor(threading.Thread):
             prev_checkpoint = self.checkpoint
             self.checkpoint = len(self.blockchain.voting_histories)
 
-            normal, divergent = get_voting_nodes(histories)
+            normal, divergent = self.get_voting_nodes(histories)
 
             self.log.metric(
                 checkpoint=prev_checkpoint,
@@ -128,5 +87,44 @@ class DivergentAuditor(threading.Thread):
                 normal_voting_nodes=list(normal),
                 divergent_voting_nodes=list(divergent),
             )
-
         return
+
+    def get_voting_nodes(self, histories):
+        normal = set(list())
+        divergent = set(list())
+
+        ballot_dict = dict()
+
+        for ballot in histories:
+            ballot_id = ballot['ballot_id']
+            node_name = ballot['node']
+
+            if ballot_id not in ballot_dict:
+                ballot_dict[ballot_id] = list()
+
+            if node_name in self.validator_names:
+                ballot_dict[ballot_id].append(ballot)
+
+        for _, ballot_list in ballot_dict.items():
+            agree_list = set(list())
+            disagree_list = set(list())
+            for ballot in ballot_list:
+                node_name = ballot['node']
+                result = ballot['result']
+                if result == BallotVotingResult.agree:
+                    agree_list.add(node_name)
+                else:
+                    disagree_list.add(node_name)
+
+            if len(agree_list) > 1 and len(disagree_list) == 1:
+                normal.update(agree_list)
+                divergent.update(disagree_list)
+            elif len(agree_list) == 1 and len(disagree_list) > 1:
+                normal.update(disagree_list)
+                divergent.update(agree_list)
+            elif len(disagree_list) == 0:
+                normal.update(agree_list)
+            elif len(agree_list) == 0:
+                normal.update(disagree_list)
+
+        return normal, divergent
