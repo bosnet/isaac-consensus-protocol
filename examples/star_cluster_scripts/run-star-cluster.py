@@ -1,16 +1,18 @@
 import json
+import logging
 import pathlib
+import sys  # noqa
 import threading
 
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.consensus import get_fba_module
-from bos_consensus.network import get_network_module, BaseServer
+from bos_consensus.network import get_network_module, Endpoint, BaseServer
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
     get_local_ipaddress,
     logger,
 )
-from bos_consensus.common import node_factory
+from bos_consensus.common.node import node_factory
 from star_cluster import (
     get_nodes,
     NodeInfo
@@ -35,9 +37,9 @@ def run_node(node_info):
 
     node = node_factory(
         node_info.name,
-        (get_local_ipaddress(), node_info.port),
+        Endpoint('http', get_local_ipaddress(), node_info.port),
+        node_info.faulty_percent,
         node_info.faulty_kind,
-        node_info.faulty_percent
     )
     consensus_module = get_fba_module('isaac')
     consensus = consensus_module.IsaacConsensus(
@@ -53,6 +55,8 @@ def run_node(node_info):
     base_server = BaseServer(blockchain)
     base_server.start()
 
+    return
+
 
 def run_all(nodes):
     assert isinstance(nodes, dict)
@@ -64,8 +68,10 @@ def run_all(nodes):
         except:  # noqa
             print('Error: unable to start thread')
 
-    while 1:
-        t.join()
+    while True:
+        pass
+
+    return
 
 
 def main(options):
@@ -82,12 +88,16 @@ def main(options):
     nodes = get_nodes(data)
     run_all(nodes)
 
+    return
+
 
 if __name__ == '__main__':
     options = parser.parse_args()
 
     logger.from_argparse(logger, options)
     log = logger.get_logger(__name__)
+    logger.set_level(logging.FATAL, 'http')
+    logger.set_level(logging.FATAL, 'ping')
 
     log.debug('options: %s', options)
     log.debug('log settings: %s', logger.info)

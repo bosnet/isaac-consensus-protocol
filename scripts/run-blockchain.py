@@ -1,12 +1,13 @@
 import collections
 import configparser
+import logging
 import pathlib
 import uuid
 
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.consensus import get_fba_module
-from bos_consensus.network import get_network_module, BaseServer
-from bos_consensus.common import node_factory
+from bos_consensus.network import Endpoint, get_network_module, BaseServer
+from bos_consensus.common.node import Node, node_factory
 
 from bos_consensus.util import (
     get_local_ipaddress,
@@ -20,6 +21,9 @@ parser.add_argument('conf', help='ini config file for server node')
 log = None
 
 logger.set_argparse(parser)
+
+
+NETWORK_MODULE = get_network_module('default_http')
 
 
 def main(options):
@@ -48,16 +52,15 @@ def main(options):
     log.debug('loaded conf: %s', config)
 
     validator_list = []
-    for i in filter(lambda x: len(x.strip()) > 0,
-                    conf['node']['validator_list'].split(',')):
-        validator_list.append(i.strip())
+    for i in filter(lambda x: len(x.strip()) > 0, conf['node']['validator_list'].split(',')):
+        validator_list.append(Endpoint.from_uri(i.strip()))
 
     config = config._replace(validators=validator_list)
     log.debug('Validators: %s' % config.validators)
 
     node = node_factory(
         config.node_name,
-        (get_local_ipaddress(), config.port),
+        Endpoint(NETWORK_MODULE.SCHEME, get_local_ipaddress(), config.port),
         config.faulty_percent
     )
 
@@ -65,13 +68,12 @@ def main(options):
     consensus = consensus_module.IsaacConsensus(
         node,
         config.threshold,
-        config.validators
+        tuple(map(lambda x: Node(x.extras['name'], x), config.validators)),
     )
 
     log.metric(node=node.name, data=node.to_dict())
 
-    network_module = get_network_module('default_http')
-    transport = network_module.Transport(bind=('0.0.0.0', config.port))
+    transport = NETWORK_MODULE.Transport(bind=('0.0.0.0', config.port))
 
     blockchain = Blockchain(consensus, transport)
     base_server = BaseServer(blockchain)
@@ -85,6 +87,8 @@ if __name__ == '__main__':
     logger.from_argparse(logger, options)
 
     log = logger.get_logger(__name__)
+    logger.set_level(logging.FATAL, 'http')
+    logger.set_level(logging.FATAL, 'ping')
 
     log.debug('options: %s', options)
     log.debug('log settings: %s', logger.info)

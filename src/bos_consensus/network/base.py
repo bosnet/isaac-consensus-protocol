@@ -88,7 +88,17 @@ class Endpoint:
     def from_uri(cls, uri):
         parsed = urllib.parse.urlparse(uri)
 
-        return cls(parsed.scheme, parsed.hostname, parsed.port, **urllib.parse.parse_qs(parsed.query))
+        return cls(
+            parsed.scheme,
+            parsed.hostname,
+            parsed.port,
+            **dict(
+                map(
+                    lambda x: (x[0], x[1][0]),
+                    urllib.parse.parse_qs(parsed.query).items()
+                )
+            )
+        )
 
     def __init__(self, scheme, host, port, **extras):
         assert type(host) in (str,)
