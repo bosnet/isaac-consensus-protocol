@@ -25,7 +25,7 @@ faulties:
     n1:
         - case:
             kind: state_regression
-            frequency: 10  # how often make regressed state within one consensus
+            frequency: 100  # how often make regressed state within one consensus
             target_nodes:
                 - n0
                 - n2
