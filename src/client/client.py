@@ -1,13 +1,10 @@
 import collections
-import json
 import logging
-import time
 import urllib
 
 import colorlog
 import requests
 
-from bos_consensus.consensus import get_consensus_module
 from bos_consensus.common.message import Message
 
 

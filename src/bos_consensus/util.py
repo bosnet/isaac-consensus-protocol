@@ -58,8 +58,9 @@ class PartialLog:
     def getLevel(self):
         return self.logger.level
 
-    def _write(self, n, *a, **kw):
-        return getattr(self.logger, n)(*a, **kw)
+    def _write(self, n, msg, *a, **kw):
+        msg = '%s - %s' % (msg, self.extras)
+        return getattr(self.logger, n)(msg, *a, **kw)
 
     def debug(self, *a, **kw):
         return self._write('debug', *a, **kw)
@@ -108,7 +109,7 @@ class LogStreamHandler(logging.StreamHandler):
         super(LogStreamHandler, self).__init__(*a, **kw)
 
         self.logger = logger
-        self.json_formatter = JsonFormatter(json_indent=2)
+        self.json_formatter = JsonFormatter(json_indent=2 if self.in_terminal else None)
         self.json_formatter_output = JsonFormatter()
         self.stream_metric = None
 
@@ -308,7 +309,8 @@ log = logger.get_logger('util')
 def get_module(name, package=None):
     try:
         return importlib.import_module(name, package=package)
-    except ModuleNotFoundError:
+    except ModuleNotFoundError as e:
+        log.error(e)
         return None
 
 

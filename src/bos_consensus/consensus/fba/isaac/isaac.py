@@ -42,11 +42,11 @@ class IsaacConsensus(Fba):
 
         from_outside = self.from_outside(ballot.node_name)
         self.log.debug(
-            '[%s] [%s] receive ballot from %s%s',
+            '[%s] [%s] receive ballot from %s(from_outside=%s)',
             self.node_name,
             self.state,
             ballot.node_name,
-            '(outside. validators: %s)' % self.validator_node_names() if from_outside else '',
+            from_outside,
         )
 
         if not from_outside:

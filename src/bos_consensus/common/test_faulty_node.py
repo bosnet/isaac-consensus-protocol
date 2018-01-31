@@ -4,11 +4,11 @@ from .faulty_node import FaultyNodeKind
 
 
 def test_get_faulty_kind():
-    assert FaultyNodeKind.get_faulty_kind('node_unreachable') == FaultyNodeKind.NodeUnreachable
-    assert FaultyNodeKind.get_faulty_kind('no_voting') == FaultyNodeKind.NoVoting
-    assert FaultyNodeKind.get_faulty_kind('duplicated_message_sent') == FaultyNodeKind.DuplicatedMessageSent
-    assert FaultyNodeKind.get_faulty_kind('divergent_voting') == FaultyNodeKind.DivergentVoting
-    assert FaultyNodeKind.get_faulty_kind('state_regression') == FaultyNodeKind.StateRegression
+    assert FaultyNodeKind.get_from_name('node_unreachable') == FaultyNodeKind.NodeUnreachable
+    assert FaultyNodeKind.get_from_name('no_voting') == FaultyNodeKind.NoVoting
+    assert FaultyNodeKind.get_from_name('duplicated_message_sent') == FaultyNodeKind.DuplicatedMessageSent
+    assert FaultyNodeKind.get_from_name('divergent_voting') == FaultyNodeKind.DivergentVoting
+    assert FaultyNodeKind.get_from_name('state_regression') == FaultyNodeKind.StateRegression
 
 
 def test_instanciation():

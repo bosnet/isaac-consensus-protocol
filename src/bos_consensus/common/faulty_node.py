@@ -27,19 +27,26 @@ class FaultyNodeKind(enum.Enum):
     Unknown = enum.auto()
 
     @classmethod
-    def get_faulty_kind(cls, faulty_kind_str):
-        faulty_kind_dict = dict(
-            node_unreachable=cls.NodeUnreachable,
-            no_voting=cls.NoVoting,
-            duplicated_message_sent=cls.DuplicatedMessageSent,
-            divergent_voting=cls.DivergentVoting,
-            state_regression=cls.StateRegression,
-        )
-
-        if faulty_kind_str not in faulty_kind_dict:
+    def get_from_name(cls, s):
+        if s not in FAULTY_KIND_NAMING_MAP:
             return cls.Unknown
         else:
-            return faulty_kind_dict[faulty_kind_str]
+            return FAULTY_KIND_NAMING_MAP[s]
+
+    @classmethod
+    def get_name(cls, s):
+        for k, v in FAULTY_KIND_NAMING_MAP.items():
+            if v == s:
+                return k
+
+
+FAULTY_KIND_NAMING_MAP = dict(
+    node_unreachable=FaultyNodeKind.NodeUnreachable,
+    no_voting=FaultyNodeKind.NoVoting,
+    duplicated_message_sent=FaultyNodeKind.DuplicatedMessageSent,
+    divergent_voting=FaultyNodeKind.DivergentVoting,
+    state_regression=FaultyNodeKind.StateRegression,
+)
 
 
 class FaultyNode(Node):
@@ -48,7 +55,7 @@ class FaultyNode(Node):
 
     def __init__(self, name, address, faulty_percent, faulty_kind_str):
         super(FaultyNode, self).__init__(name, address)
-        self.faulty_kind = FaultyNodeKind.get_faulty_kind(faulty_kind_str)
+        self.faulty_kind = FaultyNodeKind.get_from_name(faulty_kind_str)
         self.faulty_percent = faulty_percent
 
     def check_faulty(self):

@@ -1,4 +1,3 @@
-from ..network import BaseTransport
 from ..common.node import Node
 from ..util import LoggingMixin
 

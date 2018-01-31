@@ -21,7 +21,10 @@ class Blockchain(BaseBlockchain):
             self.consensus.set_transport(transport)
         else:
             from ..network.default_http import Transport
-            self.consensus.set_transport(Transport(bind=('0.0.0.0', consensus.node.port)))
+            self.consensus.set_transport(Transport(bind=(
+                '0.0.0.0',
+                consensus.node.endpoint.port,
+            )))
 
         self.middlewares = load_middlewares()
         self.voting_histories = list()
