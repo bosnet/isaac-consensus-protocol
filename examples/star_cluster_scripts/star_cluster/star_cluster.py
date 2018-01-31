@@ -27,7 +27,7 @@ def set_nodes(nodes, name, node_infos, count):
         name,
         node_infos.get('threshold', 51),
         [],
-        'http://localhost',
+        'localhost',
         BASE_PORT + count,
         node_infos.get('faulty_kind', ''),
         node_infos.get('faulty_percent', 0),
@@ -111,10 +111,10 @@ def print_to_ini_files(output_path, nodes):
     for name, node_info in nodes.items():
         assert isinstance(node_info, NodeInfo)
         config['node'] = {
-            'id': node_info.id,
+            'name': node_info.name,
             'port': node_info.port,
             'threshold_percent': node_info.threshold,
-            'validator_list': ', '.join(node_info.validators)
+            'validator_list': ', '.join(map(lambda a: a.name, node_info.validators))
         }
 
         output_file_path = '%s/%s.ini' % (output_path, name)

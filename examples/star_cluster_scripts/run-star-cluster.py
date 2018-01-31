@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 import sys  # noqa
 import threading
@@ -54,6 +55,8 @@ def run_node(node_info):
     base_server = BaseServer(blockchain)
     base_server.start()
 
+    return
+
 
 def run_all(nodes):
     assert isinstance(nodes, dict)
@@ -65,8 +68,10 @@ def run_all(nodes):
         except:  # noqa
             print('Error: unable to start thread')
 
-    while 1:
-        t.join()
+    while True:
+        pass
+
+    return
 
 
 def main(options):
@@ -83,12 +88,16 @@ def main(options):
     nodes = get_nodes(data)
     run_all(nodes)
 
+    return
+
 
 if __name__ == '__main__':
     options = parser.parse_args()
 
     logger.from_argparse(logger, options)
     log = logger.get_logger(__name__)
+    logger.set_level(logging.FATAL, 'http')
+    logger.set_level(logging.FATAL, 'ping')
 
     log.debug('options: %s', options)
     log.debug('log settings: %s', logger.info)

@@ -22,7 +22,7 @@ class Fba(BaseConsensus):
         super(Fba, self).__init__(node)
         assert type(threshold) in (float, int)
         assert threshold <= 100 and threshold > 0  # threshold must be percentile
-        assert isinstance(validator_candidates, list)
+        assert isinstance(validator_candidates, (list, tuple))
         assert len(
             list(filter(lambda x: not isinstance(x, Node), validator_candidates))
         ) < 1
