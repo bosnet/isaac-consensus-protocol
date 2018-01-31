@@ -120,10 +120,10 @@ class LogStreamHandler(logging.StreamHandler):
             record.msg['created'] = record.created
             formatted = self.json_formatter.format(record)
             formatted_output = self.json_formatter_output.format(record)
-            level_name = 'METRI'
+            level_name = 'METR'
         else:
             formatted = self.format(record)
-            level_name = record.levelname[:5]
+            level_name = record.levelname[:4]
 
         prefix = ''
         if self.in_terminal:
@@ -133,7 +133,7 @@ class LogStreamHandler(logging.StreamHandler):
         if self.in_terminal and self.logger.is_show_line:
             line = self.terminator + '%s' % ('─' * int(TERMINAL_COLUMNS))
 
-        msg = '%s%0.8f - %s - %-5s - %s%s' % (prefix, record.created, record.name, level_name, formatted, line)
+        msg = '%s%0.8f - %s - %-4s - %s%s' % (prefix, record.created, record.name, level_name, formatted, line)
 
         if self.in_terminal and self.logger.is_show_color:
             color = self.logger.colors.get(record.levelno)

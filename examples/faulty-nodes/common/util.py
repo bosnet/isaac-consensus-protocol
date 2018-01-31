@@ -101,6 +101,8 @@ class FaultyBlockchain(Blockchain):
     no_voting_ballot_ids = None  # store the ballot to be skipped
 
     def __init__(self, faulties, consensus, transport=None):
+        self.set_logging('blockchain', node=consensus.node.name)
+
         found_node_unreachable_faulty = None
         found_state_regression_faulty = None
         transport = None
@@ -114,6 +116,7 @@ class FaultyBlockchain(Blockchain):
                 continue
 
         if found_node_unreachable_faulty is not None:
+            self.log.debug('found node_unreachable faulty case: %s', found_node_unreachable_faulty)
             transport = NodeUnreachableTransport(
                 found_node_unreachable_faulty,
                 bind=(
@@ -123,6 +126,7 @@ class FaultyBlockchain(Blockchain):
             )
 
         if found_state_regression_faulty is not None:
+            self.log.debug('found state_regression faulty case: %s', found_state_regression_faulty)
             transport = StateRegressionTransport(
                 found_state_regression_faulty,
                 bind=(

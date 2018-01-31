@@ -127,8 +127,14 @@ class Fba(BaseConsensus):
 
     def store(self, ballot):
         assert isinstance(ballot, Ballot)
-        if self.state <= ballot.state:
-            self.validators[ballot.node_name]['ballot'] = ballot
-            self.log.debug('[%s] [%s] store ballot [%s]', self.node_name, self.state, ballot.serialize(to_string=True))
+
+        if self.state > ballot.state:
+            self.log.debug('found state regression ballot=%s state=%s', ballot, self.state)
+
+            return
+
+        self.validators[ballot.node_name]['ballot'] = ballot
+
+        self.log.debug('ballot stored state=%s ballot=%s', self.state, ballot)
 
         return

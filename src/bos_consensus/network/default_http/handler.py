@@ -67,6 +67,7 @@ def handle_send_ballot(handler, parsed):
 
     length = int(handler.headers['Content-Length'])
     ballot = Ballot.from_string(handler.rfile.read(length).decode('utf-8'))
+
     handler.server.blockchain_sequence_executor('receive_ballot', ballot)
 
     return handler.response(200, None)

@@ -126,3 +126,6 @@ class Endpoint:
 
     def serialize(self):
         return self.uri_full
+
+    def get(self, k, default=None):
+        return self.extras.get(k, default)

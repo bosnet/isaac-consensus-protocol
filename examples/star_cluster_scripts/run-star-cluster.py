@@ -47,8 +47,6 @@ def run_node(node_info):
         node_info.validators,
     )
 
-    sys.exit()
-
     network_module = get_network_module('default_http')
     transport = network_module.Transport(bind=('0.0.0.0', node_info.port))
 
