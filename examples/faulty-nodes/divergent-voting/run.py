@@ -113,10 +113,10 @@ if __name__ == '__main__':
         faulty = getattr(design.faulties, name, None)
         if faulty is not None:
             for case in faulty:
-                if case.case.kind not in ('DivergentVoting',):
+                if case.case.kind not in ('divergent_voting',):
                     continue
 
-                faulty_frequency = int(case.case.frequency.per_consensus)
+                faulty_frequency = int(case.case.frequency)
 
         faulty_nodes[name] = faulty_frequency
 

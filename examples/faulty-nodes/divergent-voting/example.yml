@@ -67,11 +67,9 @@ nodes:
 faulties:
     n0:
         - case:  # multiple cases can be set
-            kind: DivergentVoting  # Check [`FaultyNodeKind`](https://github.com/owlchain/bosnet-prototype-fba/blob/master/src/bos_consensus/common/node.py#L42)
-            frequency:
-                per_consensus: 100  # means, this node will be faulty node in every time
-    n7:
+            kind: divergent_voting  # Check [`FaultyNodeKind`](https://github.com/owlchain/bosnet-prototype-fba/blob/master/src/bos_consensus/common/node.py#L42)
+            frequency: 100
+    n6:
         - case:
-            kind: DivergentVoting
-            frequency:
-                per_consensus: 100
+            kind: divergent_voting
+            frequency: 100
