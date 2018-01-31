@@ -79,52 +79,85 @@ class DivergentAuditor(threading.Thread):
             prev_checkpoint = self.checkpoint
             self.checkpoint = len(self.blockchain.voting_histories)
 
-            normal, divergent = self.get_voting_nodes(histories)
+            divergent = self.get_divergent_nodes(histories)
 
             self.log.metric(
                 checkpoint=prev_checkpoint,
                 validators=list(self.validator_names),
-                normal_voting_nodes=list(normal),
                 divergent_voting_nodes=list(divergent),
             )
         return
 
-    def get_voting_nodes(self, histories):
-        normal = set(list())
-        divergent = set(list())
-
+    def get_ballot_dict(self, ballot_list):
+        '''
+        * make ballot dictionary from ballot_list
+         * ballot dictionary format
+          * {
+              ballot_id: {
+                  node_state: [ballots],
+                  node_state: [ballots]
+              },
+              ballot_id: {
+                  node_state: [ballots],
+                  node_state: [ballots]
+              }
+          }
+        '''
         ballot_dict = dict()
 
-        for ballot in histories:
+        for ballot in ballot_list:
             ballot_id = ballot['ballot_id']
             node_name = ballot['node']
+            state = ballot['ballot_state']
 
             if ballot_id not in ballot_dict:
-                ballot_dict[ballot_id] = list()
+                ballot_dict[ballot_id] = dict()
+            
+            if state not in ballot_dict[ballot_id]:
+                ballot_dict[ballot_id][state] = list()
 
             if node_name in self.validator_names:
-                ballot_dict[ballot_id].append(ballot)
+                ballot_dict[ballot_id][state].append(ballot)
+        return ballot_dict
 
-        for _, ballot_list in ballot_dict.items():
-            agree_list = set(list())
-            disagree_list = set(list())
-            for ballot in ballot_list:
-                node_name = ballot['node']
-                result = ballot['result']
-                if result == BallotVotingResult.agree:
-                    agree_list.add(node_name)
-                else:
-                    disagree_list.add(node_name)
+    def remove_intersect_ballot(self, agree_list, disagree_list):
+        intersect_set = agree_list & disagree_list
+        if intersect_set:
+            agree_list -= intersect_set
+            disagree_list -= intersect_set
 
-            if len(agree_list) > 1 and len(disagree_list) == 1:
-                normal.update(agree_list)
-                divergent.update(disagree_list)
-            elif len(agree_list) == 1 and len(disagree_list) > 1:
-                normal.update(disagree_list)
-                divergent.update(agree_list)
-            elif len(disagree_list) == 0:
-                normal.update(agree_list)
-            elif len(agree_list) == 0:
-                normal.update(disagree_list)
+    def get_divergent_voting_nodes(self, ballot_list):
+        agree_list = set(list())
+        disagree_list = set(list())
+        minimum = self.blockchain.consensus.minimum - 1  # except self ballot
+        for ballot in ballot_list:
+            node_name = ballot['node']
+            result = ballot['result']
+            if result == BallotVotingResult.agree:
+                agree_list.add(node_name)
+            else:
+                disagree_list.add(node_name)
+        
+        self.remove_intersect_ballot(agree_list, disagree_list)
 
-        return normal, divergent
+        divergent = set(list())
+        if len(agree_list) >= minimum and len(disagree_list) > 0:
+            divergent.update(disagree_list)
+        elif len(disagree_list) >= minimum and len(agree_list) > 0:
+            divergent.update(agree_list)
+        else:
+            pass
+
+        return divergent
+
+    def get_divergent_nodes(self, histories):
+        divergent = set(list())
+
+        ballot_dict = self.get_ballot_dict(histories)
+
+        for _, state_dict in ballot_dict.items():
+            for _, ballot_list in state_dict.items():
+                divergent_voting_nodes = self.get_divergent_voting_nodes(ballot_list)
+                divergent.update(divergent_voting_nodes)
+
+        return divergent

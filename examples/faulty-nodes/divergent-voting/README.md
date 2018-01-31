@@ -46,38 +46,49 @@ The 'debug' will produce so massive messages :) To make something happened, run 
 $ run-client.py  -p 54320
 ```
 
-The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In `example.yml`, the faulty nodes are 'n1' and 'n7', which will be faulty node in 100%, `faulties.<node>.n0.case.frequency.per_consensus` is `100`.
+The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In `example.yml`, the faulty nodes are 'n0' and 'n6', which will be faulty node in 100%, `faulties.<node>.n0.case.frequency` is `100`.
 
 ## Check Logs
 
-The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Blockchain.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `divergent_node` per each node.
+The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `DivergentAuditor()` will be running simultaneously, it checks the `Blockchain.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `divergent_node` per each node.
 
 ```
-● 1517292684.32862997 - audit.faulty-node.divergent-voting - METRI - {
+● 1517380220.95049810 - audit.faulty-node.divergent-voting - METRI - {
   "checkpoint": 0,
   "validators": [
     "n0",
-    "n7",
     "n3",
+    "n7",
     "n1"
   ],
-  "normal_voting_nodes": [],
-  "divergent_voting_nodes": [],
+  "divergent_voting_nodes": [
+    "n0"
+  ],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n2",
-  "created": 1517292684.32863
+  "created": 1517380220.950498
 }
-● 1517292684.32913899 - audit.faulty-node.divergent-voting - METRI - {
+● 1517380220.95111489 - audit.faulty-node.divergent-voting - METRI - {
   "checkpoint": 0,
   "validators": [
     "n0",
-    "n2",
-    "n5",
-    "n1"
+    "n3",
+    "n7",
+    "n2"
   ],
-  "normal_voting_nodes": [
-    "n5",
+  "divergent_voting_nodes": [
+    "n0"
+  ],
+  "logger": "audit.faulty-node.divergent-voting",
+  "node": "n1",
+  "created": 1517380220.951115
+}
+● 1517380220.95158100 - audit.faulty-node.divergent-voting - METRI - {
+  "checkpoint": 0,
+  "validators": [
+    "n0",
     "n1",
+    "n5",
     "n2"
   ],
   "divergent_voting_nodes": [
@@ -85,110 +96,78 @@ The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, th
   ],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n3",
-  "created": 1517292684.329139
+  "created": 1517380220.951581
 }
-● 1517292684.32958603 - audit.faulty-node.divergent-voting - METRI - {
+● 1517380220.95203400 - audit.faulty-node.divergent-voting - METRI - {
   "checkpoint": 0,
   "validators": [
-    "n3",
     "n6",
-    "n2",
-    "n4",
-    "n5",
-    "n1"
-  ],
-  "normal_voting_nodes": [
-    "n1",
     "n3",
-    "n2",
-    "n6"
+    "n4",
+    "n1",
+    "n5",
+    "n2"
   ],
   "divergent_voting_nodes": [],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n0",
-  "created": 1517292684.329586
+  "created": 1517380220.952034
 }
-● 1517292684.33796883 - audit.faulty-node.divergent-voting - METRI - {
+● 1517380220.95539498 - audit.faulty-node.divergent-voting - METRI - {
   "checkpoint": 0,
   "validators": [
     "n6",
-    "n2",
-    "n5",
-    "n1"
+    "n3",
+    "n4",
+    "n7"
   ],
-  "normal_voting_nodes": [
-    "n5",
-    "n1",
-    "n2",
+  "divergent_voting_nodes": [
     "n6"
   ],
-  "divergent_voting_nodes": [],
   "logger": "audit.faulty-node.divergent-voting",
-  "node": "n7",
-  "created": 1517292684.3379688
+  "node": "n5",
+  "created": 1517380220.955395
 }
-● 1517292686.32920408 - audit.faulty-node.divergent-voting - METRI - {
+● 1517380220.95597792 - audit.faulty-node.divergent-voting - METRI - {
   "checkpoint": 0,
   "validators": [
     "n0",
+    "n4",
     "n7",
-    "n3",
-    "n2"
+    "n5"
   ],
-  "normal_voting_nodes": [],
-  "divergent_voting_nodes": [],
+  "divergent_voting_nodes": [
+    "n0"
+  ],
   "logger": "audit.faulty-node.divergent-voting",
-  "node": "n1",
-  "created": 1517292686.329204
+  "node": "n6",
+  "created": 1517380220.955978
 }
-● 1517292686.33538413 - audit.faulty-node.divergent-voting - METRI - {
+● 1517380220.95650196 - audit.faulty-node.divergent-voting - METRI - {
   "checkpoint": 0,
   "validators": [
-    "n5",
+    "n6",
     "n1",
+    "n5",
+    "n2"
+  ],
+  "divergent_voting_nodes": [
     "n6"
   ],
-  "normal_voting_nodes": [
+  "logger": "audit.faulty-node.divergent-voting",
+  "node": "n7",
+  "created": 1517380220.956502
+}
+● 1517380222.95162392 - audit.faulty-node.divergent-voting - METRI - {
+  "checkpoint": 0,
+  "validators": [
+    "n1",
     "n5",
     "n6"
   ],
   "divergent_voting_nodes": [],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n4",
-  "created": 1517292686.3353841
-}
-● 1517292686.34087205 - audit.faulty-node.divergent-voting - METRI - {
-  "checkpoint": 0,
-  "validators": [
-    "n7",
-    "n3",
-    "n6",
-    "n4"
-  ],
-  "normal_voting_nodes": [
-    "n3",
-    "n4",
-    "n6"
-  ],
-  "divergent_voting_nodes": [
-    "n7"
-  ],
-  "logger": "audit.faulty-node.divergent-voting",
-  "node": "n5",
-  "created": 1517292686.340872
-}
-● 1517292686.34133291 - audit.faulty-node.divergent-voting - METRI - {
-  "checkpoint": 0,
-  "validators": [
-    "n0",
-    "n7",
-    "n4",
-    "n5"
-  ],
-  "normal_voting_nodes": [],
-  "divergent_voting_nodes": [],
-  "logger": "audit.faulty-node.divergent-voting",
-  "node": "n6",
-  "created": 1517292686.341333
+  "created": 1517380222.951624
 }
 ```
