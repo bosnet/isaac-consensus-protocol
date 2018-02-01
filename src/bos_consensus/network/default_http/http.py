@@ -164,7 +164,6 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
         super(BOSNetHTTPServer, self).__init__(*a, **kw)
 
         self.version = '0.8.1'
-        self.lqueue = LockedQueue()
         self.blockchain = blockchain
 
         self.log = logger.get_logger('http', node=blockchain.node.name)
