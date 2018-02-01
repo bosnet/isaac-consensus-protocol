@@ -11,6 +11,14 @@ class IsaacState(FbaState):
     ACCEPT = enum.auto()
     ALLCONFIRM = enum.auto()
 
+    @classmethod
+    def get_from_value(cls, v):
+        for i in list(cls):
+            if i.value == v:
+                return i
+
+        return
+
 
 class IsaacConsensus(Fba):
     def get_init_state(self):

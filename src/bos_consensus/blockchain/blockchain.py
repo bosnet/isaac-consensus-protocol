@@ -4,15 +4,14 @@ from ..blockchain.base import BaseBlockchain
 from ..network import BaseTransport
 from ..middlewares import (
     load_middlewares,
-    NoFurtherMiddlewares,
-    StopConsensus,
+    NoFurtherBlockchainMiddlewares,
+    StopReceiveBallot,
 )
 
 
 class Blockchain(BaseBlockchain):
     consensus = None
     middlewares = list()
-    voting_histories = None  # for auditing received ballots
 
     def __init__(self, consensus, transport=None):
         super(Blockchain, self).__init__(consensus.node)
@@ -26,8 +25,7 @@ class Blockchain(BaseBlockchain):
                 consensus.node.endpoint.port,
             )))
 
-        self.middlewares = load_middlewares()
-        self.voting_histories = list()
+        self.middlewares = load_middlewares('blockchain')
 
     def set_transport(self, transport):
         assert isinstance(transport, BaseTransport)
@@ -58,8 +56,8 @@ class Blockchain(BaseBlockchain):
             1. each middleware execute before and after consensus
             1. if method of middleware returns,
                 * `None`: pass
-                * `NoFurtherMiddlewares`: stop middlewares
-                * `StopConsensus`: stop consensus to handle ballot
+                * `NoFurtherBlockchainMiddlewares`: stop middlewares
+                * `StopReceiveBallot`: stop consensus to handle ballot
             1. middleware keep the state in `receive_ballot`
         '''
         assert isinstance(ballot, Ballot)
@@ -69,10 +67,10 @@ class Blockchain(BaseBlockchain):
         for m in middlewares:
             try:
                 m.received_ballot(ballot)
-            except NoFurtherMiddlewares as e:
+            except NoFurtherBlockchainMiddlewares as e:
                 self.log.debug('break middleware: %s', e)
                 break
-            except StopConsensus as e:
+            except StopReceiveBallot as e:
                 self.log.debug('stop consensus: %s', e)
                 return
 
@@ -81,7 +79,7 @@ class Blockchain(BaseBlockchain):
         for m in middlewares:
             try:
                 m.finished_ballot(ballot)
-            except NoFurtherMiddlewares as e:
+            except NoFurtherBlockchainMiddlewares as e:
                 self.log.debug('break middleware: %s', e)
                 break
 

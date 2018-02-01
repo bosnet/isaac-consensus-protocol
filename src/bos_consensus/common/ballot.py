@@ -80,9 +80,7 @@ class Ballot:
         )
 
     @classmethod
-    def from_string(cls, s):
-        o = json.loads(s)
-
+    def from_dict(cls, o):
         state = get_fba_module('isaac').IsaacState
 
         return cls(
@@ -92,6 +90,10 @@ class Ballot:
             state[o['state']],
             BallotVotingResult[o['result']],
         )
+
+    @classmethod
+    def from_string(cls, s):
+        return cls.from_dict(json.loads(s))
 
     @property
     def message_id(self):

@@ -120,10 +120,10 @@ class LogStreamHandler(logging.StreamHandler):
             record.msg['created'] = record.created
             formatted = self.json_formatter.format(record)
             formatted_output = self.json_formatter_output.format(record)
-            level_name = 'METRI'
+            level_name = 'METR'
         else:
             formatted = self.format(record)
-            level_name = record.levelname[:5]
+            level_name = record.levelname[:4]
 
         prefix = ''
         if self.in_terminal:
@@ -133,7 +133,7 @@ class LogStreamHandler(logging.StreamHandler):
         if self.in_terminal and self.logger.is_show_line:
             line = self.terminator + '%s' % ('─' * int(TERMINAL_COLUMNS))
 
-        msg = '%s%0.8f - %s - %-5s - %s%s' % (prefix, record.created, record.name, level_name, formatted, line)
+        msg = '%s%0.8f - %s - %-4s - %s%s' % (prefix, record.created, record.name, level_name, formatted, line)
 
         if self.in_terminal and self.logger.is_show_color:
             color = self.logger.colors.get(record.levelno)
@@ -344,10 +344,17 @@ def convert_namedtuple_to_dict(v):
     return n
 
 
-def get_free_port():
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
+def get_free_port(defined=None):
+    if defined is None:
+        defined = list()
+
+    port = None
+    while port is None or port in defined:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.bind(('', 0))
+            port = s.getsockname()[1]
+
+    return port
 
 
 def utcnow():

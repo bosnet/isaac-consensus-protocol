@@ -7,11 +7,11 @@ from bos_consensus.util import (
 )
 
 
-class NoFurtherMiddlewares(Exception):
+class NoFurtherBlockchainMiddlewares(Exception):
     pass
 
 
-class StopConsensus(Exception):
+class StopReceiveBallot(Exception):
     pass
 
 

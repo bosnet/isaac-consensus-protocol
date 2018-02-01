@@ -50,7 +50,7 @@ The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In
 
 ## Check Logs
 
-The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Blockchain.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `no_voting_nodes` per each node.
+The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `no_voting_nodes` per each node.
 
 ```
 ● 1517182997.42433095 - audit.faulty-node.no-voting - METRI - {
