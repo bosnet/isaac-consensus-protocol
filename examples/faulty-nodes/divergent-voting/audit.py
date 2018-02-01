@@ -18,20 +18,20 @@ AUDITING_TIMEOUT = 5  # 5 seconds
 class DivergentAuditor(threading.Thread):
     checkpoint = None
 
-    def __init__(self, blockchain):
+    def __init__(self, consensus):
         super(DivergentAuditor, self).__init__()
 
-        self.blockchain = blockchain
+        self.consensus = consensus
         self.checkpoint = 0
 
-        self.log = logger.get_logger('audit.faulty-node.divergent-voting', node=self.blockchain.consensus.node.name)
+        self.log = logger.get_logger('audit.faulty-node.divergent-voting', node=self.consensus.node.name)
 
     def _wait_for_connecting_validators(self):
-        if not self.blockchain.consensus.all_validators_connected():
+        if not self.consensus.all_validators_connected():
             return False
 
-        self.validator_names = set(map(lambda x: x['node'].name, self.blockchain.consensus.validators.values()))
-        self.validator_names.remove(self.blockchain.consensus.node.name)
+        self.validator_names = set(map(lambda x: x['node'].name, self.consensus.validators.values()))
+        self.validator_names.remove(self.consensus.node.name)
 
         return True
 
@@ -54,7 +54,7 @@ class DivergentAuditor(threading.Thread):
 
         while True:
             time.sleep(2)
-            histories = self.blockchain.voting_histories[self.checkpoint:]
+            histories = self.consensus.voting_histories[self.checkpoint:]
             if len(histories) < 1:
                 continue
 
@@ -62,7 +62,7 @@ class DivergentAuditor(threading.Thread):
             last_allconfirm = None
             for index in range(len(histories) - 1, -1, -1):
                 history = histories[index]
-                if history['node_state'] not in (self.blockchain.consensus.get_last_state(),):
+                if history['node_state'] not in (self.consensus.get_last_state(),):
                     continue
 
                 last_allconfirm = index
@@ -77,7 +77,7 @@ class DivergentAuditor(threading.Thread):
                 continue
 
             prev_checkpoint = self.checkpoint
-            self.checkpoint = len(self.blockchain.voting_histories)
+            self.checkpoint = len(self.consensus.voting_histories)
 
             divergent = self.get_divergent_nodes(histories)
 
@@ -129,7 +129,7 @@ class DivergentAuditor(threading.Thread):
     def get_divergent_voting_nodes(self, ballot_list):
         agree_list = set(list())
         disagree_list = set(list())
-        minimum = self.blockchain.consensus.minimum - 1  # except self ballot
+        minimum = self.consensus.minimum - 1  # except self ballot
         for ballot in ballot_list:
             node_name = ballot['node']
             result = ballot['result']

@@ -14,18 +14,18 @@ AUDITING_TIMEOUT = 5  # 5 seconds
 class NoVotingAuditor(threading.Thread):
     checkpoint = None
 
-    def __init__(self, blockchain):
+    def __init__(self, consensus):
         super(NoVotingAuditor, self).__init__()
 
-        self.blockchain = blockchain
+        self.consensus = consensus
         self.checkpoint = 0
 
-        self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.blockchain.consensus.node.name)
+        self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.consensus.node.name)
 
-        self.validator_names = set(map(lambda x: x.name, self.blockchain.consensus.validator_candidates))
+        self.validator_names = set(map(lambda x: x.name, self.consensus.validator_candidates))
 
     def _wait_for_connecting_validators(self):
-        if not self.blockchain.consensus.all_validators_connected():
+        if not self.consensus.all_validators_connected():
             return False
 
         return True
@@ -50,7 +50,7 @@ class NoVotingAuditor(threading.Thread):
 
         while True:
             time.sleep(2)
-            histories = self.blockchain.voting_histories[self.checkpoint:]
+            histories = self.consensus.voting_histories[self.checkpoint:]
             if len(histories) < 1:
                 continue
 
@@ -58,7 +58,7 @@ class NoVotingAuditor(threading.Thread):
             last_allconfirm = None
             for index in range(len(histories) - 1, -1, -1):
                 history = histories[index]
-                if history['node_state'] not in (self.blockchain.consensus.get_last_state(),):
+                if history['node_state'] not in (self.consensus.get_last_state(),):
                     continue
 
                 last_allconfirm = index
@@ -73,7 +73,7 @@ class NoVotingAuditor(threading.Thread):
                 continue
 
             prev_checkpoint = self.checkpoint
-            self.checkpoint = len(self.blockchain.voting_histories)
+            self.checkpoint = len(self.consensus.voting_histories)
 
             voted_nodes = set()
             for i in filter(lambda x: x['ballot_id'] == last_allconfirm_history['ballot_id'], histories):
