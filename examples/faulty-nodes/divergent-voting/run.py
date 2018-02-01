@@ -145,7 +145,7 @@ if __name__ == '__main__':
         blockchains.append(blockchain)
 
         NodeRunner(blockchain).start()
-        DivergentAuditor(blockchain).start()
+        DivergentAuditor(consensus).start()
 
     prev = None
     while True:

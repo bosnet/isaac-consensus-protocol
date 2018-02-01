@@ -116,7 +116,7 @@ class DivergentAuditor(threading.Thread):
             if state not in ballot_dict[ballot_id]:
                 ballot_dict[ballot_id][state] = list()
 
-            if node_name in self.validator_names:
+            if node_name in self.validator_names or node_name == self.consensus.node_name:
                 ballot_dict[ballot_id][state].append(ballot)
         return ballot_dict
 
@@ -129,7 +129,7 @@ class DivergentAuditor(threading.Thread):
     def get_divergent_voting_nodes(self, ballot_list):
         agree_list = set(list())
         disagree_list = set(list())
-        minimum = self.consensus.minimum - 1  # except self ballot
+        minimum = self.consensus.minimum
         for ballot in ballot_list:
             node_name = ballot['node']
             result = ballot['result']
@@ -141,6 +141,7 @@ class DivergentAuditor(threading.Thread):
         self.remove_intersect_ballot(agree_list, disagree_list)
 
         divergent = set(list())
+
         if len(agree_list) >= minimum and len(disagree_list) > 0:
             divergent.update(disagree_list)
         elif len(disagree_list) >= minimum and len(agree_list) > 0:

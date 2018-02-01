@@ -39,6 +39,7 @@ class Fba(BaseConsensus):
         self.validator_candidates = validator_candidates
         self.validator_node_names = tuple([node.name] + list(map(lambda x: x.name, self.validator_candidates)))
         self.validators = dict()
+        self.middlewares = load_middlewares('consensus')
         self.voting_histories = list()
         self.init()
 

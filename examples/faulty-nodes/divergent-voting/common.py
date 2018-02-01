@@ -2,7 +2,6 @@ import random
 
 from bos_consensus.common import Ballot, BallotVotingResult
 from bos_consensus.consensus import get_fba_module
-from bos_consensus.middlewares import BaseMiddleware
 
 
 IsaacConsensus = get_fba_module('isaac').Consensus

@@ -6,8 +6,9 @@ from ..util import get_module
 
 def load_middlewares(module):
     middlewares = list()
+    blockchain_path = pathlib.Path(pathlib.Path(__file__).parent, module)
 
-    for i in pathlib.Path(__file__).parent.glob('*.py'):
+    for i in blockchain_path.glob('*.py'):
         if i.name.startswith('.') or i.name.startswith('_'):
             continue
         if i.name in ('base.py'):
