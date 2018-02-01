@@ -18,10 +18,10 @@ AUDITING_TIMEOUT = 5  # 5 seconds
 class DivergentAuditor(threading.Thread):
     checkpoint = None
 
-    def __init__(self, consensus):
+    def __init__(self, blockchain):
         super(DivergentAuditor, self).__init__()
 
-        self.consensus = consensus
+        self.consensus = blockchain.consensus
         self.checkpoint = 0
 
         self.log = logger.get_logger('audit.faulty-node.divergent-voting', node=self.consensus.node.name)
