@@ -91,6 +91,8 @@ class IsaacConsensus(Fba):
         return
 
     def _handle_allconfirm(self, ballot):
+        self.store(ballot)
+
         if self._is_new_ballot(ballot):
             self.init()
             self.handle_ballot(ballot)

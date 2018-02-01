@@ -14,10 +14,10 @@ AUDITING_TIMEOUT = 5  # 5 seconds
 class NoVotingAuditor(threading.Thread):
     checkpoint = None
 
-    def __init__(self, consensus):
+    def __init__(self, blockchain):
         super(NoVotingAuditor, self).__init__()
 
-        self.consensus = consensus
+        self.consensus = blockchain.consensus
         self.checkpoint = 0
 
         self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.consensus.node.name)
@@ -75,9 +75,11 @@ class NoVotingAuditor(threading.Thread):
             prev_checkpoint = self.checkpoint
             self.checkpoint = len(self.consensus.voting_histories)
 
+            if self.consensus.node_name == 'n3':
+                voted_nodes = set()
             voted_nodes = set()
             for i in filter(lambda x: x['ballot_id'] == last_allconfirm_history['ballot_id'], histories):
-                if i['node'] in voted_nodes:
+                if i['node'] in voted_nodes or i['node'] == self.consensus.node_name:
                     continue
 
                 voted_nodes.add(i['node'])
