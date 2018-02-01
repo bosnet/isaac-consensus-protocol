@@ -53,121 +53,121 @@ The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In
 The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `DivergentAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `divergent_node` per each node.
 
 ```
-● 1517380220.95049810 - audit.faulty-node.divergent-voting - METRI - {
+● 1517463534.81830812 - audit.faulty-node.divergent-voting - METR - {
   "checkpoint": 0,
   "validators": [
-    "n0",
-    "n3",
     "n7",
-    "n1"
-  ],
-  "divergent_voting_nodes": [
-    "n0"
-  ],
-  "logger": "audit.faulty-node.divergent-voting",
-  "node": "n2",
-  "created": 1517380220.950498
-}
-● 1517380220.95111489 - audit.faulty-node.divergent-voting - METRI - {
-  "checkpoint": 0,
-  "validators": [
     "n0",
-    "n3",
-    "n7",
-    "n2"
+    "n2",
+    "n3"
   ],
   "divergent_voting_nodes": [
     "n0"
   ],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n1",
-  "created": 1517380220.951115
+  "created": 1517463534.818308
 }
-● 1517380220.95158100 - audit.faulty-node.divergent-voting - METRI - {
+● 1517463534.81902385 - audit.faulty-node.divergent-voting - METR - {
   "checkpoint": 0,
   "validators": [
-    "n0",
-    "n1",
-    "n5",
-    "n2"
-  ],
-  "divergent_voting_nodes": [
-    "n0"
-  ],
-  "logger": "audit.faulty-node.divergent-voting",
-  "node": "n3",
-  "created": 1517380220.951581
-}
-● 1517380220.95203400 - audit.faulty-node.divergent-voting - METRI - {
-  "checkpoint": 0,
-  "validators": [
-    "n6",
-    "n3",
-    "n4",
-    "n1",
-    "n5",
-    "n2"
-  ],
-  "divergent_voting_nodes": [],
-  "logger": "audit.faulty-node.divergent-voting",
-  "node": "n0",
-  "created": 1517380220.952034
-}
-● 1517380220.95539498 - audit.faulty-node.divergent-voting - METRI - {
-  "checkpoint": 0,
-  "validators": [
-    "n6",
-    "n3",
-    "n4",
-    "n7"
-  ],
-  "divergent_voting_nodes": [
-    "n6"
-  ],
-  "logger": "audit.faulty-node.divergent-voting",
-  "node": "n5",
-  "created": 1517380220.955395
-}
-● 1517380220.95597792 - audit.faulty-node.divergent-voting - METRI - {
-  "checkpoint": 0,
-  "validators": [
-    "n0",
-    "n4",
     "n7",
-    "n5"
+    "n0",
+    "n5",
+    "n4"
   ],
   "divergent_voting_nodes": [
     "n0"
   ],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n6",
-  "created": 1517380220.955978
+  "created": 1517463534.8190238
 }
-● 1517380220.95650196 - audit.faulty-node.divergent-voting - METRI - {
+● 1517463534.81953192 - audit.faulty-node.divergent-voting - METR - {
   "checkpoint": 0,
   "validators": [
     "n6",
     "n1",
-    "n5",
-    "n2"
+    "n2",
+    "n5"
   ],
   "divergent_voting_nodes": [
     "n6"
   ],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n7",
-  "created": 1517380220.956502
+  "created": 1517463534.819532
 }
-● 1517380222.95162392 - audit.faulty-node.divergent-voting - METRI - {
+● 1517463534.82003880 - audit.faulty-node.divergent-voting - METR - {
   "checkpoint": 0,
   "validators": [
     "n1",
-    "n5",
-    "n6"
+    "n7",
+    "n0",
+    "n3"
+  ],
+  "divergent_voting_nodes": [
+    "n0"
+  ],
+  "logger": "audit.faulty-node.divergent-voting",
+  "node": "n2",
+  "created": 1517463534.8200388
+}
+● 1517463534.82052612 - audit.faulty-node.divergent-voting - METR - {
+  "checkpoint": 0,
+  "validators": [
+    "n1",
+    "n0",
+    "n2",
+    "n5"
+  ],
+  "divergent_voting_nodes": [
+    "n0"
+  ],
+  "logger": "audit.faulty-node.divergent-voting",
+  "node": "n3",
+  "created": 1517463534.8205261
+}
+● 1517463534.82070994 - audit.faulty-node.divergent-voting - METR - {
+  "checkpoint": 0,
+  "validators": [
+    "n6",
+    "n1",
+    "n5"
   ],
   "divergent_voting_nodes": [],
   "logger": "audit.faulty-node.divergent-voting",
   "node": "n4",
-  "created": 1517380222.951624
+  "created": 1517463534.82071
+}
+● 1517463534.84274697 - audit.faulty-node.divergent-voting - METR - {
+  "checkpoint": 0,
+  "validators": [
+    "n6",
+    "n7",
+    "n4",
+    "n3"
+  ],
+  "divergent_voting_nodes": [
+      "n6"
+  ],
+  "logger": "audit.faulty-node.divergent-voting",
+  "node": "n5",
+  "created": 1517463534.842747
+}
+● 1517463536.81973505 - audit.faulty-node.divergent-voting - METR - {
+  "checkpoint": 0,
+  "validators": [
+    "n6",
+    "n1",
+    "n2",
+    "n5",
+    "n4",
+    "n3"
+  ],
+  "divergent_voting_nodes": [],
+  "logger": "audit.faulty-node.divergent-voting",
+  "node": "n0",
+  "created": 1517463536.819735
 }
 ```
