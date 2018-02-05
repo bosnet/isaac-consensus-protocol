@@ -1,0 +1,31 @@
+---
+common:
+    network: default_http
+    threshold: 60
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+
+faulties:
+    n1:
+        - case:
+            kind: state_regression
+            frequency: 100  # how often make regressed state within one consensus
+            target_nodes:
+                - n0
+                - n2

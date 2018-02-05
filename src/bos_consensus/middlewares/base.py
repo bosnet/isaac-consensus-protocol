@@ -22,7 +22,7 @@ class BaseMiddleware(LoggingMixin):
         self.blockchain = blockchain
 
         super(BaseMiddleware, self).__init__()
-        self.set_logging('middleware', node=self.blockchain.consensus.node.name)
+        self.set_logging('middleware:%s' % self.__class__.__name__, node=self.blockchain.consensus.node.name)
 
     def received_ballot(self, ballot):
         pass

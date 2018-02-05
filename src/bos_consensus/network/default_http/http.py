@@ -166,6 +166,9 @@ class BOSNetHTTPServer(ThreadingMixIn, HTTPServer):
         self.version = '0.8.1'
         self.lqueue = LockedQueue()
         self.blockchain = blockchain
+
+        self.log = logger.get_logger('http', node=blockchain.node.name)
+
         self.node_name = blockchain.node_name
         self.blockchain_manager = BlockchainManager(self.blockchain)
 
@@ -285,18 +288,32 @@ class Transport(BaseTransport):
 
         return
 
-    def send(self, endpoint, data):
+    def send(self, endpoint, data, retries=None):
+        if retries is None:
+            retries = 3
+
         node_name = self.blockchain.node_name
         self.log.debug('[%s] begin send_to %s' % (node_name, endpoint))
         post_data = json.dumps(data)
-        try:
-            response = requests.post(urllib.parse.urljoin(endpoint.uri, '/send_ballot'), data=post_data)
-            if response.status_code == 200:
-                self.log.debug('[%s] sent to %s' % (node_name, endpoint))
-        except requests.exceptions.ConnectionError:
-            self.log.error('[%s] Connection to %s Refused' % (node_name, endpoint))
 
-        return
+        n = 0
+        while n < retries:
+            try:
+                response = requests.post(urllib.parse.urljoin(endpoint.uri, '/send_ballot'), data=post_data)
+                response.raise_for_status()
+            except Exception as e:
+                self.log.error('failed to send: tries=%d data=%s to=%s: %s', n, data, endpoint, e)
+
+                n += 1
+                continue
+            else:
+                self.log.debug('successfully sent data=%s to=%s', data, endpoint)
+
+                return True
+
+        self.log.error('max retries, %d exceeded: data=%s to=%s', retries, data, endpoint)
+
+        return False
 
 
 class Server(BaseServer):
