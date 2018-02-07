@@ -74,10 +74,8 @@ class Fba(BaseConsensus):
 
     def add_to_validators(self, node):
         is_new = node.name not in self.validators
-
-        self.validators[node.name] = {'node': node, 'ballot': None}
-
         if is_new:
+            self.validators[node.name] = {'node': node, 'ballot': None}
             self.log.debug('added to validators: is_new=%s node=%s', is_new, node)
             self.log.metric(action='connected', target=node.name, validators=list(self.validators.keys()))
 
