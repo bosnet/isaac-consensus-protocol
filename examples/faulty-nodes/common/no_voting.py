@@ -1,12 +1,12 @@
 import random
 
 from bos_consensus.middlewares import (
-    BaseMiddleware,
-    StopConsensus,
+    BaseBlockchainMiddleware,
+    StopReceiveBallot,
 )
 
 
-class NoVotingMiddleware(BaseMiddleware):
+class NoVotingMiddleware(BaseBlockchainMiddleware):
     faulty_frequency = None
 
     def __init__(self, *a, **kw):
@@ -23,11 +23,11 @@ class NoVotingMiddleware(BaseMiddleware):
                     self.log.info('[%s] no voting for ballot, %s in %s', consensus.node.name, ballot, consensus.state)
                     self.blockchain.no_voting_ballot_ids.append(ballot.ballot_id)
 
-                    raise StopConsensus()
+                    raise StopReceiveBallot()
 
         if ballot.ballot_id in self.blockchain.no_voting_ballot_ids:
             self.log.info('[%s] no voting for ballot, %s in %s', consensus.node.name, ballot, consensus.state)
 
-            raise StopConsensus()
+            raise StopReceiveBallot()
 
         return

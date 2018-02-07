@@ -68,7 +68,7 @@ class Ballot:
         return json.dumps(o)
 
     @classmethod
-    def new(cls, node_name, message, state, result=BallotVotingResult.agree):
+    def new(cls, node_name, message, state, result=BallotVotingResult.disagree):
         assert isinstance(message, Message)
 
         return cls(

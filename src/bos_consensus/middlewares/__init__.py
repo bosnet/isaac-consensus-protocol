@@ -1,6 +1,16 @@
 from .base import (  # noqa
-    BaseMiddleware,
     load_middlewares,
-    NoFurtherMiddlewares,
-    StopConsensus,
+)
+
+from .blockchain.base import (
+    NoFurtherBlockchainMiddlewares,
+    StopReceiveBallot,
+    BaseBlockchainMiddleware,
+)
+
+from .consensus.base import (
+    NoFurtherConsensusMiddlewares,
+    StopStore,
+    StopBroadcast,
+    BaseConsensusMiddleware,
 )

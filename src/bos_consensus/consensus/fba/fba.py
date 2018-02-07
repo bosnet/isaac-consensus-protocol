@@ -3,6 +3,12 @@ import math
 
 from ...common.ballot import Ballot, BallotVotingResult
 from ...consensus.base import BaseConsensus
+from bos_consensus.middlewares import (
+    load_middlewares,
+    NoFurtherConsensusMiddlewares,
+    StopBroadcast,
+    StopStore,
+)
 from ...common.node import Node
 
 
@@ -16,6 +22,8 @@ class Fba(BaseConsensus):
     validators = None
     validator_candidates = None
     transport = None
+    middlewares = list()
+    voting_histories = None  # for auditing received ballots
 
     def __init__(self, node, threshold, validator_candidates):
         assert isinstance(node, Node)
@@ -31,6 +39,8 @@ class Fba(BaseConsensus):
         self.validator_candidates = validator_candidates
         self.validator_node_names = tuple([node.name] + list(map(lambda x: x.name, self.validator_candidates)))
         self.validators = dict()
+        self.middlewares = load_middlewares('consensus')
+        self.voting_histories = list()
         self.init()
 
     def set_self_node_to_validators(self):
@@ -112,22 +122,73 @@ class Fba(BaseConsensus):
     def handle_ballot(self, ballot):
         raise NotImplementedError()
 
+    def _is_new_ballot(self, ballot):
+        if self.node_name not in self.validators or not self.validators[self.node_name]:
+            return True
+        old_ballot = self.validators[self.node_name]['ballot']
+        return not old_ballot or old_ballot.message.data != ballot.message.data  # noqa
+
+    def make_self_ballot(self, ballot):
+        return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
+
     def broadcast(self, ballot):
+        '''
+        Middleware for broadcast
+            1. each middleware execute before and after broadcast
+            1. if method of middleware returns,
+                * `None`: pass
+                * `NoFurtherConsensusMiddlewares`: stop middlewares
+                * `StopBroadcast`: stop broadcast
+            1. middleware keep the state in `broadcast`
+        '''
         assert isinstance(ballot, Ballot)
+
+        middlewares = list(map(lambda x: x(self), self.middlewares))
+
+        for m in middlewares:
+            try:
+                m.broadcast(ballot)
+            except NoFurtherConsensusMiddlewares as e:
+                self.log.debug('break middleware: %s', e)
+                break
+            except StopBroadcast as e:
+                self.log.debug('stop consensus: %s', e)
+                return
+
 
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
 
-        new = Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
-        self.store(new)
-
+        self.store(ballot)
         for name, validator in self.validators.items():
             if name is not self.node_name:
-                self.transport.send(validator['node'].endpoint, new.serialize(to_string=False))
+                self.transport.send(validator['node'].endpoint, ballot.serialize(to_string=False))
 
         return
 
     def store(self, ballot):
+        '''
+        Middleware for store
+            1. each middleware execute before and after store
+            1. if method of middleware returns,
+                * `None`: pass
+                * `NoFurtherConsensusMiddlewares`: stop middlewares
+                * `StopStore`: stop store
+            1. middleware keep the state in `store`
+        '''
         assert isinstance(ballot, Ballot)
+
+        middlewares = list(map(lambda x: x(self), self.middlewares))
+
+        for m in middlewares:
+            try:
+                m.store(ballot)
+            except NoFurtherConsensusMiddlewares as e:
+                self.log.debug('break middleware: %s', e)
+                break
+            except StopStore as e:
+                self.log.debug('stop consensus: %s', e)
+                return
+
 
         if self.state > ballot.state:
             self.log.debug('found state regression ballot=%s state=%s', ballot, self.state)

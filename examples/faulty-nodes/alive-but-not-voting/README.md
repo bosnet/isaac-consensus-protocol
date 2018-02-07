@@ -46,11 +46,11 @@ The 'debug' will produce so massive messages :) To make something happened, run 
 $ run-client.py  -p 54320
 ```
 
-The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In `example.yml`, the faulty nodes are 'n1' and 'n7', which will be faulty node in 100%, `faulties.<node>.n0.case.frequency.per_consensus` is `1.0`.
+The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In `example.yml`, the faulty nodes are 'n0' and 'n7', which will be faulty node in 100%, `faulties.<node>.n0.case.frequency.per_consensus` is `100`.
 
 ## Check Logs
 
-The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Blockchain.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `no_voting_nodea` per each node.
+The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `no_voting_nodes` per each node.
 
 ```
 ● 1517182997.42433095 - audit.faulty-node.no-voting - METRI - {

@@ -181,6 +181,40 @@
             "WaitOnNormalExit",
             "RedirectOutput"
         ]
+    },
+    {
+        "name": "faulty divergent-voting",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": true,
+        "pythonPath": "${config:python.pythonPath}",
+        "program": "${workspaceRoot}/examples/faulty-nodes/divergent-voting/run.py",
+        "cwd": "${workspaceRoot}/examples/faulty-nodes/divergent-voting",
+        "args": ["${workspaceRoot}/examples/faulty-nodes/divergent-voting/example.yml", "-log-level", "info"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
+        "name": "faulty no-voting",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": true,
+        "pythonPath": "${config:python.pythonPath}",
+        "program": "${workspaceRoot}/examples/faulty-nodes/run-case.py",
+        "cwd": "${workspaceRoot}/examples/faulty-nodes/divergent-voting",
+        "args": ["${workspaceRoot}/examples/faulty-nodes/alive-but-not-voting/example.yml", "-log-level", "info"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
     }
     ]
 }
