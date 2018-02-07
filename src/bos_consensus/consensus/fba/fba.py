@@ -103,6 +103,7 @@ class Fba(BaseConsensus):
         return dict(
             validator_candidates=list(map(lambda x: x.to_dict(), self.validator_candidates)),
             threshold=self.threshold,
+            messages=list(map(lambda x: x.serialize(), self.messages)),
         )
 
     def all_validators_connected(self):
