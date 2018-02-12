@@ -34,16 +34,16 @@ def test_state_lifecycle():
         [node_name_1, node_name_2],
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
     bc1.consensus.init()
 
-    bc2.consensus.add_to_validators(bc1.node)
-    bc2.consensus.add_to_validators(bc3.node)
+    bc2.consensus.add_to_validator_connected(bc1.node)
+    bc2.consensus.add_to_validator_connected(bc3.node)
     bc2.consensus.init()
 
-    bc3.consensus.add_to_validators(bc1.node)
-    bc3.consensus.add_to_validators(bc2.node)
+    bc3.consensus.add_to_validator_connected(bc1.node)
+    bc3.consensus.add_to_validator_connected(bc2.node)
     bc3.consensus.init()
 
     message = Message.new('message')
@@ -52,13 +52,13 @@ def test_state_lifecycle():
     ballot_init_3 = Ballot.new(node_name_3, message, IsaacState.INIT)
 
     bc1.receive_ballot(ballot_init_1)
-    assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.INIT
+    assert bc1.consensus.validator_ballots[bc1.node_name].state == IsaacState.INIT
     bc1.receive_ballot(ballot_init_2)
-    assert bc1.consensus.validators[bc2.node_name]['ballot'].state == IsaacState.INIT
+    assert bc1.consensus.validator_ballots[bc2.node_name].state == IsaacState.INIT
     bc1.receive_ballot(ballot_init_3)
-    assert bc1.consensus.validators[bc3.node_name]['ballot'].state == IsaacState.INIT
+    assert bc1.consensus.validator_ballots[bc3.node_name].state == IsaacState.INIT
 
-    assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.SIGN
+    assert bc1.consensus.validator_ballots[bc1.node_name].state == IsaacState.SIGN
     assert bc1.get_state() == IsaacState.SIGN
 
     bc2.receive_ballot(ballot_init_1)
@@ -74,12 +74,12 @@ def test_state_lifecycle():
     ballot_sign_3 = Ballot.new(node_name_3, message, IsaacState.SIGN)
 
     bc1.receive_ballot(ballot_sign_1)
-    assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.SIGN
+    assert bc1.consensus.validator_ballots[bc1.node_name].state == IsaacState.SIGN
     bc1.receive_ballot(ballot_sign_2)
-    assert bc1.consensus.validators[bc2.node_name]['ballot'].state == IsaacState.SIGN
+    assert bc1.consensus.validator_ballots[bc2.node_name].state == IsaacState.SIGN
     bc1.receive_ballot(ballot_sign_3)
-    assert bc1.consensus.validators[bc3.node_name]['ballot'].state == IsaacState.SIGN
-    assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.ACCEPT
+    assert bc1.consensus.validator_ballots[bc3.node_name].state == IsaacState.SIGN
+    assert bc1.consensus.validator_ballots[bc1.node_name].state == IsaacState.ACCEPT
 
     bc2.receive_ballot(ballot_sign_1)
     bc2.receive_ballot(ballot_sign_2)
@@ -98,13 +98,13 @@ def test_state_lifecycle():
     ballot_accept_3 = Ballot.new(node_name_3, message, IsaacState.ACCEPT)
 
     bc1.receive_ballot(ballot_sign_1)    # different state ballot
-    assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.ACCEPT
-    assert bc1.consensus.validators[bc2.node_name]['ballot'].state == IsaacState.SIGN
+    assert bc1.consensus.validator_ballots[bc1.node_name].state == IsaacState.ACCEPT
+    assert bc1.consensus.validator_ballots[bc2.node_name].state == IsaacState.SIGN
     bc1.receive_ballot(ballot_accept_2)
-    assert bc1.consensus.validators[bc2.node_name]['ballot'].state == IsaacState.ACCEPT
+    assert bc1.consensus.validator_ballots[bc2.node_name].state == IsaacState.ACCEPT
     bc1.receive_ballot(ballot_accept_3)
-    assert bc1.consensus.validators[bc3.node_name]['ballot'].state == IsaacState.ACCEPT
-    assert bc1.consensus.validators[bc1.node_name]['ballot'].state == IsaacState.ALLCONFIRM
+    assert bc1.consensus.validator_ballots[bc3.node_name].state == IsaacState.ACCEPT
+    assert bc1.consensus.validator_ballots[bc1.node_name].state == IsaacState.ALLCONFIRM
 
     bc2.receive_ballot(ballot_accept_1)
     bc2.receive_ballot(ballot_accept_2)

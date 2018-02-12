@@ -19,7 +19,7 @@ class FbaState(enum.IntEnum):
 class Fba(BaseConsensus):
     state = None
     threshold = None
-    validators = None
+    validator_ballots = None
     validator_candidates = None
     transport = None
     middlewares = list()
@@ -38,14 +38,15 @@ class Fba(BaseConsensus):
         self.threshold = threshold
         self.validator_candidates = validator_candidates
         self.validator_node_names = tuple([node.name] + list(map(lambda x: x.name, self.validator_candidates)))
-        self.validators = dict()
+        self.validator_connected = dict()
+        self.validator_ballots = dict()
         self.middlewares = load_middlewares('consensus')
         self.voting_histories = list()
         self.init()
 
     def set_self_node_to_validators(self):
-        if self.node_name not in self.validators:
-            self.add_to_validators(self.node)
+        if self.node_name not in self.validator_connected:
+            self.add_to_validator_connected(self.node)
 
         return
 
@@ -72,23 +73,23 @@ class Fba(BaseConsensus):
 
         return
 
-    def add_to_validators(self, node):
-        is_new = node.name not in self.validators
+    def add_to_validator_connected(self, node):
+        is_new = node.name not in self.validator_connected
         if is_new:
-            self.validators[node.name] = {'node': node, 'ballot': None}
+            self.validator_connected[node.name] = node
             self.log.debug('added to validators: is_new=%s node=%s', is_new, node)
-            self.log.metric(action='connected', target=node.name, validators=list(self.validators.keys()))
+            self.log.metric(action='connected', target=node.name, validators=list(self.validator_connected.keys()))
 
         return
 
     def remove_from_validators(self, node):
-        if node.name not in self.validators:
+        if node.name not in self.validator_connected:
             return
 
-        del self.validators[node.name]
+        del self.validator_connected[node.name]
 
         self.log.debug('removed from validators: %s', node)
-        self.log.metric(action='removed', target=node.name, validators=list(self.validators.keys()))
+        self.log.metric(action='removed', target=node.name, validators=list(self.validator_connected.keys()))
 
         return
 
@@ -96,9 +97,7 @@ class Fba(BaseConsensus):
         return name not in self.validator_node_names
 
     def clear_validator_ballots(self):
-        for key in self.validators.keys():
-            if 'ballot' in self.validators[key]:
-                self.validators[key]['ballot'] = None
+        self.validator_ballots.clear()
 
     @property
     def minimum(self):
@@ -115,16 +114,19 @@ class Fba(BaseConsensus):
         )
 
     def all_validators_connected(self):
-        return len(self.validator_candidates) + 1 == len(self.validators)
+        return len(self.validator_candidates) + 1 == len(self.validator_connected)
 
     def handle_ballot(self, ballot):
         raise NotImplementedError()
 
-    def _is_new_ballot(self, ballot):
-        if self.node_name not in self.validators or not self.validators[self.node_name]:
+    def _is_new_ballot(self, ballot):  #[TODO] search in ballot_history
+        if not self.validator_ballots:
             return True
-        old_ballot = self.validators[self.node_name]['ballot']
-        return not old_ballot or old_ballot.message.data != ballot.message.data  # noqa
+        if ballot.node_name not in self.validator_ballots:
+            return True
+        if ballot.ballot_id != self.validator_ballots[ballot.node_name].ballot_id:
+            return True
+        return False
 
     def make_self_ballot(self, ballot):
         return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
@@ -157,9 +159,9 @@ class Fba(BaseConsensus):
         self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
 
         self.store(ballot)
-        for name, validator in self.validators.items():
-            if name is not self.node_name:
-                self.transport.send(validator['node'].endpoint, ballot.serialize(to_string=False))
+        for node_name, node in self.validator_connected.items():
+            if node_name is not self.node_name:
+                self.transport.send(node.endpoint, ballot.serialize(to_string=False))
 
         return
 
@@ -193,7 +195,7 @@ class Fba(BaseConsensus):
 
             return
 
-        self.validators[ballot.node_name]['ballot'] = ballot
+        self.validator_ballots[ballot.node_name] = ballot
 
         self.log.debug('ballot stored state=%s ballot=%s', self.state, ballot)
 

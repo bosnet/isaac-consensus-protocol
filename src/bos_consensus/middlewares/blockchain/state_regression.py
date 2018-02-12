@@ -4,8 +4,8 @@ from .base import BaseBlockchainMiddleware
 class Middleware(BaseBlockchainMiddleware):
     def received_ballot(self, ballot):
         validator_ballots = list(map(
-            lambda x: (x['node'].name, x['ballot'].state if x['ballot'] else ''),
-            self.blockchain.consensus.validators.values(),
+            lambda x: (x.node_name, x.state),
+            self.blockchain.consensus.validator_ballots.values(),
         ))
         self.log.debug(
             'ballot received: %s -> %s validator_ballots=%s ballot=%s',
@@ -15,10 +15,10 @@ class Middleware(BaseBlockchainMiddleware):
             ballot,
         )
 
-        if ballot.node_name not in self.blockchain.consensus.validators:
+        if ballot.node_name not in self.blockchain.consensus.validator_ballots:
             return
 
-        existing = self.blockchain.consensus.validators[ballot.node_name]['ballot']
+        existing = self.blockchain.consensus.validator_ballots[ballot.node_name]
         if existing is None:
             return
 

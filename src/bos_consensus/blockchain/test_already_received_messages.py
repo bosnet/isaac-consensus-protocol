@@ -72,8 +72,8 @@ def test_same_message_after_allconfirm():
     node2 = node_factory(node_id_2, Endpoint.from_uri('http://localhost:5002'))
     node3 = node_factory(node_id_3, Endpoint.from_uri('http://localhost:5003'))
 
-    blockchain1.consensus.add_to_validators(node2)
-    blockchain1.consensus.add_to_validators(node3)
+    blockchain1.consensus.add_to_validator_connected(node2)
+    blockchain1.consensus.add_to_validator_connected(node3)
 
     message = Message.new('message')
 
@@ -89,7 +89,7 @@ def test_same_message_after_allconfirm():
 
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
-    assert len(blockchain1.consensus.validators) > 0
+    assert len(blockchain1.consensus.validator_connected) > 0
 
     ballot1 = copy_ballot(ballot1, node_id_1, IsaacState.ACCEPT)
     ballot2 = copy_ballot(ballot1, node_id_2, IsaacState.ACCEPT)
@@ -100,8 +100,8 @@ def test_same_message_after_allconfirm():
     assert blockchain1.consensus.state == IsaacState.ALLCONFIRM
 
     # `Node.validator_ballots` will have same `ballot_id`
-    validator_value_list = blockchain1.consensus.validators.values()
-    assert list(set(map(lambda x: x['ballot'].ballot_id, validator_value_list))) == [ballot1.ballot_id]
+    ballots = blockchain1.consensus.validator_ballots.values()
+    assert list(set(map(lambda x: x.ballot_id, ballots))) == [ballot1.ballot_id]
 
     # send same message in new ballot
     new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
@@ -117,8 +117,8 @@ def test_same_message_after_allconfirm():
     # node state still remains the previous state
     assert blockchain1.consensus.state == IsaacState.ALLCONFIRM
 
-    validator_value_list = blockchain1.consensus.validators.values()
-    assert len(list(filter(lambda x: x['ballot'].ballot_id == ballot1.ballot_id, validator_value_list))) < 1
+    ballots = blockchain1.consensus.validator_ballots.values()
+    assert len(list(filter(lambda x: x.ballot_id == ballot1.ballot_id, ballots))) < 1
 
     return
 
@@ -138,8 +138,8 @@ def test_same_message_after_init():
     node2 = node_factory(node_id_2, Endpoint.from_uri('http://localhost:5002'))
     node3 = node_factory(node_id_3, Endpoint.from_uri('http://localhost:5003'))
 
-    blockchain1.consensus.add_to_validators(node2)
-    blockchain1.consensus.add_to_validators(node3)
+    blockchain1.consensus.add_to_validator_connected(node2)
+    blockchain1.consensus.add_to_validator_connected(node3)
 
     message = Message.new('message')
 
@@ -151,7 +151,7 @@ def test_same_message_after_init():
 
     assert blockchain1.get_state() == IsaacState.SIGN
 
-    existing_ballot_ids = set(map(lambda x: x['ballot'].ballot_id, blockchain1.consensus.validators.values()))
+    existing_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.validator_ballots.values()))
 
     # send same message in new ballot, which has previous state
     new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
@@ -168,10 +168,10 @@ def test_same_message_after_init():
     assert blockchain1.consensus.state == IsaacState.SIGN
 
     assert len(list(filter(
-        lambda x: x['ballot'].ballot_id == ballot1.ballot_id, blockchain1.consensus.validators.values()
+        lambda x: x.ballot_id == ballot1.ballot_id, blockchain1.consensus.validator_ballots.values()
     ))) < 1
 
-    current_ballot_ids = set(map(lambda x: x['ballot'].ballot_id, blockchain1.consensus.validators.values()))
+    current_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.validator_ballots.values()))
 
     assert existing_ballot_ids == current_ballot_ids
 

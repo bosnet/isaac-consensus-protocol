@@ -42,9 +42,9 @@ def test_next_message():
         [node_name_1, node_name_2, node_name_3],
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
-    bc1.consensus.add_to_validators(bc4.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc4.node)
     bc1.consensus.init()
 
     message_1 = Message.new('message-1')

@@ -81,8 +81,8 @@ def test_state_init_to_sign():
         [node_name_1, node_name_2]
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
     bc1.consensus.init()
 
     message = Message.new('message')
@@ -123,16 +123,16 @@ def test_state_init_to_all_confirm_sequence():
         [node_name_1, node_name_2],
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
     bc1.consensus.init()
 
-    bc2.consensus.add_to_validators(bc1.node)
-    bc2.consensus.add_to_validators(bc3.node)
+    bc2.consensus.add_to_validator_connected(bc1.node)
+    bc2.consensus.add_to_validator_connected(bc3.node)
     bc2.consensus.init()
 
-    bc3.consensus.add_to_validators(bc1.node)
-    bc3.consensus.add_to_validators(bc2.node)
+    bc3.consensus.add_to_validator_connected(bc1.node)
+    bc3.consensus.add_to_validator_connected(bc2.node)
     bc3.consensus.init()
 
     message = Message.new('message')
@@ -231,9 +231,9 @@ def test_state_jump_from_init():
         [node_name_1, node_name_2, node_name_3],
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
-    bc1.consensus.add_to_validators(bc4.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc4.node)
     bc1.consensus.init()
 
     message = Message.new('message')
@@ -300,9 +300,9 @@ def test_next_message():
         [node_name_1, node_name_2, node_name_3],
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
-    bc1.consensus.add_to_validators(bc4.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc4.node)
     bc1.consensus.init()
 
     message_1 = Message.new('message-1')

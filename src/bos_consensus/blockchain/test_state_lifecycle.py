@@ -34,16 +34,16 @@ def test_state_lifecycle():
         [node_name_1, node_name_2],
     )
 
-    bc1.consensus.add_to_validators(bc2.node)
-    bc1.consensus.add_to_validators(bc3.node)
+    bc1.consensus.add_to_validator_connected(bc2.node)
+    bc1.consensus.add_to_validator_connected(bc3.node)
     bc1.consensus.init()
 
-    bc2.consensus.add_to_validators(bc1.node)
-    bc2.consensus.add_to_validators(bc3.node)
+    bc2.consensus.add_to_validator_connected(bc1.node)
+    bc2.consensus.add_to_validator_connected(bc3.node)
     bc2.consensus.init()
 
-    bc3.consensus.add_to_validators(bc1.node)
-    bc3.consensus.add_to_validators(bc2.node)
+    bc3.consensus.add_to_validator_connected(bc1.node)
+    bc3.consensus.add_to_validator_connected(bc2.node)
     bc3.consensus.init()
 
     message = Message.new('message')

@@ -36,8 +36,8 @@ class IsaacConsensus(Fba):
         #   it will be passed.
         #  1. if `ballot` is same except `ballot_id`, it will be passed
         assert isinstance(ballot, Ballot)
-        if ballot.node_name in self.validators:
-            existing = self.validators[ballot.node_name]['ballot']
+        if ballot.node_name in self.validator_ballots:
+            existing = self.validator_ballots[ballot.node_name]
             if ballot == existing:
                 return
 
@@ -100,8 +100,10 @@ class IsaacConsensus(Fba):
         return
 
     def _check_threshold(self):
-        ballots = list(map(lambda node: node['ballot'], self.validators.values()))
+        ballots = self.validator_ballots.values()
         validator_th = self.minimum
+
+        self.log.debug('[%s] check_threshold: ballots=%s', self.node_name, ballots)
 
         for ballot in ballots:
             if ballot is None:
@@ -114,12 +116,11 @@ class IsaacConsensus(Fba):
                 validator_th -= 1
 
             self.log.debug(
-                '[%s] ballot.node_name=%s validator_th=%s minimum_quorum=%s ballots=%s',
+                '[%s] ballot.node_name=%s threshold=(%s/%s)',
                 self.node_name,
                 ballot.node_name,
                 validator_th,
                 self.minimum,
-                ballots,
             )
 
         return validator_th < 1

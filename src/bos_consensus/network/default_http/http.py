@@ -56,7 +56,7 @@ class Ping(threading.Thread):
             n += 1
             time.sleep(2)
 
-            now = set(consensus.validators.keys())
+            now = set(consensus.validator_connected.keys())
             if now != prev:
                 if consensus.all_validators_connected():
                     self.log.debug('[%d] all nodes were connected: %s -> %s', n, prev, now)
@@ -86,7 +86,7 @@ class Ping(threading.Thread):
 
                     consensus.remove_from_validators(node)
                 else:
-                    consensus.add_to_validators(self.get_node(get_node_response))
+                    consensus.add_to_validator_connected(self.get_node(get_node_response))
 
                     if node.name not in prev:
                         self.log.debug("[%d] successfully connected to %s", n, node)
