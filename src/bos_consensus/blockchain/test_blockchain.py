@@ -1,18 +1,12 @@
-from ..common.ballot import Ballot
-from ..network import BaseTransport, Endpoint
+from ..common import Ballot, Message, node_factory
+from ..network import Endpoint
 from ..blockchain import Blockchain
 from ..consensus import get_fba_module
-from ..common.node import node_factory
 from ..consensus.fba.isaac import IsaacState
-from ..common.message import Message
+from .util import StubTransport
 
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus
-
-
-class StubTransport(BaseTransport):
-    def send(self, _, __):
-        return
 
 
 def blockchain_factory(name, address, threshold, validator_endpoint_uris):

@@ -342,7 +342,6 @@ class LocalTransport(BaseTransport):
 
 class BaseServer:
     name = None
-    transport_class = None
     transport = None
 
     def __init__(self, name, transport):

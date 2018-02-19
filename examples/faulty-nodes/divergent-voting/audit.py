@@ -112,7 +112,7 @@ class DivergentAuditor(threading.Thread):
 
             if ballot_id not in ballot_dict:
                 ballot_dict[ballot_id] = dict()
-            
+
             if state not in ballot_dict[ballot_id]:
                 ballot_dict[ballot_id][state] = list()
 
@@ -137,7 +137,7 @@ class DivergentAuditor(threading.Thread):
                 agree_list.add(node_name)
             else:
                 disagree_list.add(node_name)
-        
+
         self.remove_intersect_ballot(agree_list, disagree_list)
 
         divergent = set(list())

@@ -4,3 +4,4 @@ from .isaac import (  # noqa
 )
 State = IsaacState
 Consensus = IsaacConsensus
+State = IsaacState

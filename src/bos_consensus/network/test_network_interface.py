@@ -6,18 +6,19 @@ import time
 import traceback
 import urllib
 
-from ..common.ballot import Ballot
+from ..common import Ballot, Message, node_factory
 from ..blockchain import Blockchain
 from ..network import Endpoint, get_network_module
 from ..consensus.fba.isaac import IsaacConsensus
 from ..consensus.fba.isaac import IsaacState
-from ..common.message import Message
-from ..common.node import node_factory
-from ..util import get_free_port
+from ..util import get_free_port, logger, LOG_LEVEL_METRIC
 
 
 PORT = get_free_port()
 NODE_NAME = 'n1'
+
+
+logger.set_level(LOG_LEVEL_METRIC, 'consensus')
 
 
 class Server(threading.Thread):
@@ -39,6 +40,9 @@ class Server(threading.Thread):
 
         class TestTransport(network_module.Transport):
             http_server_class = TestBOSNetHTTPServer
+
+            def set_requests(self):
+                self.requests = requests
 
         node = node_factory(self.node_name, Endpoint('http', 'localhost', self.port))
 

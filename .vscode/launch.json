@@ -19,14 +19,48 @@
             ]
         },
         {
-            "name": "run star_cluster server",
+            "name": "run star_cluster",
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
             "program": "${workspaceRoot}/examples/star_cluster_scripts/run-star-cluster.py",
             "cwd": "${workspaceRoot}/examples/star_cluster_scripts/",
-            "args": ["-i", "${workspaceRoot}/examples/star_cluster_scripts/star_cluster_conf.json", "-info"],
+            "args": ["-i", "${workspaceRoot}/examples/star_cluster_scripts/star_cluster_conf.json", "-log-level", "info"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "run star_cluster_lifecycle",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/examples/star_cluster_scripts/run-star-cluster-lifecycle.py",
+            "cwd": "${workspaceRoot}/examples/star_cluster_scripts/",
+            "args": ["-i", "${workspaceRoot}/examples/star_cluster_scripts/lifecycle_star_cluster.json", "-c", "${workspaceRoot}/examples/star_cluster_scripts/lifecycle_commet.json", "-log-level", "debug"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "run-commet",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/examples/star_cluster_scripts/run-commet.py",
+            "cwd": "${workspaceRoot}/examples/star_cluster_scripts/",
+            "args": ["-i", "${workspaceRoot}/examples/star_cluster_scripts/commet_conf.json"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [

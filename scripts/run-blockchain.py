@@ -7,7 +7,7 @@ import uuid
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.network import Endpoint, get_network_module, BaseServer
-from bos_consensus.common.node import Node, node_factory
+from bos_consensus.common import Node, node_factory
 
 from bos_consensus.util import (
     get_local_ipaddress,
@@ -76,6 +76,7 @@ def main(options):
     transport = NETWORK_MODULE.Transport(bind=('0.0.0.0', config.port))
 
     blockchain = Blockchain(consensus, transport)
+
     base_server = BaseServer(blockchain)
     base_server.start()
 

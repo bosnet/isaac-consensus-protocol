@@ -1,14 +1,20 @@
 from ..network import Endpoint, BaseTransport
 from ..blockchain import Blockchain
 from ..consensus import get_fba_module
-from ..common.node import node_factory
+from ..common import node_factory
 
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus
 
 
 class StubTransport(BaseTransport):
+    def __init__(self, *a, **kw):
+        super(StubTransport, self).__init__(*a, **kw)
+
     def send(self, _, __):
+        pass
+
+    def set_requests(self):
         return
 
 

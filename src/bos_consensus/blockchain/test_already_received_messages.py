@@ -1,11 +1,10 @@
 import copy
 
-from bos_consensus.common.ballot import Ballot
+from bos_consensus.common import Ballot, Message, node_factory
 from bos_consensus.consensus import get_fba_module
-from bos_consensus.common.message import Message
-from bos_consensus.network import Endpoint, get_network_module
-from bos_consensus.common.node import node_factory
+from bos_consensus.network import Endpoint
 from .blockchain import Blockchain
+from .util import StubTransport
 
 
 def copy_ballot(ballot, node_name, state):
@@ -17,17 +16,8 @@ def copy_ballot(ballot, node_name, state):
     return new_ballot
 
 
-IsaacConsensus = get_fba_module('isaac').IsaacConsensus
-IsaacState = get_fba_module('isaac').IsaacState
-Transport = get_network_module('default_http').Transport
-
-
-class StubTransport(Transport):
-    def __init__(self, *a, **kw):
-        super(StubTransport, self).__init__(*a, **kw)
-
-    def send(self, addr, data):
-        pass
+Consensus = get_fba_module('isaac').Consensus
+IsaacState = get_fba_module('isaac').State
 
 
 class SimpleBlockchain(Blockchain):
@@ -50,7 +40,7 @@ def simple_blockchain_factory(name, address, threshold, validator_endpoint_uris)
             node_factory(uri, Endpoint(uri, uri, 0)),
         )
 
-    consensus = IsaacConsensus(node, threshold, validators)
+    consensus = Consensus(node, threshold, validators)
 
     transport = StubTransport(bind=('0.0.0.0', 5001))
 

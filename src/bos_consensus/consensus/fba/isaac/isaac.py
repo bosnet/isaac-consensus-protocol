@@ -1,7 +1,7 @@
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
-from bos_consensus.common.ballot import Ballot
+from bos_consensus.common import Ballot
 
 
 class IsaacState(FbaState):
@@ -103,7 +103,12 @@ class IsaacConsensus(Fba):
         ballots = self.validator_ballots.values()
         validator_th = self.minimum
 
-        self.log.debug('[%s] check_threshold: ballots=%s', self.node_name, ballots)
+        self.log.debug(
+            '[%s] check_threshold: validators=%s ballots=%s',
+            self.node_name,
+            self.validator_ballots.keys(),
+            ballots,
+        )
 
         for ballot in ballots:
             if ballot is None:
@@ -116,11 +121,12 @@ class IsaacConsensus(Fba):
                 validator_th -= 1
 
             self.log.debug(
-                '[%s] ballot.node_name=%s threshold=(%s/%s)',
+                '[%s] ballot.node_name=%s threshold=(%s/%s) validators=%s',
                 self.node_name,
                 ballot.node_name,
                 validator_th,
                 self.minimum,
+                tuple(self.validator_ballots.keys()),
             )
 
         return validator_th < 1

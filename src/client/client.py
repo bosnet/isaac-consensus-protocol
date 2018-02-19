@@ -5,7 +5,7 @@ import urllib
 import colorlog
 import requests
 
-from bos_consensus.common.message import Message
+from bos_consensus.common import Message
 
 
 logging.basicConfig(
@@ -52,7 +52,5 @@ def send_message(message_info):
         )
         response.raise_for_status()
         log.debug('message sent!')
-    except requests.exceptions.ConnectionError:
-        log.warn("ConnectionError occurred during client send message to '%s'!" % endpoint)
-    except requests.exceptions.HTTPError:
-        log.warn("HTTPError occurred during client send message to '%s'!" % endpoint)
+    except Exception as e:
+        log.error("ConnectionError occurred during client send message to '%s'!" % endpoint)

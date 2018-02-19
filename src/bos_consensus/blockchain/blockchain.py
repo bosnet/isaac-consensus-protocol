@@ -1,7 +1,5 @@
-from ..common.ballot import Ballot, BallotVotingResult
-from ..common.message import Message
+from ..common import Ballot, BallotVotingResult, Message
 from ..blockchain.base import BaseBlockchain
-from ..network import BaseTransport
 from ..middlewares import (
     load_middlewares,
     NoFurtherBlockchainMiddlewares,
@@ -14,7 +12,7 @@ class Blockchain(BaseBlockchain):
     middlewares = list()
 
     def __init__(self, consensus, transport=None):
-        super(Blockchain, self).__init__(consensus.node)
+        super(Blockchain, self).__init__(consensus.node, transport)
         self.consensus = consensus
         if transport:
             self.consensus.set_transport(transport)
@@ -26,11 +24,6 @@ class Blockchain(BaseBlockchain):
             )))
 
         self.middlewares = load_middlewares('blockchain')
-
-    def set_transport(self, transport):
-        assert isinstance(transport, BaseTransport)
-        self.consensus.set_transport(transport)
-        return
 
     def get_state(self):
         return self.consensus.state

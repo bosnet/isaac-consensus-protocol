@@ -1,7 +1,7 @@
 import copy
 import random
 
-from bos_consensus.common.ballot import Ballot
+from bos_consensus.common import Ballot
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.network import get_network_module
 from bos_consensus.util import logger

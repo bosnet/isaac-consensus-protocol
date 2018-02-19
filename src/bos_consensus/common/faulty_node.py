@@ -1,7 +1,7 @@
 import enum
 from random import randint
 
-from bos_consensus.common.node import Node
+from bos_consensus.common import Node
 
 
 class FaultyNodeKind(enum.Enum):

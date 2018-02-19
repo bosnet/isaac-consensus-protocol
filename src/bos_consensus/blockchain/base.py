@@ -1,16 +1,20 @@
-from ..common.node import Node
+from ..common import Node
 from ..util import LoggingMixin
+from bos_consensus.network import BaseTransport
 
 
 class BaseBlockchain(LoggingMixin):
     node = None
+    transport = None
 
-    def __init__(self, node):
+    def __init__(self, node, transport):
         assert isinstance(node, Node)
+        assert isinstance(transport, BaseTransport)
 
         super(BaseBlockchain, self).__init__()
 
         self.node = node
+        self.transport = transport
 
         self.set_logging('blockchain', node=self.node.name)
 

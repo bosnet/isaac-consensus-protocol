@@ -1,7 +1,6 @@
-from ..common.ballot import Ballot
+from ..common import Ballot, Message
 from ..consensus import get_fba_module
 from ..consensus.fba.isaac import IsaacState
-from ..common.message import Message
 from .util import blockchain_factory
 
 

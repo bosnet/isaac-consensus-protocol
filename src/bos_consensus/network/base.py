@@ -20,6 +20,7 @@ class BaseTransport(LoggingMixin):
         super(BaseTransport, self).__init__()
 
         self.config = config
+        self.set_requests()
 
     def receive(self, data):
         raise NotImplementedError()
@@ -28,6 +29,9 @@ class BaseTransport(LoggingMixin):
         raise NotImplementedError()
 
     def send(self, addr, message):
+        raise NotImplementedError()
+
+    def set_requests(self):
         raise NotImplementedError()
 
     def start(self, blockchain, message_received_callback):
@@ -52,8 +56,6 @@ class BaseTransport(LoggingMixin):
 
 class BaseServer(LoggingMixin):
     blockchain = None
-    transport = None
-
     config = None
 
     def __init__(self, blockchain, **config):
@@ -65,7 +67,7 @@ class BaseServer(LoggingMixin):
         self.config = config
 
     def start(self):
-        self.blockchain.consensus.transport.start(self.blockchain, self.message_received_callback)
+        self.blockchain.transport.start(self.blockchain, self.message_received_callback)
 
         return
 
@@ -73,7 +75,7 @@ class BaseServer(LoggingMixin):
         raise NotImplementedError()
 
     def stop(self):
-        self.blockchain.consensus.transport.stop()
+        self.blockchain.transport.stop()
 
         return
 

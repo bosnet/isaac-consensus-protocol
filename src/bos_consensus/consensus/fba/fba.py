@@ -1,7 +1,7 @@
 import enum
 import math
 
-from ...common.ballot import Ballot, BallotVotingResult
+from ...common import Ballot, BallotVotingResult, Node
 from ...consensus.base import BaseConsensus
 from bos_consensus.middlewares import (
     load_middlewares,
@@ -9,7 +9,6 @@ from bos_consensus.middlewares import (
     StopBroadcast,
     StopStore,
 )
-from ...common.node import Node
 
 
 class FbaState(enum.IntEnum):
@@ -45,7 +44,8 @@ class Fba(BaseConsensus):
         self.init()
 
     def set_self_node_to_validators(self):
-        if self.node_name not in self.validator_connected:
+        self.log.debug('[%s] set self node to validators', self.node.name)
+        if self.node.name not in self.validator_connected:
             self.add_to_validator_connected(self.node)
 
         return
@@ -69,7 +69,7 @@ class Fba(BaseConsensus):
 
     def set_state(self, state):
         self.state = state
-        self.log.info('[%s] state to %s', self.node_name, self.state)
+        self.log.info('[%s] state to %s', self.node.name, self.state)
 
         return
 
@@ -119,7 +119,7 @@ class Fba(BaseConsensus):
     def handle_ballot(self, ballot):
         raise NotImplementedError()
 
-    def _is_new_ballot(self, ballot):  #[TODO] search in ballot_history
+    def _is_new_ballot(self, ballot):  # [TODO] search in ballot_history
         if not self.validator_ballots:
             return True
         if ballot.node_name not in self.validator_ballots:
@@ -129,7 +129,7 @@ class Fba(BaseConsensus):
         return False
 
     def make_self_ballot(self, ballot):
-        return Ballot(ballot.ballot_id, self.node_name, ballot.message, self.state, BallotVotingResult.agree)
+        return Ballot(ballot.ballot_id, self.node.name, ballot.message, self.state, BallotVotingResult.agree)
 
     def broadcast(self, ballot):
         '''
@@ -155,12 +155,16 @@ class Fba(BaseConsensus):
                 self.log.debug('stop consensus: %s', e)
                 return
 
-
-        self.log.debug('[%s] [%s] begin broadcast to everyone', self.node_name, self.state)
+        self.log.debug(
+            '[%s] [%s] begin broadcast to connected nodes=%s',
+            self.node.name,
+            self.state,
+            tuple(self.validator_connected.keys()),
+        )
 
         self.store(ballot)
         for node_name, node in self.validator_connected.items():
-            if node_name is not self.node_name:
+            if node_name is not self.node.name:
                 self.transport.send(node.endpoint, ballot.serialize(to_string=False))
 
         return
@@ -188,7 +192,6 @@ class Fba(BaseConsensus):
             except StopStore as e:
                 self.log.debug('stop consensus: %s', e)
                 return
-
 
         if self.state > ballot.state:
             self.log.debug('found state regression ballot=%s state=%s', ballot, self.state)

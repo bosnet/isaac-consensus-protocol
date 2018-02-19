@@ -13,7 +13,7 @@ class Message:
         self.data = data
 
     def __repr__(self):
-        return '<Message: %(message_id)s>' % self.__dict__
+        return '<Message: message_id=%(message_id)s data="%(data)s">' % self.__dict__
 
     def __eq__(self, a):
         return self.message_id == a.message_id

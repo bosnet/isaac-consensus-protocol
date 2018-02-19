@@ -7,6 +7,7 @@ import time
 
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.consensus import get_fba_module
+from bos_consensus.network import get_network_module
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
     convert_namedtuple_to_dict,
@@ -42,6 +43,7 @@ parser.add_argument(
 
 
 def run(options, design):
+    network_module = get_network_module('default_http')
     blockchains = list()
     for node_design in design.nodes:
         consensus = CONSENSUS_MODULE.Consensus(
@@ -50,11 +52,12 @@ def run(options, design):
             node_design.quorum.validators,
         )
 
+        transport = network_module.Transport(bind=('0.0.0.0', node_design.node.endpoint.port))
         faulties = getattr(design.faulties, node_design.node.name, list())
         if len(faulties) > 0:
-            blockchain = FaultyBlockchain(faulties, consensus)
+            blockchain = FaultyBlockchain(faulties, consensus, transport)
         else:
-            blockchain = Blockchain(consensus)
+            blockchain = Blockchain(consensus, transport)
 
         blockchains.append(blockchain)
 

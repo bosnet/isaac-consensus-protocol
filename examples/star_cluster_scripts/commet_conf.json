@@ -1,0 +1,18 @@
+{
+    "common":
+    {
+        "network": "http"
+    },
+
+    "messages":
+    {
+        "n1":
+        {
+            "ip": "localhost",
+            "port": 5001,
+            "number": 5,
+            "message_format": "message%d",
+            "interval": 4000
+        }
+    }
+}

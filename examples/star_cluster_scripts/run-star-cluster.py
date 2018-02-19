@@ -12,8 +12,8 @@ from bos_consensus.util import (
     get_local_ipaddress,
     logger,
 )
-from bos_consensus.common.node import node_factory
-from star_cluster import (
+from bos_consensus.common import node_factory
+from common import (
     get_nodes,
     NodeInfo
 )
@@ -50,6 +50,7 @@ def run_node(node_info):
     )
 
     network_module = get_network_module('default_http')
+
     transport = network_module.Transport(bind=('0.0.0.0', node_info.port))
 
     blockchain = Blockchain(consensus, transport)
@@ -86,7 +87,7 @@ def main(options):
     with open(input_path) as input_data:
         data = json.load(input_data)
 
-    nodes = get_nodes(data)
+    nodes, _ = get_nodes(data)
     run_all(nodes)
 
     return

@@ -1,9 +1,11 @@
 import collections
 import configparser
 
-from bos_consensus.common.node import Node
+from bos_consensus.common import Node
 from bos_consensus.network import Endpoint
-
+from bos_consensus.util import (
+    get_local_ipaddress,
+)
 
 NodeInfo = collections.namedtuple(
     'NodeInfo',
@@ -27,7 +29,7 @@ def set_nodes(nodes, name, node_infos, count):
         name,
         node_infos.get('threshold', 51),
         [],
-        'localhost',
+        get_local_ipaddress(),
         BASE_PORT + count,
         node_infos.get('faulty_kind', ''),
         node_infos.get('faulty_percent', 0),
@@ -65,6 +67,10 @@ def organize_group(nodes, group_nodes_name):
 
 def get_nodes(data):
     assert isinstance(data, dict)
+    scheme = None
+    if 'common' in data:
+        if 'network' in data['common']:
+            scheme = data['common']['network']
 
     nodes = {}
     if 'nodes' in data:
@@ -99,8 +105,8 @@ def get_nodes(data):
             to_list = unary_link[1]
             link_from_to(nodes, from_list, to_list)
 
-    set_validator_endpoint(nodes)
-    return nodes
+    set_validator_endpoint(nodes, scheme)
+    return nodes, scheme
 
 
 def print_to_ini_files(output_path, nodes):
@@ -122,12 +128,12 @@ def print_to_ini_files(output_path, nodes):
             config.write(output_file)
 
 
-def set_validator_endpoint(nodes):
+def set_validator_endpoint(nodes, scheme):
     assert isinstance(nodes, dict)
     for name, node_info in nodes.items():
         assert isinstance(node_info, NodeInfo)
         validator_list = []
         for validator_name in node_info.validators:
-            endpoint = Endpoint('http', nodes[validator_name].ip, nodes[validator_name].port)
+            endpoint = Endpoint(scheme, nodes[validator_name].ip, nodes[validator_name].port)
             validator_list.append(Node(validator_name, endpoint))
         nodes[name] = nodes[name]._replace(validators=validator_list)

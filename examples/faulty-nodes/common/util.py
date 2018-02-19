@@ -5,7 +5,7 @@ import yaml
 
 from bos_consensus.blockchain import Blockchain
 from bos_consensus.common.faulty_node import FaultyNodeKind
-from bos_consensus.common.node import node_factory
+from bos_consensus.common import node_factory
 from bos_consensus.network import Endpoint, get_network_module, BaseServer
 from bos_consensus.util import (
     convert_dict_to_namedtuple,
@@ -105,7 +105,6 @@ class FaultyBlockchain(Blockchain):
 
         found_node_unreachable_faulty = None
         found_state_regression_faulty = None
-        transport = None
         for faulty in faulties:
             if faulty.kind in (FaultyNodeKind.NodeUnreachable,):
                 found_node_unreachable_faulty = faulty

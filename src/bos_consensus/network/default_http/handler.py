@@ -1,7 +1,6 @@
 import json
 
-from bos_consensus.common.ballot import Ballot
-from bos_consensus.common.message import Message
+from bos_consensus.common import Ballot, Message
 
 
 def not_found_handler(handler, parsed):

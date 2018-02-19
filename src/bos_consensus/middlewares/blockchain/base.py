@@ -1,10 +1,4 @@
-import os.path
-import pathlib
-
-from bos_consensus.util import (
-    get_module,
-    LoggingMixin,
-)
+from bos_consensus.util import LoggingMixin
 
 
 class NoFurtherBlockchainMiddlewares(Exception):

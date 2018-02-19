@@ -1,7 +1,7 @@
 {
     "common":
     {
-        "network": "http"
+        "network": "local_socket"
     },
     "nodes":
     {

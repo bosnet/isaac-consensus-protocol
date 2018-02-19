@@ -1,5 +1,12 @@
 # Quorum Intersection Test In Single Process
 
+## Run Quorum Topology Server and periodically send messages
+
+```
+$ cd examples/star_cluster_scripts
+$ python run-star-cluster-lifecycle.py -i lifecycle_star_cluster.json -c lifecycle_commet.json -log-level debug
+```
+
 ## Run Quorum Topology Server Example
 
 ```
@@ -17,8 +24,13 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
 
 ## Input Json File Format
 
+### lifecycle_star_cluster.json, star_cluser_conf.json
 ```
 {
+    "common":
+    {
+        "network": string
+    },
     "nodes":
     {
         "Node Name":
@@ -60,64 +72,26 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
 }
 ```
 
+### lifecycle_commet.json, commet_conf.json
 
-## Input Json File Example
-```json
+```
 {
-    "nodes":
+    "common":
     {
-        "n1":
+        "network": string
+    },
+
+    "messages":
+    {
+        "node_name":
         {
-            "threshold": 80
-        },
-        "n2":
-        {
-            "threshold": 80
-        },
-        "n3":
-        {
-            "threshold": 80,
-            "faulty_percent": 20,
-            "faulty_kind": "node_unreachable"
-        },
-        "n4":
-        {
-            "faulty_percent": 20
-        },
-        "n5":
-        {
-            "threshold": 80
-        },
-        "n6":
-        {
-            "threshold": 51
-        },
-        "n7":
-        {
-            "threshold": 51
-        },
-        "n8":
-        {
-            "threshold": 51
-        },
-        "n9":
-        {
+            "ip": string, default: "localhost"
+            "port": int,  default: 5001
+            "number": int,  default: 1
+            "message_format": formatted string, default: "message%d"
+            "interval": int, default: 4000
         }
-    },
-    "groups":
-    {
-        "g1": ["n1", "n2", "n3"],
-        "g2": ["n4", "n5", "n6", "n7"]
-    },
-    "binary_link":
-    [
-        [ ["n8"], ["n3", "n4"] ],
-        [ ["n9"], ["n3", "n6"] ]
-    ],
-    "unary_link":
-    [
-        [ ["n9"], ["n1"] ]
-    ]
+    }
 }
 ```
 

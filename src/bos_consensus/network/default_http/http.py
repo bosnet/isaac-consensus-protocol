@@ -1,7 +1,6 @@
 import json
 import logging
 from queue import Queue
-import requests
 from socketserver import ThreadingMixIn
 import threading
 import time
@@ -16,7 +15,7 @@ from ..base import (
 )
 from . import handler
 from ...util import logger
-from bos_consensus.common.node import Node
+from bos_consensus.common import Node
 
 
 SCHEME = 'http'
@@ -28,6 +27,7 @@ class Ping(threading.Thread):
     blockchain = None
     event = None
     initialized = None
+    requests = None
 
     def __init__(self, blockchain):
         assert isinstance(blockchain, BaseBlockchain)
@@ -41,6 +41,8 @@ class Ping(threading.Thread):
         self.event.set()
 
         self.log = logger.get_logger('ping', node=self.blockchain.node.name)
+
+        self.requests = blockchain.consensus.transport.requests
 
     def get_node(self, response):
         data = json.loads(response.text)
@@ -74,11 +76,11 @@ class Ping(threading.Thread):
                     continue
 
                 try:
-                    ping_response = requests.get(urllib.parse.urljoin(node.endpoint.uri, '/ping'))
+                    ping_response = self.requests.get(urllib.parse.urljoin(node.endpoint.uri, '/ping'))
                     ping_response.raise_for_status()
 
                     # validation check
-                    get_node_response = requests.get(urllib.parse.urljoin(node.endpoint.uri, '/get_node'))
+                    get_node_response = self.requests.get(urllib.parse.urljoin(node.endpoint.uri, '/get_node'))
                     get_node_response.raise_for_status()
                 except Exception as e:
                     if node.name not in prev:
@@ -298,7 +300,7 @@ class Transport(BaseTransport):
         n = 0
         while n < retries:
             try:
-                response = requests.post(urllib.parse.urljoin(endpoint.uri, '/send_ballot'), data=post_data)
+                response = self.requests.post(urllib.parse.urljoin(endpoint.uri, '/send_ballot'), data=post_data)
                 response.raise_for_status()
             except Exception as e:
                 self.log.error('failed to send: tries=%d data=%s to=%s: %s', n, data, endpoint, e)
@@ -313,6 +315,10 @@ class Transport(BaseTransport):
         self.log.error('max retries, %d exceeded: data=%s to=%s', retries, data, endpoint)
 
         return False
+
+    def set_requests(self):
+        import requests
+        self.requests = requests
 
 
 class Server(BaseServer):
