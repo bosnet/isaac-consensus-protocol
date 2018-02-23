@@ -2,9 +2,9 @@
 
 For detailed process of this issues, please check [BOS-164](https://blockchainos.atlassian.net/browse/BOS-164).
 
-## Running
+## Running by Http Transport
 
-The `run.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
+The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
 
 ```
 $ cd ./examples/faulty-nodes/alive-but-not-voting
@@ -12,8 +12,8 @@ $ cd ./examples/faulty-nodes/alive-but-not-voting
 
 The basic usage is,
 ```
-$ python run.py -h
-usage: run.py [-h] [-verbose]
+$ python run-case.py -h
+usage: run-case.py [-h] [-verbose]
               [-log-level {critical,fatal,error,warn,warning,info,debug}]
               [-log-output LOG_OUTPUT] [-log-output-metric LOG_OUTPUT_METRIC]
               [-log-show-line] [-log-no-color]
@@ -37,7 +37,7 @@ optional arguments:
 ```
 
 ```
-$ python run.py -log-level info example.yml
+$ python run-case.py -log-level info example.yml
 ```
 
 The 'debug' will produce so massive messages :) To make something happened, run `run-client.py`,
@@ -48,9 +48,49 @@ $ run-client.py  -p 54320
 
 The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In `example.yml`, the faulty nodes are 'n0' and 'n7', which will be faulty node in 100%, `faulties.<node>.n0.case.frequency.per_consensus` is `100`.
 
+## Running by Local Socket Transport(faster than http transport)
+
+The `run-case-local-socket.py` will launch the servers, which are instructed by design yaml file, and than send formatted messages to the server.
+
+```
+$ cd ./examples/faulty-nodes/alive-but-not-voting
+```
+
+The basic usage is,
+```
+$ python run-case-local-socket.py -h
+usage: run-case-local-socket.py [-h] [-verbose]
+              [-log-level {critical,fatal,error,warn,warning,info,debug}]
+              [-log-output LOG_OUTPUT] [-log-output-metric LOG_OUTPUT_METRIC]
+              [-log-show-line] [-log-no-color]
+              design
+
+positional arguments:
+  design                network design yaml
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -verbose              verbose log (default: False)
+  -log-level {critical,fatal,error,warn,warning,info,debug}
+                        set log level (default: debug)
+  -log-output LOG_OUTPUT
+                        set log output file (default: None)
+  -log-output-metric LOG_OUTPUT_METRIC
+                        set metric output file (default: None)
+  -log-show-line        show seperate lines in log (default: False)
+  -log-no-color         disable colorized log message by level (default:
+                        False)
+```
+
+```
+$ python run-case-local-socket.py -log-level info example_local_socket.yml
+```
+
+The 'debug' will produce so massive messages :)
+
 ## Check Logs
 
-The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `no_voting_nodes` per each node.
+The `run-case.py` will produce this kind of messages as 'metric' log. In `run-case.py`, the `NoVotingAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `no_voting_nodes` per each node.
 
 ```
 ● 1517182997.42433095 - audit.faulty-node.no-voting - METRI - {
@@ -108,3 +148,5 @@ The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, th
   "created": 1517182999.434294
 }
 ```
+
+

@@ -41,6 +41,8 @@ parser.add_argument(
 log = None
 logger.set_argparse(parser)
 
+MS = 0.001
+
 
 async def send_message_coroutine(local_server, node_info, client_data):
     message_infos = get_message_infos(client_data)
@@ -52,9 +54,6 @@ async def send_message_coroutine(local_server, node_info, client_data):
         log.debug(f'send message to {endpoint}')
         local_server.blockchain.transport.send(endpoint, message.serialize())
         await asyncio.sleep(interval * MS)
-
-
-MS = 0.001
 
 
 def run_all(node_data: dict, client_data: dict):

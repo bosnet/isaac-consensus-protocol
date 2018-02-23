@@ -12,7 +12,7 @@ from bos_consensus.common import BallotVotingResult
 
 CONSENSUS_MODULE = get_fba_module('isaac')
 
-AUDITING_TIMEOUT = 5  # 5 seconds
+AUDITING_TIMEOUT = 5  # seconds
 
 
 class DivergentAuditor(threading.Thread):

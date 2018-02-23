@@ -73,3 +73,9 @@ faulties:
         - case:
             kind: divergent_voting
             frequency: 100
+
+messages:
+    n1:
+       number: 5
+       message_format: "message%d"
+       interval: 500

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import pathlib
@@ -45,7 +46,10 @@ parser.add_argument(
 def run(options, design):
     network_module = get_network_module('default_http')
     blockchains = list()
+    loop = asyncio.get_event_loop()
+    auditors = dict()
     for node_design in design.nodes:
+        node = node_design.node
         consensus = CONSENSUS_MODULE.Consensus(
             node_design.node,
             node_design.quorum.threshold,
@@ -62,7 +66,14 @@ def run(options, design):
         blockchains.append(blockchain)
 
         NodeRunner(blockchain).start()
-        FaultyNodeAuditor(blockchain).start()
+        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 5)
+
+    [asyncio.ensure_future(auditor.start()) for auditor in auditors.values()]
+
+    try:
+        loop.run_forever()
+    except (KeyboardInterrupt, SystemExit):
+        log.debug('exception occured!')
 
     return blockchains
 

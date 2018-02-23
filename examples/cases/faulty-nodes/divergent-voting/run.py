@@ -26,7 +26,7 @@ from common import DivergentVotingConsensus
 from audit import DivergentAuditor
 
 
-AUDITING_TIMEOUT = 5  # 5 seconds
+AUDITING_TIMEOUT = 5  # seconds
 
 
 log = None

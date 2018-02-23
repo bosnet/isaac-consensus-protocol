@@ -1,5 +1,4 @@
-import threading
-import time
+import asyncio
 
 from bos_consensus.util import (
     datetime_to_timestamp,
@@ -8,17 +7,18 @@ from bos_consensus.util import (
 )
 
 
-AUDITING_TIMEOUT = 5  # 5 seconds
-
-
-class NoVotingAuditor(threading.Thread):
+class NoVotingAuditor:
     checkpoint = None
+    loop = None
+    auditing_timeout = None
 
-    def __init__(self, blockchain):
+    def __init__(self, blockchain, loop, auditing_timeout):
         super(NoVotingAuditor, self).__init__()
 
         self.consensus = blockchain.consensus
+        self.loop = loop
         self.checkpoint = 0
+        self.auditing_timeout = auditing_timeout
 
         self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.consensus.node.name)
 
@@ -30,7 +30,7 @@ class NoVotingAuditor(threading.Thread):
 
         return True
 
-    def run(self):
+    async def coroutine(self):
         '''
         # Auditing Rules
 
@@ -44,12 +44,12 @@ class NoVotingAuditor(threading.Thread):
 
         self.log.debug('waiting for connecting validators')
         while not self._wait_for_connecting_validators():
-            time.sleep(2)
+            await asyncio.sleep(0.3)
 
         self.log.debug('started to audit; validators connected')
 
         while True:
-            time.sleep(2)
+            await asyncio.sleep(0.2)
             histories = self.consensus.voting_histories[self.checkpoint:]
             if len(histories) < 1:
                 continue
@@ -69,7 +69,7 @@ class NoVotingAuditor(threading.Thread):
 
             last_allconfirm_history = histories[last_allconfirm]
             now = datetime_to_timestamp(utcnow())
-            if now - last_allconfirm_history['received'] < AUDITING_TIMEOUT:
+            if now - last_allconfirm_history['received'] < self.auditing_timeout:
                 continue
 
             prev_checkpoint = self.checkpoint
@@ -98,13 +98,14 @@ AUDITORS = (
 
 
 class FaultyNodeAuditor:
-    def __init__(self, blockchain):
+    def __init__(self, blockchain, loop, auditing_timeout):
         self.blockchain = blockchain
+        self.loop = loop
+        self.auditing_timeout = auditing_timeout
 
         self.log = logger.get_logger('audit.faulty-node', node=self.blockchain.consensus.node.name)
 
-    def start(self):
+    async def start(self):
         for auditor in AUDITORS:
-            auditor(self.blockchain).start()
-
+            await auditor(self.blockchain, self.loop, self.auditing_timeout).coroutine()
         return
