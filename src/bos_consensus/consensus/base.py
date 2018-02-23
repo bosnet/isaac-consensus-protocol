@@ -30,5 +30,9 @@ class BaseConsensus(LoggingMixin):
         return self.node.name
 
     def save_message(self, message):
+        self.log.metric(
+            action='save-message',
+            message=message.message_id,
+        )
         self.messages.append(message)
         self.message_ids.append(message.message_id)

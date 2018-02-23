@@ -68,8 +68,17 @@ class Fba(BaseConsensus):
         return '<Quorum: threshold=%(threshold)s validators=%(validators)s>' % self.__dict__
 
     def set_state(self, state):
+        self.log.metric(
+            action='change-state',
+            node=self.node.name,
+            state=dict(
+                after=state.name,
+                before=self.state.name if self.state is not None else None,
+            ),
+            validators=tuple(self.validator_connected.keys()),
+        )
+
         self.state = state
-        self.log.info('[%s] state to %s', self.node.name, self.state)
 
         return
 

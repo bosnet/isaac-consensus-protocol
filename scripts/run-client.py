@@ -49,4 +49,5 @@ if __name__ == '__main__':
 
     message_info = MessageInfo(options.ip, options.port, options.message)
 
-    send_message(message_info)
+    message = send_message(message_info)
+    log.info('sent message: %s', message.serialize(to_string=False))

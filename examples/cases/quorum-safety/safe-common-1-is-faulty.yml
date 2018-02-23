@@ -1,0 +1,110 @@
+# two quorums
+# * f: 1
+# * N: 9
+# * commons: n4
+# - C: 1
+#
+# * q0:
+#   - validators: n0 n1 n2 n3 n4
+#   - T: 5
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | O | fault tolerance | T >= 3f + 1 | 5 >= 3 * 1 + 1 = 4 |
+#    | X | safety          | C - 1 >= f  | 1 - 1 = 0 >= 1     |
+#    | O | liveness        | N - T >= f  | 9 - 5 = 4 >= 1     |
+#    +===+=================+=============+====================+
+#
+# * q1:
+#   - validators: n4 n5 n6 n7 n8
+#   - T: 5
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | O | fault tolerance | T >= 3f + 1 | 5 >= 3 * 1 + 1 = 4 |
+#    | X | safety          | C - 1 >= f  | 1 - 1 = 0 >= 1     |
+#    | O | liveness        | N - T >= f  | 9 - 5 = 4 >= 1     |
+#    +===+=================+==============+====================+
+#
+#--------------------------------------------------------------------------------
+# This design is that one node of commons will be faulty node. If the tolerance
+# faulty number is 1, this network will be failed to save same message.
+
+---
+common:
+    network: default_http
+    threshold: 60
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n4
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n4
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n4
+    n4:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n5
+    n5:
+        quorum:
+            validators:
+                - n4
+                - n6
+                - n7
+                - n8
+    n6:
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n7
+                - n8
+    n7:
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n6
+                - n8
+    n8:
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n6
+                - n7
+
+faulties:
+    n4:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100

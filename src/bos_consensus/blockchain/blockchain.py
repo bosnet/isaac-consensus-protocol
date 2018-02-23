@@ -38,6 +38,11 @@ class Blockchain(BaseBlockchain):
     def receive_message_from_client(self, message):
         assert isinstance(message, Message)
 
+        self.log.metric(
+            action='receive-message',
+            messge=message.message_id,
+            state=self.consensus.state.name,
+        )
         ballot = Ballot.new(self.node_name, message, self.consensus.state, BallotVotingResult.agree)  # noqa
         self.receive_ballot(ballot)
 

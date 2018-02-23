@@ -65,7 +65,7 @@ def load_design(filename):
         nodes[name] = dict(node=node, quorum=dict(validators=list(), threshold=threshold))
 
         faulties = list()
-        faulty = getattr(design.faulties, name, None)
+        faulty = getattr(getattr(design, 'faulties', None), name, None)
         if faulty is not None:
             for case in faulty:
                 kind = FaultyNodeKind.get_from_name(case.case.kind)

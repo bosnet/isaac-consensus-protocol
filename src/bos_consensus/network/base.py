@@ -90,6 +90,10 @@ class Endpoint:
     def from_uri(cls, uri):
         parsed = urllib.parse.urlparse(uri)
 
+        assert len(parsed.scheme) > 0
+        assert len(parsed.hostname) > 0
+        assert type(parsed.port) in (int,)
+
         return cls(
             parsed.scheme,
             parsed.hostname,
@@ -113,11 +117,14 @@ class Endpoint:
 
     @property
     def uri_full(self):
-        extras = None
+        return '%s%s' % (self.uri, self.get_extras())
+
+    def get_extras(self):
+        extras = ''
         if self.extras:
             extras = '?%s' % urllib.parse.urlencode(self.extras)
 
-        return '%s%s' % (self.uri, extras)
+        return extras
 
     @property
     def uri(self):
@@ -141,3 +148,6 @@ class Endpoint:
 
     def get(self, k, default=None):
         return self.extras.get(k, default)
+
+    def join(self, u):
+        return urllib.parse.urljoin(self.uri, u) + self.get_extras()
