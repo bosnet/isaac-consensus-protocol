@@ -1,3 +1,4 @@
+import json
 import pprint  # noqa
 import sys  # noqa
 import threading
@@ -9,6 +10,7 @@ from bos_consensus.common import node_factory
 from bos_consensus.network import Endpoint, get_network_module, BaseServer
 from bos_consensus.util import (
     convert_dict_to_namedtuple,
+    convert_json_config,
     convert_namedtuple_to_dict,
     get_free_port,
     get_local_ipaddress,
@@ -28,7 +30,14 @@ def load_design(filename):
     design = None
 
     with open(filename) as f:
-        design = convert_dict_to_namedtuple(yaml.load(f.read()))
+        if filename.split('.')[-1] == 'yml':
+            design = convert_dict_to_namedtuple(yaml.load(f.read()))
+        elif filename.split('.')[-1] == 'json':
+            temp_design = convert_json_config(json.load(f))
+            design = convert_dict_to_namedtuple(temp_design)
+        else:
+            print('# error: \"file `%s` is not valid file. yml or json type is needed\"' % filename)
+            sys.exit(1)
 
     defined_ports = list()
     for name, config in design.nodes._asdict().items():

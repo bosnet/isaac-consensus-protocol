@@ -37,7 +37,7 @@ parser.add_argument(
 
 parser.add_argument(
     'design',
-    help='design yaml',
+    help='design should be yaml or json',
     type=str,
 )
 

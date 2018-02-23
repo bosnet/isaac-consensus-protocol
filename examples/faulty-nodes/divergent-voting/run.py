@@ -1,4 +1,7 @@
+import json
 import logging
+import os
+import pathlib
 import pprint  # noqa
 import sys  # noqa
 import threading
@@ -12,6 +15,7 @@ from bos_consensus.network import Endpoint, get_network_module, BaseServer
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
     convert_dict_to_namedtuple,
+    convert_json_config,
     convert_namedtuple_to_dict,
     get_free_port,
     get_local_ipaddress,
@@ -31,7 +35,7 @@ parser = ArgumentParserShowDefaults()
 logger.set_argparse(parser)
 parser.add_argument(
     'design',
-    help='network design yaml',
+    help='network design yaml or json',
     type=str,
 )
 
@@ -40,10 +44,23 @@ CONSENSUS_MODULE = get_fba_module('isaac')
 
 
 def load_design(filename):
+    if not pathlib.Path(filename).exists():
+        parser.error('file, `%s` does not exists.' % filename)
+
+    if not pathlib.Path(filename).is_file():
+        parser.error('file, `%s` is not valid file.' % filename)
+
     design = None
 
     with open(filename) as f:
-        design = convert_dict_to_namedtuple(yaml.load(f.read()))
+        if filename.split('.')[-1] == 'yml':
+            design = convert_dict_to_namedtuple(yaml.load(f.read()))
+        elif filename.split('.')[-1] == 'json':
+            temp_design = convert_json_config(json.load(f))
+            design = convert_dict_to_namedtuple(temp_design)
+        else:
+            print('# error: \"file `%s` is not valid file. yml or json type is needed\"' % filename)
+            sys.exit(1)
 
     network_module = get_network_module(design.common.network)
 
@@ -70,9 +87,9 @@ def load_design(filename):
     design_dict = convert_namedtuple_to_dict(design)
 
     design_dict['common']['network_module'] = get_network_module(design.common.network)
+
     design_dict['nodes'] = list(nodes.values())
     design_dict['nodes_by_name'] = nodes
-
     return convert_dict_to_namedtuple(design_dict)
 
 
