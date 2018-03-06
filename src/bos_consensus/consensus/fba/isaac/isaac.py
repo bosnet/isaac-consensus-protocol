@@ -1,7 +1,7 @@
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
-from bos_consensus.common import Ballot
+from bos_consensus.common.ballot import Ballot
 
 
 class IsaacState(FbaState):
@@ -68,25 +68,15 @@ class IsaacConsensus(Fba):
             self.broadcast(self.make_self_ballot(ballot))
 
         self.store(ballot)
-
-        if self._check_threshold():
-            self.set_state(IsaacState.SIGN)
-            self.broadcast(self.make_self_ballot(ballot))
+        self._change_state_and_broadcasting(ballot)
 
     def _handle_sign(self, ballot):
         self.store(ballot)
-
-        if self._check_threshold():
-            self.set_state(IsaacState.ACCEPT)
-            self.broadcast(self.make_self_ballot(ballot))
+        self._change_state_and_broadcasting(ballot)
 
     def _handle_accept(self, ballot):
         self.store(ballot)
-
-        if self._check_threshold():
-            self.set_state(IsaacState.ALLCONFIRM)  # [TODO]set_next_state
-            self.save_message(ballot.message)
-            self.broadcast(self.make_self_ballot(ballot))
+        self._change_state_and_broadcasting(ballot)
 
         return
 
@@ -99,34 +89,69 @@ class IsaacConsensus(Fba):
 
         return
 
-    def _check_threshold(self):
+    def _check_threshold_and_state(self):
         ballots = self.validator_ballots.values()
-        validator_th = self.minimum
-
-        self.log.debug(
-            '[%s] check_threshold: validators=%s ballots=%s',
-            self.node_name,
-            self.validator_ballots.keys(),
-            ballots,
-        )
+        state_consensus = None
+        state_check_init = self.minimum
+        state_check_sign = self.minimum
+        state_check_accept = self.minimum
+        self.log.debug('[%s] check_threshold: ballots=%s', self.node_name, ballots)
 
         for ballot in ballots:
             if ballot is None:
                 continue
 
-            if validator_th < 1:
+            if state_check_init < 1 or state_check_sign < 1 or state_check_accept < 1:
                 break
 
             if self.state <= ballot.state:
-                validator_th -= 1
+                if ballot.state >= IsaacState.INIT:
+                    state_check_init -= 1
+                if ballot.state >= IsaacState.SIGN:
+                    state_check_sign -= 1
+                if ballot.state >= IsaacState.ACCEPT:
+                    state_check_accept -= 1
 
             self.log.debug(
-                '[%s] ballot.node_name=%s threshold=(%s/%s) validators=%s',
+                '[%s] ballot.node_name=%s ballot.node_state= %s ',
                 self.node_name,
                 ballot.node_name,
-                validator_th,
-                self.minimum,
-                tuple(self.validator_ballots.keys()),
+                ballot.state,
+
             )
 
-        return validator_th < 1
+        self.log.info("state threshold check -- Isaac.INIT : %s , Isaac.SIGN: %s , Isaac.ACCEPT : %s",
+                      state_check_init, state_check_sign, state_check_accept)
+
+        check_threshold = [state_check_init, state_check_sign, state_check_accept]
+
+        if check_threshold[0] < 1:
+            state_consensus = IsaacState.SIGN
+
+        if check_threshold[1] < 1:
+            state_consensus = IsaacState.ACCEPT
+
+        if check_threshold[2] < 1:
+            state_consensus = IsaacState.ALLCONFIRM
+        self.log.info('returning ballot state : %s', state_consensus)
+
+        return state_consensus, check_threshold
+
+    def _change_state_and_broadcasting(self, ballot):
+        state = self._check_threshold_and_state()
+        if state[0] is None:
+            return
+
+        state_init = state[1][0]
+        state_sign = state[1][1]
+        state_accept = state[1][2]
+
+        self.log.debug("state change check : %s", state)
+        if state_init < 1 or state_sign < 1 or state_accept < 1:
+            self.set_state(state[0])
+            if state[0] is IsaacState.ALLCONFIRM:
+                self.save_message(ballot.message)
+
+            self.broadcast(self.make_self_ballot(ballot))
+
+        return
