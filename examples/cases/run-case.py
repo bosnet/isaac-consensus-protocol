@@ -85,6 +85,12 @@ if __name__ == '__main__':
     logger.set_level(logging.FATAL, 'http')
     logger.set_level(logging.FATAL, 'transport')
 
+    if not pathlib.Path(options.design).exists():
+        parser.error('file, `%s` does not exists.' % options.design)
+
+    if not pathlib.Path(options.design).is_file():
+        parser.error('file, `%s` is not valid file.' % options.design)
+
     design = load_design(options.design)
 
     log = logger.get_logger(__name__)

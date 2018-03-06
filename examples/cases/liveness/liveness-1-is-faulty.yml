@@ -1,39 +1,39 @@
+# two quorums
+# * f: 1
+# * N: 8
+# * commons: n1 n2 n3 n4 n5 n6
+# - C: 5
+#
+# * q0:
+#   - validators: n0 n1 n2 n3 n4 n5 n6
+#   - T: 7
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | O | fault tolerance | T >= 3f + 1 | 7 >= 3 * 1 + 1 = 4 |
+#    | O | safety          | C - 1 >= f  | 5 - 1 = 4 >= 1     |
+#    | O | liveness        | N - T >= f  | 8 - 7 = 1 >= 1     |
+#    +===+=================+=============+====================+
+#
+# * q1:
+#   - validators: n1 n2 n3 n4 n5 n6 n7
+#   - T: 7
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | O | fault tolerance | T >= 3f + 1 | 7 >= 3 * 1 + 1 = 4 |
+#    | O | safety          | C - 1 >= f  | 5 - 1 = 4 >= 1     |
+#    | O | liveness        | N - T >= f  | 8 - 7 = 1 >= 1     |
+#    +===+=================+==============+====================+
+#
+#--------------------------------------------------------------------------------
+# This design is that one nodes will be faulty node. When the tolerance
+# faulty number is 1, everything works fine, but risky.
+
 ---
 common:
     network: default_http
     threshold: 60
-
-# two quorums
-# * f: 1
-# * N: 9
-# * commons: n3 n4
-# - C: 2
-#
-# * q0:
-#   - validators: n0 n1 n2 n3 n4
-#   - T: 5
-#    +===+=================+=============+====================+
-#    | ? | name            | formula     | result             |
-#    +---+-----------------+-------------+--------------------+
-#    | O | fault tolerance | T >= 3f + 1 | 3 * 1 + 1 = 4 <= 5 |
-#    | O | safety          | f <= C -1   | 2 - 1 = 1 >= 1     |
-#    | O | liveness        | f =< N - T  | 9 - 5 = 4 >= 1     |
-#    +===+=================+=============+====================+
-#
-# * q1:
-#   - validators: n3 n4 n5 n6 n7 n8
-#   - T: 6
-#    +===+=================+=============+====================+
-#    | ? | name            | formula     | result             |
-#    +---+-----------------+-------------+--------------------+
-#    | O | fault tolerance | T >= 3f + 1 | 3 * 1 + 1 = 4 <= 6 |
-#    | O | safety          | f <= C -1   | 1 - 1 = 0 >= 1     |
-#    | O | liveness        | f =< N - T  | 9 - 6 = 3 >= 1     |
-#    +===+=================+=============+====================+
-#
-#--------------------------------------------------------------------------------
-# This design is that one node of commons will be faulty node. If the tolerance
-# faulty number is 1, but everything works fine.
 
 nodes:
     n0:
@@ -43,6 +43,8 @@ nodes:
                 - n2
                 - n3
                 - n4
+                - n5
+                - n6
     n1:
         port: 54320
         quorum:
@@ -51,6 +53,8 @@ nodes:
                 - n2
                 - n3
                 - n4
+                - n5
+                - n6
     n2:
         quorum:
             validators:
@@ -58,6 +62,8 @@ nodes:
                 - n1
                 - n3
                 - n4
+                - n5
+                - n6
     n3:
         quorum:
             validators:
@@ -66,49 +72,47 @@ nodes:
                 - n2
                 - n4
                 - n5
+                - n6
     n4:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n5
+                - n6
+                - n7
+    n5:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n6
+                - n7
+    n6:
         quorum:
             validators:
                 - n0
                 - n1
                 - n2
                 - n3
-                - n5
-    n5:
-        quorum:
-            validators:
-                - n3
-                - n4
-                - n6
-                - n7
-                - n8
-    n6:
-        quorum:
-            validators:
-                - n3
                 - n4
                 - n5
                 - n7
-                - n8
     n7:
         quorum:
             validators:
+                - n1
+                - n2
                 - n3
                 - n4
                 - n5
                 - n6
-                - n8
-    n8:
-        quorum:
-            validators:
-                - n3
-                - n4
-                - n5
-                - n6
-                - n7
 
 faulties:
-    n4:
+    n7:
         - case:
             kind: no_voting
             frequency:

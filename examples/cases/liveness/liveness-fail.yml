@@ -1,0 +1,93 @@
+# The node n1 has 5 validators include itself
+# Because of the threshold of n1 is 60,
+# liveness is maintained when three or more nodes behave normally.
+# However, since three(n0, n2, n7) out of five are faulty,
+# we can see that liveness is failed
+---
+common:
+    # consensus: isaac
+    network: default_http
+    threshold: 60
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n7
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n7
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n5
+    n4:
+        quorum:
+            validators:
+                - n1
+                - n5
+                - n6
+    n5:
+        quorum:
+            validators:
+                - n3
+                - n4
+                - n6
+                - n7
+    n6:
+        quorum:
+            validators:
+                - n0
+                - n4
+                - n5
+                - n7
+    n7:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n5
+                - n6
+
+faulties:
+    n0:
+        - case:  # multiple cases can be set
+            kind: no_voting  # Check [`FaultyNodeKind`](https://github.com/owlchain/bosnet-prototype-fba/blob/master/src/bos_consensus/common/node.py#L42)
+            frequency:
+                per_consensus: 100  # means, this node will be faulty node in every time
+    n2:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
+    n7:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
+
+messages:
+    n1:
+       number: 5
+       message_format: "message%d"
+       interval: 500

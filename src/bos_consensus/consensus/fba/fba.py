@@ -36,11 +36,17 @@ class Fba(BaseConsensus):
 
         self.threshold = threshold
         self.validator_candidates = validator_candidates
+        self.__minimum = math.ceil((len(self.validator_candidates) + 1) * (self.threshold / 100))
         self.validator_node_names = tuple([node.name] + list(map(lambda x: x.name, self.validator_candidates)))
         self.validator_connected = dict()
+        self.validator_faulty = set()
+
         self.validator_ballots = dict()
-        self.middlewares = load_middlewares('consensus')
         self.voting_histories = list()
+
+        self.middlewares = load_middlewares('consensus')
+        self.set_self_node_to_validators()
+
         self.init()
 
     def set_self_node_to_validators(self):
@@ -54,8 +60,6 @@ class Fba(BaseConsensus):
         self.set_state(self.get_init_state())
         self.clear_validator_ballots()
 
-        self.set_self_node_to_validators()
-
         return
 
     def get_init_state(self):
@@ -65,7 +69,12 @@ class Fba(BaseConsensus):
         raise NotImplementedError()
 
     def __repr__(self):
-        return '<Quorum: threshold=%(threshold)s validators=%(validators)s>' % self.__dict__
+        repr_str = list()
+        repr_str.append('threshold=%(threshold)s')
+        repr_str.append('candidates=%(validator_candidates)s')
+        repr_str.append('connected=%(validator_connected)s')
+        repr_str.append('faulty=%(validator_faulty)s')
+        return ' '.join(repr_str) % self.__dict__
 
     def set_state(self, state):
         self.log.metric(
@@ -113,7 +122,7 @@ class Fba(BaseConsensus):
         '''
         the required minimum quorum will be round *up*
         '''
-        return math.ceil((len(self.validator_candidates) + 1) * (self.threshold / 100))
+        return self.__minimum
 
     def to_dict(self, simple=True):
         return dict(
@@ -212,3 +221,23 @@ class Fba(BaseConsensus):
         self.log.debug('ballot stored state=%s ballot=%s', self.state, ballot)
 
         return
+
+    def set_faulty_validator(self, node_name):
+        if node_name not in self.validator_connected:
+            return
+
+        self.validator_faulty.add(node_name)
+
+        self.log.metric(
+            action='faulty-node-added',
+            faulty_node=node_name,
+        )
+
+        return
+
+    def is_guarantee_liveness(self):
+        not_connected_yet = len(self.validator_connected) <= 1
+        if not_connected_yet:
+            return True
+        non_faulty_validators = set(self.validator_connected.keys()) - self.validator_faulty
+        return len(non_faulty_validators) >= self.minimum

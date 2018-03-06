@@ -4,7 +4,7 @@ For detailed process of this issues, please check [BOS-172](https://blockchainos
 
 ## Running
 
-The `run.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
+The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
 
 ```
 $ cd ./examples/faulty-nodes/divergent-voting
@@ -12,8 +12,8 @@ $ cd ./examples/faulty-nodes/divergent-voting
 
 The basic usage is,
 ```
-$ python run.py -h
-usage: run.py [-h] [-verbose]
+$ python run-case.py -h
+usage: run-case.py [-h] [-verbose]
               [-log-level {critical,fatal,error,warn,warning,info,debug}]
               [-log-output LOG_OUTPUT] [-log-output-metric LOG_OUTPUT_METRIC]
               [-log-show-line] [-log-no-color]
@@ -37,7 +37,7 @@ optional arguments:
 ```
 
 ```
-$ python run.py -log-level info example.yml
+$ python run-case.py -log-level info example.yml
 ```
 
 The 'debug' will produce so massive messages :) To make something happened, run `run-client.py`,
@@ -50,7 +50,7 @@ The `54320` is already assigned port by the `example.yml` for the node, 'n1'. In
 
 ## Check Logs
 
-The `run.py` will produce this kind of messages as 'metric' log. In `run.py`, the `DivergentAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `divergent_node` per each node.
+The `run-case.py` will produce this kind of messages as 'metric' log. In `run-case.py`, the `DivergentAuditor()` will be running simultaneously, it checks the `Fba.voting_history = list()` and after the final consensus state, `ALLCONFIRM`, it will filter the `divergent_node` per each node.
 
 ```
 ● 1517463534.81830812 - audit.faulty-node.divergent-voting - METR - {

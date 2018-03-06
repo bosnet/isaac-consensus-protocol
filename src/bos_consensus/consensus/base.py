@@ -36,3 +36,6 @@ class BaseConsensus(LoggingMixin):
         )
         self.messages.append(message)
         self.message_ids.append(message.message_id)
+
+    def is_guarantee_liveness(self):
+        raise NotImplementedError()

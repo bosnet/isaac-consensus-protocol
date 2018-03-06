@@ -140,7 +140,7 @@ def run(options, design):
     finally:
         pass
 
-    return blockchains
+    return
 
 
 if __name__ == '__main__':

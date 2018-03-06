@@ -1,36 +1,34 @@
 # two quorums
-# * f: 1
-# * N: 9
-# * commons: n4
-# - C: 1
+# * f: 2
+# * N: 8
+# * commons: n1 n2 n3 n4 n5 n6
+# - C: 5
 #
 # * q0:
-#   - validators: n0 n1 n2 n3 n4
-#   - T: 5
-#
+#   - validators: n0 n1 n2 n3 n4 n5 n6
+#   - T: 7
 #    +===+=================+=============+====================+
 #    | ? | name            | formula     | result             |
 #    +---+-----------------+-------------+--------------------+
-#    | O | fault tolerance | T >= 3f + 1 | 3 * 1 + 1 = 4 <= 5 |
-#    | X | safety          | f <= C -1   | 1 - 1 = 0 >= 1     |
-#    | O | liveness        | f =< N - T  | 9 - 5 = 4 >= 1     |
+#    | O | fault tolerance | T >= 3f + 1 | 7 >= 3 * 2 + 1 = 6 |
+#    | O | safety          | C - 1 >= f  | 5 - 1 = 4 >= 2     |
+#    | X | liveness        | N - T >= f  | 8 - 7 = 1 >= 2     |
 #    +===+=================+=============+====================+
 #
 # * q1:
-#   - validators: n4 n5 n6 n7 n8
-#   - T: 5
-#
+#   - validators: n1 n2 n3 n4 n5 n6 n7
+#   - T: 7
 #    +===+=================+=============+====================+
 #    | ? | name            | formula     | result             |
 #    +---+-----------------+-------------+--------------------+
-#    | O | fault tolerance | T >= 3f + 1 | 3 * 1 + 1 = 4 <= 5 |
-#    | X | safety          | f <= C -1   | 1 - 1 = 0 >= 1     |
-#    | O | liveness        | f =< N - T  | 9 - 6 = 3 >= 1     |
+#    | O | fault tolerance | T >= 3f + 1 | 7 >= 3 * 2 + 1 = 6 |
+#    | O | safety          | C - 1 >= f  | 5 - 1 = 4 >= 2     |
+#    | X | liveness        | N - T >= f  | 8 - 7 = 1 >= 2     |
 #    +===+=================+==============+====================+
 #
 #--------------------------------------------------------------------------------
-# This design is that one node of commons will be faulty node. If the tolerance
-# faulty number is 1, this network will be failed to save same message.
+# This design is that two nodes will be faulty node. When the tolerance
+# faulty number is 2, it did not satisfy the liveness.
 
 ---
 common:
@@ -45,6 +43,8 @@ nodes:
                 - n2
                 - n3
                 - n4
+                - n5
+                - n6
     n1:
         port: 54320
         quorum:
@@ -53,6 +53,8 @@ nodes:
                 - n2
                 - n3
                 - n4
+                - n5
+                - n6
     n2:
         quorum:
             validators:
@@ -60,6 +62,8 @@ nodes:
                 - n1
                 - n3
                 - n4
+                - n5
+                - n6
     n3:
         quorum:
             validators:
@@ -67,45 +71,53 @@ nodes:
                 - n1
                 - n2
                 - n4
+                - n5
+                - n6
     n4:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n5
+                - n6
+                - n7
+    n5:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n6
+                - n7
+    n6:
         quorum:
             validators:
                 - n0
                 - n1
                 - n2
                 - n3
-                - n5
-    n5:
-        quorum:
-            validators:
-                - n4
-                - n6
-                - n7
-                - n8
-    n6:
-        quorum:
-            validators:
                 - n4
                 - n5
                 - n7
-                - n8
     n7:
         quorum:
             validators:
+                - n1
+                - n2
+                - n3
                 - n4
                 - n5
                 - n6
-                - n8
-    n8:
-        quorum:
-            validators:
-                - n4
-                - n5
-                - n6
-                - n7
 
 faulties:
-    n4:
+    n6:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
+    n7:
         - case:
             kind: no_voting
             frequency:

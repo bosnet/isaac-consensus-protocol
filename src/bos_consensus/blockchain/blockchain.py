@@ -62,6 +62,11 @@ class Blockchain(BaseBlockchain):
 
         middlewares = list(map(lambda x: x(self), self.middlewares))
 
+        self.log.metric(
+            action='receive-ballot',
+            ballot=ballot.serialize(to_string=False),
+            state=self.consensus.state.name,
+        )
         for m in middlewares:
             try:
                 m.received_ballot(ballot)
@@ -82,3 +87,6 @@ class Blockchain(BaseBlockchain):
                 break
 
         return
+
+    def is_guarantee_liveness(self):
+        return self.consensus.is_guarantee_liveness()

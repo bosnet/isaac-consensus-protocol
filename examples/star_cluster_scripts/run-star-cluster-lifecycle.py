@@ -56,6 +56,32 @@ async def send_message_coroutine(local_server, node_info, client_data):
         await asyncio.sleep(interval * MS)
 
 
+def get_liveness_failed_blockchains(blockchains):
+    failed = list()
+    for blockchain in blockchains:
+        if not blockchain.is_guarantee_liveness():
+            failed.append(blockchain)
+    return failed
+
+
+def is_all_guarantee_liveness(blockchains):
+    return not blockchains  # True if empty
+
+
+def log_liveness(blockchains):
+    assert isinstance(blockchains, list)
+    failed = get_liveness_failed_blockchains(blockchains)
+    if is_all_guarantee_liveness(failed):
+        log.info('[SUCCESS] Liveness!')
+    else:
+        all_names = [blockchain.node_name for blockchain in blockchains]
+        failed_names = [blockchain.node_name for blockchain in failed]
+        log.info('[FAILED] Liveness - failed {%r} of all {%r}' % (failed_names, all_names))
+        for blockchain in blockchains:
+            if not blockchain.is_guarantee_liveness():
+                log.debug('[FAILED] Liveness - %r' % blockchain.consensus)
+
+
 def run_all(node_data: dict, client_data: dict):
     assert isinstance(node_data, dict)
     assert isinstance(client_data, dict)
@@ -101,9 +127,8 @@ def run_all(node_data: dict, client_data: dict):
     finally:
         loop.close()
 
-    for server in servers.values():
-        log.info(server.blockchain.consensus.node)
-        log.info(server.blockchain.consensus.messages)
+    blockchains = [server.blockchain for server in servers.values()]
+    log_liveness(blockchains)
 
     return
 

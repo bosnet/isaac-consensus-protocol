@@ -8,7 +8,7 @@
     {
         "n1":
         {
-            "number": 5,
+            "number": 1,
             "message_format": "message%d",
             "interval": 500
         }
