@@ -40,7 +40,7 @@ class Blockchain(BaseBlockchain):
 
         self.log.metric(
             action='receive-message',
-            messge=message.message_id,
+            message=message.message_id,
             state=self.consensus.state.name,
         )
         ballot = Ballot.new(self.node_name, message, self.consensus.state, BallotVotingResult.agree)  # noqa
@@ -59,6 +59,12 @@ class Blockchain(BaseBlockchain):
             1. middleware keep the state in `receive_ballot`
         '''
         assert isinstance(ballot, Ballot)
+
+        self.log.metric(
+            action='receive-ballot',
+            ballot=ballot.serialize(to_string=False),
+            message=ballot.message.message_id,
+        )
 
         middlewares = list(map(lambda x: x(self), self.middlewares))
 

@@ -31,6 +31,7 @@ class NodeUnreachableBOSNetHTTPServerRequestHandler(NETWORK_MODULE.BOSNetHTTPSer
         query, parsed = super(NodeUnreachableBOSNetHTTPServerRequestHandler, self)._parse_request()
 
         if self._check_no_response():
+            self.log.metric(action='faulty-node', fault_type='node_unreachable')
             return (None, None)
 
         return (query, parsed)

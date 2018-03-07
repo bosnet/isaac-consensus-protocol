@@ -26,5 +26,6 @@ setup(
         'scripts/run-blockchain.py',
         'scripts/run-client.py',
         'scripts/run-client-new.py',
+        'scripts/metric-analyzer.py',
     ),
 )

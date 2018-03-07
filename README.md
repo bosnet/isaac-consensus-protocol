@@ -158,3 +158,62 @@ $ pytest
 ## Examples
 
 See the [examples](./examples/).
+
+## `metric-analyzer.py`
+
+This simple script will try to analyze the metric messages from node. Mainly this will handle below issues,
+
+* node activity
+* fault tolerance for nodes
+* safety between quorum(2 nodes)
+* ~~liveness between quorum(2 nodes)~~
+
+The definition of these terms will be found in stellar documentation page or SCP paper, or even in confluence page of BlockchainOS. The interesting thing is that to check the health of quorum, this script will create superset in all the validators and compose the quorum with each 2 nodes.
+
+### Usage
+
+Before running this script, please run this, `$ python setup.py develop`, and then generate 'metric' messages from running nodes and make something happened.
+
+```
+$ metric-analyzer.py -h
+usage: metric-analyzer.py [-h] [-verbose]
+                          [-log-level {critical,fatal,error,warn,warning,info,debug}]
+                          [-log-output LOG_OUTPUT]
+                          [-log-output-metric LOG_OUTPUT_METRIC]
+                          [-log-show-line] [-log-no-color] [-type TYPE]
+                          [-nodes NODES] [-node NODE]
+                          [metric]
+
+positional arguments:
+  metric                metric file (default: None)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -verbose              verbose log (default: False)
+  -log-level {critical,fatal,error,warn,warning,info,debug}
+                        set log level (default: debug)
+  -log-output LOG_OUTPUT
+                        set log output file (default: None)
+  -log-output-metric LOG_OUTPUT_METRIC
+                        set metric output file (default: None)
+  -log-show-line        show seperate lines in log (default: False)
+  -log-no-color         disable colorized log message by level (default:
+                        False)
+  -type TYPE        set the analyzer type to be shown
+                        (dict_keys(['history', 'safety', 'fault-tolerance']))
+                        (default: None)
+  -nodes NODES          set the nodes to be shown (default: None)
+```
+
+If you have the `/tmp/metric.json',
+
+```
+$ metric-analyzer.py /tmp/metric.json
+```
+
+You can filter multiple types you want,
+
+```
+$ metric-analyzer.py -type safety,fault-tolerance -nodes n0 /tmp/metric.json
+```
+This will show result only for safety and fault tolerance of 'n0'.

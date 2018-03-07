@@ -1,4 +1,5 @@
 import lorem
+import sys
 
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
@@ -50,4 +51,7 @@ if __name__ == '__main__':
     message_info = MessageInfo(options.ip, options.port, options.message)
 
     message = send_message(message_info)
+    if message is None:
+        sys.exit(1)
+
     log.info('sent message: %s', message.serialize(to_string=False))

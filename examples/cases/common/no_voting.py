@@ -13,6 +13,18 @@ class NoVotingMiddleware(BaseBlockchainMiddleware):
         super(NoVotingMiddleware, self).__init__(*a, **kw)
 
     def received_ballot(self, ballot):
+        try:
+            return self._received_ballot(ballot)
+        except StopReceiveBallot:
+            self.log.metric(
+                action='faulty-node',
+                fault_type='no-voting',
+                message=ballot.message.message_id,
+                ballot=ballot.serialize(to_string=False),
+            )
+            raise
+
+    def _received_ballot(self, ballot):
         if self.faulty_frequency == 0:
             return
 

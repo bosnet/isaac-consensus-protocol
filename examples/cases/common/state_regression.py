@@ -77,4 +77,15 @@ class StateRegressionTransport(NETWORK_MODULE.Transport):
             ballot,
         )
 
+        self.log.metric(
+            action='faulty-node',
+            fault_type='state_regression',
+            message=new_ballot.message.message_id,
+            ballot=new_ballot.serialize(to_string=False),
+            state=dict(
+                before=ballot.state.name,
+                after=new_ballot.state.name,
+            ),
+            target=endpoint.get('name'),
+        )
         return sent

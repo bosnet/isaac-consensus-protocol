@@ -65,7 +65,9 @@ class IsaacConsensus(Fba):
 
     def _handle_init(self, ballot):
         if self._is_new_ballot(ballot):
-            self.broadcast(self.make_self_ballot(ballot))
+            self.log.metric(action='receive-new-ballot', ballot=ballot.serialize(to_string=False))
+            new_ballot = self.make_self_ballot(ballot)
+            self.broadcast(new_ballot)
 
         self.store(ballot)
         self._change_state_and_broadcasting(ballot)
