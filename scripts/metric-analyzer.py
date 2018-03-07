@@ -338,6 +338,14 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
             'ballot result=%s' % message['ballot']['result'],
         )
 
+    def _format_store_ballot(self, message):
+        return PRINTER.format(
+            'from=%s' % message['ballot']['node_name'],
+            'ballot=%s' % message['ballot']['ballot_id'],
+            'ballot state=%s' % message['ballot']['state'],
+            'ballot result=%s' % message['ballot']['result'],
+        )
+
     def _check_health(self, faulty_nodes, info):
         message = dict(
             action='faulty-node-found',

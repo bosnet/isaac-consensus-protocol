@@ -140,9 +140,9 @@ class Fba(BaseConsensus):
     def _is_new_ballot(self, ballot):  # [TODO] search in ballot_history
         if not self.validator_ballots:
             return True
-        if ballot.node_name not in self.validator_ballots:
+        if self.node.name not in self.validator_ballots:
             return True
-        if ballot.ballot_id != self.validator_ballots[ballot.node_name].ballot_id:
+        if ballot.ballot_id != self.validator_ballots[self.node.name].ballot_id:
             return True
         return False
 
@@ -219,6 +219,7 @@ class Fba(BaseConsensus):
         self.validator_ballots[ballot.node_name] = ballot
 
         self.log.debug('ballot stored state=%s ballot=%s', self.state, ballot)
+        self.log.metric(action='store-ballot', ballot=ballot.serialize(to_string=False))
 
         return
 
