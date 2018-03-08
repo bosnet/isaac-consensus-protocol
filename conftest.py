@@ -3,7 +3,7 @@ import logging
 import pathlib
 
 
-sys.path.insert(0, pathlib.Path('.').resolve() / 'src')
+sys.path.insert(0, str(pathlib.Path('.').resolve() / 'src'))
 
 
 from bos_consensus.util import logger, LOG_LEVEL_METRIC  # noqa
