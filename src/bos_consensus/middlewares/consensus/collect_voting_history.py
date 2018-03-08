@@ -6,7 +6,7 @@ from bos_consensus.util import (
 
 
 class Middleware(BaseConsensusMiddleware):
-    def store(self, ballot):
+    def handle_ballot(self, ballot):
         self.consensus.voting_histories.append(dict(
             received=datetime_to_timestamp(utcnow()),
             ballot_id=ballot.ballot_id,

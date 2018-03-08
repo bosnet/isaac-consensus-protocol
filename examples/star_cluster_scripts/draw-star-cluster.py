@@ -7,7 +7,7 @@ import urllib.parse
 from star_cluster.star_cluster import get_nodes
 
 
-parser = argparse.ArgumentParser('Draw the layout of star system')
+parser = argparse.ArgumentParser('Draw the layout of star cluster')
 parser.add_argument('-format', default='png', help='image format', type=str, choices=graphviz.FORMATS)
 parser.add_argument('-dpi', help='dpi', type=int, default=300)
 parser.add_argument('-o', dest='output', required=True, help='output file', type=str)

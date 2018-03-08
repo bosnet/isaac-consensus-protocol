@@ -6,29 +6,35 @@ from bos_consensus.util import (
     utcnow,
 )
 
+from bos_consensus.common import BallotVotingResult
 
-class NoVotingAuditor:
+
+class BaseAuditor:
     checkpoint = None
     loop = None
     auditing_timeout = None
+    validator_names = None
+    log = None
 
     def __init__(self, blockchain, loop, auditing_timeout):
-        super(NoVotingAuditor, self).__init__()
-
         self.consensus = blockchain.consensus
         self.loop = loop
         self.checkpoint = 0
         self.auditing_timeout = auditing_timeout
-
-        self.log = logger.get_logger('audit.faulty-node.no-voting', node=self.consensus.node.name)
-
         self.validator_names = set(map(lambda x: x.name, self.consensus.validator_candidates))
+        self.log = logger.get_logger(self._log_name(), node=self.consensus.node.name)
+
+    def _log_name(self):
+        raise NotImplementedError()
 
     def _wait_for_connecting_validators(self):
         if not self.consensus.all_validators_connected():
             return False
 
         return True
+
+    def _log_metric(self, prev_checkpoint, history):
+        raise NotImplementedError()
 
     def get_last_voting_idx(self, histories):
         last_voting_idx = None
@@ -81,15 +87,14 @@ class NoVotingAuditor:
         1. remember the `checkpoint`
         1. print log metric
         '''
-
         self.log.debug('waiting for connecting validators')
         while not self._wait_for_connecting_validators():
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(1)
 
         self.log.debug('started to audit; validators connected')
 
         while True:
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(1)
             histories = self.consensus.voting_histories[self.checkpoint:]
 
             if len(histories) < 1:
@@ -107,36 +112,150 @@ class NoVotingAuditor:
             prev_checkpoint = self.checkpoint
             self.checkpoint = len(self.consensus.voting_histories)
 
-            voted_nodes = set()
-            for i in filter(lambda x: x['ballot_id'] == last_voting_history['ballot_id'], histories):
-                if i['node'] in voted_nodes or i['node'] == self.consensus.node_name:
-                    continue
-
-                voted_nodes.add(i['node'])
-
-            no_voting_nodes = list(self.validator_names - voted_nodes)
-            [self.consensus.set_faulty_validator(node_name) for node_name in no_voting_nodes]
-
-            if not self.consensus.is_guarantee_liveness():
-                self.log.metric(
-                    liveness='Failed',
-                    minimum=self.consensus.minimum,
-                    validators=list(self.consensus.validator_connected),
-                    faulties=self.consensus.validator_faulty,
-                )
-
-            self.log.metric(
-                checkpoint=prev_checkpoint,
-                validators=list(self.validator_names),
-                voted_nodes=list(voted_nodes),
-                no_voting_nodes=no_voting_nodes,
-            )
+            collected_history = filter(lambda x: x['ballot_id'] == last_voting_history['ballot_id'], histories)
+            self._log_metric(prev_checkpoint, collected_history)
 
         return
 
 
+class LivenessAuditor(BaseAuditor):
+    def _log_name(self):
+        return 'health-check.liveness'
+
+    def _log_metric(self, prev_checkpoint, history):
+        if not self.consensus.is_guarantee_liveness():
+            self.log.metric(
+                liveness='Failed',
+                minimum=self.consensus.minimum,
+                validators=list(self.consensus.validator_connected),
+                faulties=self.consensus.validator_faulty,
+            )
+
+
+class DivergentAuditor(BaseAuditor):
+    checkpoint = None
+    loop = None
+    auditing_timeout = None
+
+    def __init__(self, blockchain, loop, auditing_timeout):
+        super(DivergentAuditor, self).__init__(blockchain, loop, auditing_timeout)
+
+    def _log_name(self):
+        return 'faulty-node.divergent-voting'
+
+    def _log_metric(self, prev_checkpoint, history):
+        divergent = self.get_divergent_nodes(history)
+
+        self.log.metric(
+            checkpoint=prev_checkpoint,
+            validators=list(self.validator_names),
+            divergent_voting_nodes=list(divergent),
+        )
+
+    def get_ballot_dict(self, ballot_list):
+        '''
+        * make ballot dictionary from ballot_list
+         * ballot dictionary format
+          * {
+              ballot_id: {
+                  node_state: [ballots],
+                  node_state: [ballots]
+              },
+              ballot_id: {
+                  node_state: [ballots],
+                  node_state: [ballots]
+              },
+              ...
+          }
+        '''
+        ballot_dict = dict()
+
+        for ballot in ballot_list:
+            ballot_id = ballot['ballot_id']
+            node_name = ballot['node']
+            state = ballot['ballot_state']
+
+            if ballot_id not in ballot_dict:
+                ballot_dict[ballot_id] = dict()
+
+            if state not in ballot_dict[ballot_id]:
+                ballot_dict[ballot_id][state] = list()
+
+            if node_name in self.validator_names or node_name == self.consensus.node_name:
+                ballot_dict[ballot_id][state].append(ballot)
+        return ballot_dict
+
+    def remove_intersect_ballot(self, agree_list, disagree_list):
+        intersect_set = agree_list & disagree_list
+        if intersect_set:
+            agree_list -= intersect_set
+            disagree_list -= intersect_set
+
+    def get_divergent_voting_nodes(self, ballot_list):
+        agree_list = set()
+        disagree_list = set()
+        minimum = self.consensus.minimum
+        for ballot in ballot_list:
+            node_name = ballot['node']
+            result = ballot['result']
+            if result == BallotVotingResult.agree:
+                agree_list.add(node_name)
+            else:
+                disagree_list.add(node_name)
+
+        self.remove_intersect_ballot(agree_list, disagree_list)
+
+        divergent = set()
+
+        if len(agree_list) >= minimum and len(disagree_list) > 0:
+            divergent.update(disagree_list)
+        elif len(disagree_list) >= minimum and len(agree_list) > 0:
+            divergent.update(agree_list)
+        else:
+            pass
+
+        return divergent
+
+    def get_divergent_nodes(self, histories):
+        divergent = set()
+
+        ballot_dict = self.get_ballot_dict(histories)
+
+        for _, state_dict in ballot_dict.items():
+            for _, ballot_list in state_dict.items():
+                divergent_voting_nodes = self.get_divergent_voting_nodes(ballot_list)
+                divergent.update(divergent_voting_nodes)
+
+        return divergent
+
+
+class NoVotingAuditor(BaseAuditor):
+    def __init__(self, blockchain, loop, auditing_timeout):
+        super(NoVotingAuditor, self).__init__(blockchain, loop, auditing_timeout)
+
+    def _log_name(self):
+        return 'faulty-node.no-voting'
+
+    def _log_metric(self, prev_checkpoint, history):
+        voted_nodes = set()
+        for i in history:
+            if i['node'] in voted_nodes or i['node'] == self.consensus.node_name:
+                continue
+
+            voted_nodes.add(i['node'])
+
+        self.log.metric(
+            checkpoint=prev_checkpoint,
+            validators=list(self.validator_names),
+            voted_nodes=list(voted_nodes),
+            no_voting_nodes=list(self.validator_names - voted_nodes),
+        )
+
+
 AUDITORS = (
+    DivergentAuditor,
     NoVotingAuditor,
+    LivenessAuditor,
 )
 
 
@@ -150,5 +269,8 @@ class FaultyNodeAuditor:
 
     async def start(self):
         for auditor in AUDITORS:
-            await auditor(self.blockchain, self.loop, self.auditing_timeout).coroutine()
+            asyncio.ensure_future(
+                auditor(self.blockchain, self.loop, self.auditing_timeout).coroutine(),
+                loop=self.loop,
+            )
         return

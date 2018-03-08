@@ -1,1 +1,1 @@
-from .client import send_message, MessageInfo
+from .client import send_message, MessageInfo  # noqa

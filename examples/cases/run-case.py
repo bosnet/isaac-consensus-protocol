@@ -66,7 +66,7 @@ def run(options, design):
         blockchains.append(blockchain)
 
         NodeRunner(blockchain).start()
-        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 5)
+        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 3)
 
     [asyncio.ensure_future(auditor.start()) for auditor in auditors.values()]
 
@@ -85,13 +85,14 @@ if __name__ == '__main__':
     logger.set_level(logging.FATAL, 'http')
     logger.set_level(logging.FATAL, 'transport')
 
-    if not pathlib.Path(options.design).exists():
-        parser.error('file, `%s` does not exists.' % options.design)
+    filename = options.design
+    if not pathlib.Path(filename).exists():
+        parser.error('file, `%s` does not exists.' % filename)
 
-    if not pathlib.Path(options.design).is_file():
-        parser.error('file, `%s` is not valid file.' % options.design)
+    if not pathlib.Path(filename).is_file():
+        parser.error('file, `%s` is not valid file.' % filename)
 
-    design = load_design(options.design)
+    design = load_design(filename)
 
     log = logger.get_logger(__name__)
     log_state = logger.get_logger('consensus.state')

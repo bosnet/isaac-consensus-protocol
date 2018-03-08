@@ -113,3 +113,8 @@ faulties:
             kind: no_voting
             frequency:
                 per_consensus: 100
+
+messages:
+    n1:
+        number: 5
+        interval: 500

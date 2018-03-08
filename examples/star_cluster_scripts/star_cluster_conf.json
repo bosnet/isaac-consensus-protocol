@@ -7,32 +7,22 @@
     {
         "n1":
         {
-            "threshold": 80,
-            "faulty_kind": "no_voting",
-            "faulty_percent": 1
+            "threshold": 80
         },
         "n2":
         {
-            "threshold": 80,
-            "faulty_kind": "duplicated_message_sent",
-            "faulty_percent": 1
+            "threshold": 80
         },
         "n3":
         {
-            "threshold": 80,
-            "faulty_kind": "node_unreachable",
-            "faulty_percent": 20
+            "threshold": 80
         },
         "n4":
         {
-            "faulty_kind": "divergent_voting",
-            "faulty_percent": 1
         },
         "n5":
         {
-            "threshold": 80,
-            "faulty_kind": "state_regression",
-            "faulty_percent": 1
+            "threshold": 80
         },
         "n6":
         {

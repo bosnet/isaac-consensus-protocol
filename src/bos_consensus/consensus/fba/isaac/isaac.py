@@ -27,7 +27,7 @@ class IsaacConsensus(Fba):
     def get_last_state(self):
         return IsaacState.ALLCONFIRM
 
-    def handle_ballot(self, ballot):
+    def _handle_ballot(self, ballot):
         # filtering rules, for same `ballot_id` or `message_id`
         #  1. if `message_id` is already saved in `self.message_ids`, it will be passed
         #  1. if `ballot` is same,
@@ -36,6 +36,7 @@ class IsaacConsensus(Fba):
         #   it will be passed.
         #  1. if `ballot` is same except `ballot_id`, it will be passed
         assert isinstance(ballot, Ballot)
+
         if ballot.node_name in self.validator_ballots:
             existing = self.validator_ballots[ballot.node_name]
             if ballot == existing:
@@ -87,7 +88,7 @@ class IsaacConsensus(Fba):
             self.store(ballot)
         else:
             self.init()
-            self.handle_ballot(ballot)
+            self._handle_ballot(ballot)
 
         return
 

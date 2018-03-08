@@ -101,3 +101,8 @@ nodes:
                 - n5
                 - n6
                 - n7
+
+messages:
+    n1:
+        number: 5
+        interval: 500

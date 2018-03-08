@@ -1,6 +1,8 @@
 import collections
+import lorem
 from multiprocessing import Process, Queue
 import urllib
+import uuid
 
 import requests
 
@@ -37,8 +39,9 @@ def send_message(message_info):
     return message
 
 
-def _send_message_new(queue, message, endpoint):
+def _send_message_multiple_one(queue, message, endpoint):
     log = logger.get_logger('client')
+
     try:
         response = requests.post(
             endpoint.join('/send_message'),
@@ -58,13 +61,40 @@ def _send_message_new(queue, message, endpoint):
     return
 
 
-def send_message_new(message, *endpoints):
-    q = Queue(maxsize=len(endpoints))
-    for endpoint in endpoints:
-        p = Process(target=_send_message_new, args=(q, message, endpoint))
+def _send_message_multiple(queue, message, endpoint):
+    create_new_message = message is None
+    messages = [message] if message is not None else list()
+
+    number_of_messages = int(endpoint.get('m', 1))
+    q = Queue(maxsize=number_of_messages)
+    for i in range(number_of_messages):
+        if create_new_message:
+            messages.append(
+                Message.new(),
+            )
+
+        p = Process(target=_send_message_multiple_one, args=(q, messages[-1], endpoint))
         p.start()
 
     while not q.full():
         pass
 
-    return message
+    queue.put(messages)
+
+    return
+
+
+def send_message_multiple(message, *endpoints):
+    q = Queue(maxsize=len(endpoints))
+    for endpoint in endpoints:
+        p = Process(target=_send_message_multiple, args=(q, message, endpoint))
+        p.start()
+
+    while not q.full():
+        pass
+
+    messages = list()
+    for i in endpoints:
+        messages.extend(map(lambda x: (x, i), q.get()))
+
+    return messages

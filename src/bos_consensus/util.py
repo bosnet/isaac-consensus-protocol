@@ -403,7 +403,7 @@ def convert_json_config(config):
 
                     if isinstance(nodes[node]['faulty_percent'], dict):
                         for node_case in faulty_dict[node]:
-                            node_case['case']['frequency']['per_consensus'] = nodes[node]['faulty_percent']['per_consensus']
+                            node_case['case']['frequency']['per_consensus'] = nodes[node]['faulty_percent']['per_consensus']  # noqa
 
                 if 'duration' in nodes[node]:
                     for node_case in faulty_dict[node]:

@@ -70,5 +70,4 @@ nodes:
 messages:
     n1:
         number: 5
-        message_format: "message%d"
         interval: 1000

@@ -135,6 +135,40 @@ class Fba(BaseConsensus):
         return len(self.validator_candidates) + 1 == len(self.validator_connected)
 
     def handle_ballot(self, ballot):
+        '''
+        Middleware for broadcast
+            1. each middleware execute before and after broadcast
+            1. if method of middleware returns,
+                * `None`: pass
+                * `NoFurtherConsensusMiddlewares`: stop middlewares
+                * `StopBroadcast`: stop broadcast
+            1. middleware keep the state in `broadcast`
+        '''
+        assert isinstance(ballot, Ballot)
+
+        middlewares = list(map(lambda x: x(self), self.middlewares))
+
+        for m in middlewares:
+            try:
+                m.handle_ballot(ballot)
+            except NoFurtherConsensusMiddlewares as e:
+                self.log.debug('break middleware: %s', e)
+                break
+            except StopBroadcast as e:
+                self.log.debug('stop consensus: %s', e)
+                return
+
+        self.log.debug(
+            '[%s] [%s] begin handle_ballot=%s',
+            self.node.name,
+            self.state,
+            ballot,
+        )
+
+        self._handle_ballot(ballot)
+        return
+
+    def _handle_ballot(self, ballot):
         raise NotImplementedError()
 
     def _is_new_ballot(self, ballot):  # [TODO] search in ballot_history

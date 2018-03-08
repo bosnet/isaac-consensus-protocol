@@ -76,6 +76,5 @@ faulties:
 
 messages:
     n1:
-       number: 5
-       message_format: "message%d"
+       number: 2
        interval: 500

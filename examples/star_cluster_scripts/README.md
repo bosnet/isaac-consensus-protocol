@@ -1,19 +1,5 @@
 # Quorum Intersection Test In Single Process
 
-## Run Quorum Topology Server and periodically send messages
-
-```
-$ cd examples/star_cluster_scripts
-$ python run-star-cluster-lifecycle.py -i lifecycle_star_cluster.json -c lifecycle_commet.json -log-level debug
-```
-
-## Run Quorum Topology Server Example
-
-```
-$ cd examples/star_cluster_scripts
-$ python run-star-cluster.py -i star_cluster_conf.json -log-level debug
-```
-
 ## Run Quorum Nodes Ini Files Generator Example
 
 ```
@@ -24,7 +10,7 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
 
 ## Input Json File Format
 
-### lifecycle_star_cluster.json, star_cluser_conf.json
+### star_cluser_conf.json
 ```
 {
     "common":
@@ -35,9 +21,7 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
     {
         "Node Name":
         {
-            "threshold": integer,
-            "faulty_percent": integer,
-            "faulty_kind": string
+            "threshold": integer
         },
         "Node Name": {} // default threshold 51
     },
@@ -72,29 +56,6 @@ $ python star_cluster_ini_generator.py -i star_cluster_conf.json -o outdir
 }
 ```
 
-### lifecycle_commet.json, commet_conf.json
-
-```
-{
-    "common":
-    {
-        "network": string
-    },
-
-    "messages":
-    {
-        "node_name":
-        {
-            "ip": string, default: "localhost"
-            "port": int,  default: 5001
-            "number": int,  default: 1
-            "message_format": formatted string, default: "message%d"
-            "interval": int, default: 4000
-        }
-    }
-}
-```
-
 ## Example's Output Node Validators
 
 ```
@@ -109,7 +70,7 @@ N8: (N3, N4)
 N9: (N1, N3, N6)
 ```
 
-## Verifing The Layout Of Star System
+## Verifing The Layout Of Star Cluster
 
 To eveything work properly, install `graphviz` first.
 
@@ -125,8 +86,8 @@ $ brew install graphviz
 
 ```
 $ cd examples/star_cluster_scripts/
-$ python draw-star-system.py -h
-usage: Draw the layout of star system [-h]
+$ python draw-star-cluster -h
+usage: Draw the layout of star cluster [-h]
                                       [-format {webp,gif,wbmp,xdot1.2,gtk,dot,ismap,pct,ico,json0,cgimage,gv,svg,tk,png,gd,canon,json,imap_np,pov,cmap,pic,tiff,xdot,jpe,jpg,psd,jp2,tga,cmapx_np,vmlz,xdot1.4,vml,xdot_json,dot_json,jpeg,plain-ext,sgi,bmp,pict,eps,exr,svgz,x11,gd2,xlib,plain,ps2,pdf,tif,imap,fig,cmapx,vrml,ps}]
                                       [-dpi DPI] -o OUTPUT
                                       json
@@ -143,7 +104,7 @@ optional arguments:
 ```
 
 ```
-$ python draw-star-system.py -format png -o /tmp/first-shot star_cluster_conf.json
+$ python draw-star-cluster -format png -o /tmp/first-shot star_cluster_conf.json
 $ ls -al /tmp/*.png
 -rw-r--r--  1 spikeekips  wheel  162773 Jan 11 15:23 /tmp/first-shot.png
 $ open /tmp/first-shot.png

@@ -1,5 +1,6 @@
 from .util import (  # noqa
-    load_design,
+    DivergentVotingConsensus,
     FaultyBlockchain,
+    load_design,
     NodeRunner,
 )

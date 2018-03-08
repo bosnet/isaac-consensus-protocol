@@ -5,6 +5,7 @@ import threading
 import yaml
 
 from bos_consensus.blockchain import Blockchain
+from .divergent_voting import DivergentVotingConsensus
 from bos_consensus.common.faulty_node import FaultyNodeKind
 from bos_consensus.common import node_factory
 from bos_consensus.network import Endpoint, get_network_module, BaseServer
@@ -114,6 +115,8 @@ class FaultyBlockchain(Blockchain):
 
         found_node_unreachable_faulty = None
         found_state_regression_faulty = None
+        found_divergent_voting_faulty = None
+
         for faulty in faulties:
             if faulty.kind in (FaultyNodeKind.NodeUnreachable,):
                 found_node_unreachable_faulty = faulty
@@ -121,6 +124,10 @@ class FaultyBlockchain(Blockchain):
 
             if faulty.kind in (FaultyNodeKind.StateRegression,):
                 found_state_regression_faulty = faulty
+                continue
+
+            if faulty.kind in (FaultyNodeKind.DivergentVoting,):
+                found_divergent_voting_faulty = faulty
                 continue
 
         if found_node_unreachable_faulty is not None:
@@ -142,6 +149,17 @@ class FaultyBlockchain(Blockchain):
                     consensus.node.endpoint.port,
                 ),
             )
+
+        if found_divergent_voting_faulty is not None:
+            self.log.debug('found divergent_voting faulty case: %s', found_divergent_voting_faulty)
+            divergent_voting_consensus = DivergentVotingConsensus(
+                found_divergent_voting_faulty.frequency,
+                consensus.node,
+                consensus.threshold,
+                consensus.validator_candidates,
+            )
+            divergent_voting_consensus.validator_connected = consensus.validator_connected
+            consensus = divergent_voting_consensus
 
         super(FaultyBlockchain, self).__init__(consensus, transport)
 

@@ -1,4 +1,3 @@
-import lorem
 import sys  # noqa
 
 from bos_consensus.common import Message
@@ -10,6 +9,7 @@ from bos_consensus.util import (
 
 from client.client import send_message_multiple
 
+
 parser = ArgumentParserShowDefaults()
 
 log = None
@@ -18,14 +18,13 @@ logger.set_argparse(parser)
 parser.add_argument(
     'endpoints',
     nargs='+',
-    help='endpoints, you want to send the message to',
+    help='endpoints with the number of endpoints\'s messages want to send; ex) http://localhost:80?m=5 http://localhost:80?m=10',  # noqa
     type=str,
 )
 
 parser.add_argument(
     'message',
     nargs='?',
-    default=lorem.sentence().split()[0],
     help='Messages you want to send to the server',
     type=str,
 )
@@ -37,7 +36,7 @@ if __name__ == '__main__':
 
     log.debug('options: %s', options)
 
-    message_text = options.message
+    message = None
     endpoints = list()
     for n, i in enumerate(options.endpoints):
         try:
@@ -48,11 +47,9 @@ if __name__ == '__main__':
 
                 sys.exit(1)
 
-            message_text = i
+            message = Message.new(i)
 
-    message = Message.new(message_text)
-
-    log.info('trying to send message: %s' % message)
+    log.debug('trying to send message, %s to %s', message, endpoints)
     messages = send_message_multiple(message, *endpoints)
     for (message, endpoint) in messages:
         log.debug('sent message, %s to %s', message.serialize(to_string=False), endpoint)

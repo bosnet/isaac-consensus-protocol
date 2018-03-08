@@ -37,7 +37,7 @@ parser.add_argument(
 
 parser.add_argument(
     'design',
-    help='design yaml',
+    help='design should be yaml or json',
     type=str,
 )
 
@@ -46,9 +46,8 @@ MS = 0.001
 
 async def send_message_coroutine(local_server, node_info, message_infos):
     for message_info in message_infos:
-        message_str = message_info[0]
+        message = message_info[0]
         interval = message_info[1]
-        message = Message.new(message_str)
         endpoint = node_info.endpoint
         log.debug(f'send message to {endpoint}')
         local_server.blockchain.transport.send(endpoint, message.serialize())
@@ -85,8 +84,8 @@ def set_message_task(loop, design, nodes, local_server):
     if 'messages' in design._fields:
         for node_name, message in design.messages._asdict().items():
             message_infos = []
-            for i in range(message.number):
-                new_message = message.message_format % i
+            for _ in range(message.number):
+                new_message = Message.new()
                 message_infos.append((new_message, message.interval))
             node_info = nodes[node_name]
             loop.create_task(send_message_coroutine(local_server, node_info, message_infos))
@@ -123,7 +122,7 @@ def run(options, design):
 
         blockchains.append(blockchain)
         servers[node.name] = network_module.Server(blockchain)
-        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 1)
+        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 5)
 
     for server in servers.values():
         server.start()
@@ -147,7 +146,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
     logger.from_argparse(logger, options)
-    logger.set_level(logging.FATAL, 'http')
+    logger.set_level(logging.FATAL, 'local')
     logger.set_level(logging.FATAL, 'transport')
 
     design = load_design(options.design)
