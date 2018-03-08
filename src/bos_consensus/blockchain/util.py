@@ -11,7 +11,7 @@ class StubTransport(BaseTransport):
     def __init__(self, *a, **kw):
         super(StubTransport, self).__init__(*a, **kw)
 
-    def send(self, _, __):
+    def send(self, _, __, ___):
         pass
 
     def set_requests(self):

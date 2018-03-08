@@ -43,7 +43,7 @@ class Blockchain(BaseBlockchain):
             message=message.message_id,
             state=self.consensus.state.name,
         )
-        ballot = Ballot.new(self.node_name, message, self.consensus.state, BallotVotingResult.agree)  # noqa
+        ballot = Ballot.new(self.node_name, message, self.consensus.state, BallotVotingResult.none)  # noqa
         self.receive_ballot(ballot)
 
         return

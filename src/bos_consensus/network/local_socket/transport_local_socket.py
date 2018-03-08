@@ -104,7 +104,7 @@ class Transport(BaseTransport):
     def send(self, endpoint, data, retries=None):
         assert isinstance(endpoint, Endpoint)
         if retries is None:
-            retries = 3
+            retries = 1
 
         node_name = self.blockchain.node_name
         self.log.debug('[%s] begin send_to %s' % (node_name, endpoint))
@@ -112,8 +112,15 @@ class Transport(BaseTransport):
 
         n = 0
         while n < retries:
-            LOCAL_TRANSPORT_LIST[endpoint.uri].write(data_str)
-            return True
+            try:
+                LOCAL_TRANSPORT_LIST[endpoint.uri].write(data_str)
+            except Exception as e:
+                self.log.error('failed to send: tries=%d data=%s to=%s: %s', n, data, endpoint, e)
+                n += 1
+                continue
+            else:
+                self.log.debug('successfully sent data=%s to=%s', data, endpoint)
+                return True
 
         self.log.error('max retries, %d exceeded: data=%r to=%r', retries, data, endpoint)
 

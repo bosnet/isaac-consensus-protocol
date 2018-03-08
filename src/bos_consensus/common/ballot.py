@@ -10,6 +10,7 @@ from .message import Message
 class BallotVotingResult(enum.Enum):
     agree = enum.auto()
     disagree = enum.auto()
+    none = enum.auto()      # initialize when message is received by client
 
 
 class Ballot:
@@ -66,6 +67,10 @@ class Ballot:
             return o
 
         return json.dumps(o)
+
+    def _is_from_client(self):
+        if self.result is BallotVotingResult.none:
+            return True
 
     @classmethod
     def new(cls, node_name, message, state, result=BallotVotingResult.disagree):

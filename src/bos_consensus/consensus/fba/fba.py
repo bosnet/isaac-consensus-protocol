@@ -183,7 +183,7 @@ class Fba(BaseConsensus):
     def make_self_ballot(self, ballot):
         return Ballot(ballot.ballot_id, self.node.name, ballot.message, self.state, BallotVotingResult.agree)
 
-    def broadcast(self, ballot):
+    def broadcast(self, ballot, retries=1):
         '''
         Middleware for broadcast
             1. each middleware execute before and after broadcast
@@ -208,16 +208,17 @@ class Fba(BaseConsensus):
                 return
 
         self.log.debug(
-            '[%s] [%s] begin broadcast to connected nodes=%s',
+            '[%s] [%s] begin broadcast to connected nodes=%s with retries=%d',
             self.node.name,
             self.state,
             tuple(self.validator_connected.keys()),
+            retries,
         )
 
         self.store(ballot)
         for node_name, node in self.validator_connected.items():
             if node_name is not self.node.name:
-                self.transport.send(node.endpoint, ballot.serialize(to_string=False))
+                self.transport.send(node.endpoint, ballot.serialize(to_string=False), retries)
 
         return
 

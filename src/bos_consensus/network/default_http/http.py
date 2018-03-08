@@ -291,7 +291,7 @@ class Transport(BaseTransport):
 
     def send(self, endpoint, data, retries=None):
         if retries is None:
-            retries = 3
+            retries = 1
 
         node_name = self.blockchain.node_name
         self.log.debug('[%s] begin send_to %s' % (node_name, endpoint))
