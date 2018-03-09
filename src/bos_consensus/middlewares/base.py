@@ -1,7 +1,7 @@
 import os.path
 import pathlib
 
-from ..util import get_module
+from bos_consensus.util import get_module
 
 
 def load_middlewares(module):

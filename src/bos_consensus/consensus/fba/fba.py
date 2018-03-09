@@ -1,8 +1,9 @@
 import enum
 import math
 
-from ...common import Ballot, BallotVotingResult, Node
-from ...consensus.base import BaseConsensus
+from bos_consensus.common import Ballot, BallotVotingResult, Node, Slot
+
+from bos_consensus.consensus.base import BaseConsensus
 from bos_consensus.middlewares import (
     load_middlewares,
     NoFurtherConsensusMiddlewares,
@@ -16,13 +17,13 @@ class FbaState(enum.IntEnum):
 
 
 class Fba(BaseConsensus):
-    state = None
+
     threshold = None
-    validator_ballots = None
     validator_candidates = None
     transport = None
     middlewares = list()
     voting_histories = None  # for auditing received ballots
+    slot = None
 
     def __init__(self, node, threshold, validator_candidates):
         assert isinstance(node, Node)
@@ -33,20 +34,17 @@ class Fba(BaseConsensus):
         assert len(
             list(filter(lambda x: not isinstance(x, Node), validator_candidates))
         ) < 1
-
         self.threshold = threshold
         self.validator_candidates = validator_candidates
         self.__minimum = math.ceil((len(self.validator_candidates) + 1) * (self.threshold / 100))
         self.validator_node_names = tuple([node.name] + list(map(lambda x: x.name, self.validator_candidates)))
         self.validator_connected = dict()
         self.validator_faulty = set()
-
-        self.validator_ballots = dict()
         self.voting_histories = list()
-
+        self.slot_size = 5
+        self.slot = Slot(self.slot_size)
         self.middlewares = load_middlewares('consensus')
         self.set_self_node_to_validators()
-
         self.init()
 
     def set_self_node_to_validators(self):
@@ -57,10 +55,13 @@ class Fba(BaseConsensus):
         return
 
     def init(self):
-        self.set_state(self.get_init_state())
+        self.slot.set_all_state(self.get_init_state())
         self.clear_validator_ballots()
 
         return
+
+    def get_ballot(self, ballot):
+        return self.slot.slot[self.slot.get_ballot_index(ballot)]
 
     def get_init_state(self):
         raise NotImplementedError()
@@ -76,18 +77,21 @@ class Fba(BaseConsensus):
         repr_str.append('faulty=%(validator_faulty)s')
         return ' '.join(repr_str) % self.__dict__
 
-    def set_state(self, state):
+    def set_state(self, ballot, state):
+        if self.slot.get_ballot_state(ballot) == state:
+            return
+
         self.log.metric(
             action='change-state',
             node=self.node.name,
             state=dict(
                 after=state.name,
-                before=self.state.name if self.state is not None else None,
+                before=self.get_ballot(ballot).consensus_state.name if self.get_ballot(ballot).consensus_state is not None else None,
             ),
             validators=tuple(self.validator_connected.keys()),
         )
 
-        self.state = state
+        self.slot.set_ballot_consensus_state(ballot, state)
 
         return
 
@@ -115,7 +119,8 @@ class Fba(BaseConsensus):
         return name not in self.validator_node_names
 
     def clear_validator_ballots(self):
-        self.validator_ballots.clear()
+        self.slot.clear_all_validator_ballots()
+        return
 
     @property
     def minimum(self):
@@ -161,7 +166,7 @@ class Fba(BaseConsensus):
         self.log.debug(
             '[%s] [%s] begin handle_ballot=%s',
             self.node.name,
-            self.state,
+            self.get_ballot(ballot).consensus_state if self.slot.get_ballot_index(ballot) != 'Not Found' else 'None',
             ballot,
         )
 
@@ -172,16 +177,24 @@ class Fba(BaseConsensus):
         raise NotImplementedError()
 
     def _is_new_ballot(self, ballot):  # [TODO] search in ballot_history
-        if not self.validator_ballots:
+        if self.slot.get_ballot_index(ballot) == 'Not Found' and ballot.message.message_id not in self.message_ids:
             return True
-        if self.node.name not in self.validator_ballots:
+        if not self.get_ballot(ballot).validator_ballots:
             return True
-        if ballot.ballot_id != self.validator_ballots[self.node.name].ballot_id:
+        if self.node.name not in self.get_ballot(ballot).validator_ballots:
+            return True
+        if ballot.ballot_id != self.get_ballot(ballot).validator_ballots[self.node.name].ballot_id:
             return True
         return False
 
     def make_self_ballot(self, ballot):
-        return Ballot(ballot.ballot_id, self.node.name, ballot.message, self.state, BallotVotingResult.agree)
+        if self.slot.get_ballot_index(ballot) == 'Not Found':
+            self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.init_state, BallotVotingResult.agree)
+            self_ballot.timestamp = ballot.timestamp
+            return self_ballot
+        self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.get_ballot_state(ballot), BallotVotingResult.agree)
+        self_ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
+        return self_ballot
 
     def broadcast(self, ballot, retries=1):
         '''
@@ -210,7 +223,7 @@ class Fba(BaseConsensus):
         self.log.debug(
             '[%s] [%s] begin broadcast to connected nodes=%s with retries=%d',
             self.node.name,
-            self.state,
+            self.slot.get_ballot_state(ballot) if ((self.slot.get_ballot_index(ballot)) != 'Not Found') else 'None',
             tuple(self.validator_connected.keys()),
             retries,
         )
@@ -246,16 +259,15 @@ class Fba(BaseConsensus):
                 self.log.debug('stop consensus: %s', e)
                 return
 
-        if self.state > ballot.state:
-            self.log.debug('found state regression ballot=%s state=%s', ballot, self.state)
+        if self.slot.get_ballot_index(ballot) != 'Not Found':
+            if self.slot.get_ballot_state(ballot) > ballot.state:
+                self.log.debug('found state regression ballot=%s state=%s', ballot, self.slot.get_ballot_state(ballot))
+                return
 
-            return
+        ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
 
-        self.validator_ballots[ballot.node_name] = ballot
-
-        self.log.debug('ballot stored state=%s ballot=%s', self.state, ballot)
-        self.log.metric(action='store-ballot', ballot=ballot.serialize(to_string=False))
-
+        self.slot.get_validator_ballots(ballot)[ballot.node_name] = ballot
+        self.log.debug('ballot stored state=%s ballot=%s', self.slot.get_ballot_state(ballot), ballot)
         return
 
     def set_faulty_validator(self, node_name):
@@ -268,7 +280,6 @@ class Fba(BaseConsensus):
             action='faulty-node-added',
             faulty_node=node_name,
         )
-
         return
 
     def is_guarantee_liveness(self):

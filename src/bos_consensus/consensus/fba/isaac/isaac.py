@@ -1,7 +1,7 @@
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
-from bos_consensus.common.ballot import Ballot
+from bos_consensus.common import Ballot, Slot
 
 
 class IsaacState(FbaState):
@@ -21,6 +21,7 @@ class IsaacState(FbaState):
 
 
 class IsaacConsensus(Fba):
+
     def get_init_state(self):
         return IsaacState.INIT
 
@@ -37,13 +38,14 @@ class IsaacConsensus(Fba):
         #  1. if `ballot` is same except `ballot_id`, it will be passed
         assert isinstance(ballot, Ballot)
 
-        if ballot.node_name in self.validator_ballots:
-            existing = self.validator_ballots[ballot.node_name]
-            if ballot == existing:
-                return
+        if self.slot.get_ballot_index(ballot) != 'Not Found':
+            if ballot.node_name in self.get_ballot(ballot).validator_ballots:
+                existing = self.get_ballot(ballot).validator_ballots[ballot.node_name]
+                if ballot == existing:
+                    return
 
-            if ballot.has_different_ballot_id(existing):
-                return
+                if ballot.has_different_ballot_id(existing):
+                    return
 
         if ballot.message_id in self.message_ids:
             self.log.debug('message already stored: %s', ballot.message)
@@ -53,19 +55,20 @@ class IsaacConsensus(Fba):
         self.log.debug(
             '[%s] [%s] receive ballot from %s(from_outside=%s)',
             self.node_name,
-            self.state,
+            self.get_ballot(ballot).consensus_state if (self.slot.get_ballot_index(ballot) != 'Not Found') else 'None',
             ballot.node_name,
             from_outside,
         )
 
         if not from_outside:
-            func = getattr(self, '_handle_%s' % self.state.name.lower())
+            func = getattr(self, '_handle_%s' % (self.get_ballot(ballot).consensus_state.name.lower() if (self.slot.get_ballot_index(ballot) != 'Not Found') else 'init'))
             func(ballot)
 
         return
 
     def _handle_init(self, ballot):
         if self._is_new_ballot(ballot):
+            self.slot.check_full_and_insert_ballot(ballot)
             self.log.metric(action='receive-new-ballot', ballot=ballot.serialize(to_string=False))
             new_ballot = self.make_self_ballot(ballot)
             if ballot._is_from_client():
@@ -95,12 +98,13 @@ class IsaacConsensus(Fba):
 
         return
 
-    def _check_threshold_and_state(self):
-        ballots = self.validator_ballots.values()
+    def _check_threshold_and_state(self, ballot):
+        ballots = self.get_ballot(ballot).validator_ballots.values() if (self.slot.get_ballot_index(ballot) != 'Not Found') else list()
         state_consensus = None
         state_check_init = self.minimum
         state_check_sign = self.minimum
         state_check_accept = self.minimum
+
         self.log.debug('[%s] check_threshold: ballots=%s', self.node_name, ballots)
 
         for ballot in ballots:
@@ -110,7 +114,7 @@ class IsaacConsensus(Fba):
             if state_check_init < 1 or state_check_sign < 1 or state_check_accept < 1:
                 break
 
-            if self.state <= ballot.state:
+            if self.get_ballot(ballot).consensus_state <= ballot.state:
                 if ballot.state >= IsaacState.INIT:
                     state_check_init -= 1
                 if ballot.state >= IsaacState.SIGN:
@@ -144,7 +148,9 @@ class IsaacConsensus(Fba):
         return state_consensus, check_threshold
 
     def _change_state_and_broadcasting(self, ballot):
-        state = self._check_threshold_and_state()
+
+        state = self._check_threshold_and_state(ballot)
+
         if state[0] is None:
             return
 
@@ -154,10 +160,11 @@ class IsaacConsensus(Fba):
 
         self.log.debug("state change check : %s", state)
         if state_init < 1 or state_sign < 1 or state_accept < 1:
-            self.set_state(state[0])
+            self.set_state(ballot, state[0])
             if state[0] is IsaacState.ALLCONFIRM:
                 self.save_message(ballot.message)
-
+                self.broadcast(self.make_self_ballot(ballot))
+                self.slot.remove_ballot(ballot)
+                return
             self.broadcast(self.make_self_ballot(ballot))
-
         return

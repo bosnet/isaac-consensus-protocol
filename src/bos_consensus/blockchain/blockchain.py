@@ -5,6 +5,7 @@ from ..middlewares import (
     NoFurtherBlockchainMiddlewares,
     StopReceiveBallot,
 )
+from ..consensus import get_fba_module
 
 
 class Blockchain(BaseBlockchain):
@@ -32,18 +33,17 @@ class Blockchain(BaseBlockchain):
         return dict(
             node=self.node.to_dict(),
             consensus=self.consensus.to_dict(),
-            state=self.consensus.state.name
+            # state=self.consensus.state.name
         )
 
     def receive_message_from_client(self, message):
         assert isinstance(message, Message)
-
         self.log.metric(
             action='receive-message',
-            message=message.message_id,
-            state=self.consensus.state.name,
+            messge=message.message_id,
+            state=None,
         )
-        ballot = Ballot.new(self.node_name, message, self.consensus.state, BallotVotingResult.none)  # noqa
+        ballot = Ballot.new(self.node_name, message, get_fba_module('isaac').IsaacState.INIT, BallotVotingResult.agree)  # noqa
         self.receive_ballot(ballot)
 
         return
@@ -60,18 +60,12 @@ class Blockchain(BaseBlockchain):
         '''
         assert isinstance(ballot, Ballot)
 
-        self.log.metric(
-            action='receive-ballot',
-            ballot=ballot.serialize(to_string=False),
-            message=ballot.message.message_id,
-        )
-
         middlewares = list(map(lambda x: x(self), self.middlewares))
 
         self.log.metric(
             action='receive-ballot',
             ballot=ballot.serialize(to_string=False),
-            state=self.consensus.state.name,
+            state=self.consensus.slot.slot[self.consensus.slot.get_ballot_index(ballot)].consensus_state.name if ((self.consensus.slot.get_ballot_index(ballot)) != 'Not Found') else None,
         )
         for m in middlewares:
             try:

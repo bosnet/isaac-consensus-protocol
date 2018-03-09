@@ -1,6 +1,7 @@
 import copy
 import enum
 import json
+import datetime
 
 from ..consensus import get_fba_module
 from ..util import get_uuid
@@ -18,6 +19,7 @@ class Ballot:
     node_name = None
     message = None
     state = None
+    timestamp = None
     result = None
 
     def __init__(self, ballot_id, node_name, message, state, result=BallotVotingResult.disagree):
@@ -28,10 +30,11 @@ class Ballot:
         self.node_name = node_name
         self.message = message
         self.state = state
+        self.timestamp = str(datetime.datetime.now())
         self.result = result
 
     def __repr__(self):
-        return '<Ballot: ballot_id=%(ballot_id)s node_name=%(node_name)s state=%(state)s message=%(message)s result=%(result)s>' % self.__dict__  # noqa
+        return '<Ballot: ballot_id=%(ballot_id)s timestamp=%(timestamp)s node_name=%(node_name)s state=%(state)s message=%(message)s result=%(result)s>' % self.__dict__  # noqa
 
     def __eq__(self, rhs):
         if rhs is None:
@@ -60,6 +63,7 @@ class Ballot:
             node_name=self.node_name,
             message=self.message.serialize(to_string=False),
             state=self.state.name,
+            timestamp=self.timestamp,
             result=self.result.name,
         )
 

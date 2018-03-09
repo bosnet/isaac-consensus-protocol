@@ -269,6 +269,9 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
 
         return
 
+    def get_node_name(self, node):
+        return '%s%s' % (node, '*' if node == self.node else '')
+
     def _format_change_state(self, message):
         s = '%(before)s -> %(after)s' % message['state']
 
@@ -286,8 +289,9 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
 
     def _format_receive_ballot(self, message):
         return PRINTER.format(
-            'from=%s' % message['ballot']['node_name'],
+            'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
             'ballot state=%s' % message['ballot']['state'],
+            'ballot=%s' % message['ballot']['ballot_id'],
         )
 
     def _format_save_message(self, message):
@@ -301,7 +305,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         if message['fault_type'] == 'no_voting':
             t = PRINTER.format(
                 t,
-                'from=%s' % message['ballot']['node_name'],
+                'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
                 'ballot state=%s' % message['ballot']['state'],
             )
         elif message['fault_type'] == 'state_regression':
@@ -332,7 +336,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
 
     def _format_receive_new_ballot(self, message):
         return PRINTER.format(
-            'from=%s' % message['ballot']['node_name'],
+            'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
             'ballot=%s' % message['ballot']['ballot_id'],
             'ballot state=%s' % message['ballot']['state'],
             'ballot result=%s' % message['ballot']['result'],
@@ -340,7 +344,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
 
     def _format_store_ballot(self, message):
         return PRINTER.format(
-            'from=%s' % message['ballot']['node_name'],
+            'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
             'ballot=%s' % message['ballot']['ballot_id'],
             'ballot state=%s' % message['ballot']['state'],
             'ballot result=%s' % message['ballot']['result'],
