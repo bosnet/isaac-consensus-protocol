@@ -1,8 +1,6 @@
 import collections
-import lorem
 from multiprocessing import Process, Queue
 import urllib
-import uuid
 
 import requests
 
@@ -69,9 +67,7 @@ def _send_message_multiple(queue, message, endpoint):
     q = Queue(maxsize=number_of_messages)
     for i in range(number_of_messages):
         if create_new_message:
-            messages.append(
-                Message.new(),
-            )
+            messages.append(Message.new())
 
         p = Process(target=_send_message_multiple_one, args=(q, messages[-1], endpoint))
         p.start()

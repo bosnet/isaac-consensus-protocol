@@ -1,7 +1,6 @@
 import copy
 import lorem
 import json
-import uuid
 
 from bos_consensus.util import get_uuid
 
@@ -10,12 +9,9 @@ class Message:
     message_id = None
     data = None
 
-    def __init__(self, message_id, data=None):
+    def __init__(self, message_id, data):
         self.message_id = message_id
-        if not data:
-            self.data = '%s-%s' % (lorem.sentence().split()[0], uuid.uuid1().hex)
-        else:
-            self.data = data
+        self.data = data
 
     def __repr__(self):
         return '<Message: message_id=%(message_id)s data="%(data)s">' % self.__dict__
@@ -42,6 +38,9 @@ class Message:
 
     @classmethod
     def new(cls, data=None):
+        if data is None:
+            data = '%s-%s' % (lorem.sentence().split()[0], get_uuid())
+
         return cls(
             get_uuid(),
             data=data,
