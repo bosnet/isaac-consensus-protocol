@@ -1,0 +1,68 @@
+# one quorum
+#
+#   - validators: n0 n1 n2 n3 n4
+#   - faulty nodes: n3 n4
+#   - T: 5
+#   - f: 2
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | X | fault tolerance | T >= 3f + 1 | 5 <= 3 * 2 + 1 = 7 |
+#    +===+=================+=============+====================+
+#
+#--------------------------------------------------------------------------------
+
+---
+common:
+    network: default_http
+    threshold: 66
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n4
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n4
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n4
+    n4:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+
+faulties:
+    n3:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
+    n4:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100

@@ -1,0 +1,113 @@
+# one quorum
+#
+#   - validators: n0 n1 n2 n3 n4 n5 n6 n7
+#   - faulty nodes: n6 n7
+#   - T: 8
+#   - f: 2
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | O | fault tolerance | T >= 3f + 1 | 8 >= 3 * 2 + 1 = 7 |
+#    +===+=================+=============+====================+
+#
+#--------------------------------------------------------------------------------
+
+---
+common:
+    network: default_http
+    threshold: 66
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+                - n7
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+                - n7
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n4
+                - n5
+                - n6
+                - n7
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n4
+                - n5
+                - n6
+                - n7
+    n4:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n5
+                - n6
+                - n7
+
+    n5:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n4
+                - n6
+                - n7
+    n6:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n7
+    n7:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+faulties:
+    n6:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
+    n7:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
