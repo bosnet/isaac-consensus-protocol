@@ -49,34 +49,40 @@ def test_next_message():
     message_1 = Message.new('message-1')
 
     ballot_init_2 = Ballot.new(node_name_2, message_1, IsaacState.INIT)
-    ballot_init_3 = Ballot.new(node_name_3, message_1, IsaacState.INIT)
-    ballot_init_4 = Ballot.new(node_name_4, message_1, IsaacState.INIT)
+    ballot_id = ballot_init_2.ballot_id
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT)
+    ballot_init_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT)
 
     bc1.receive_ballot(ballot_init_2)
     bc1.receive_ballot(ballot_init_3)
     bc1.receive_ballot(ballot_init_4)
 
-    assert bc1.get_state() == IsaacState.SIGN
+    assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.SIGN
 
-    ballot_sign_2 = Ballot.new(node_name_2, message_1, IsaacState.ACCEPT)
-    ballot_sign_3 = Ballot.new(node_name_3, message_1, IsaacState.SIGN)
-    ballot_sign_4 = Ballot.new(node_name_4, message_1, IsaacState.SIGN)
+    ballot_sign_2 = Ballot(ballot_id, node_name_2, message_1, IsaacState.ACCEPT)
+    ballot_sign_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.SIGN)
+    ballot_sign_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.SIGN)
 
     bc1.receive_ballot(ballot_sign_2)
     bc1.receive_ballot(ballot_sign_3)
     bc1.receive_ballot(ballot_sign_4)
 
-    assert bc1.get_state() == IsaacState.ACCEPT
+    assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.ACCEPT
 
-    ballot_accept_3 = Ballot.new(node_name_3, message_1, IsaacState.ACCEPT)
-    ballot_accept_4 = Ballot.new(node_name_4, message_1, IsaacState.ACCEPT)
+    ballot_accept_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.ACCEPT)
+    ballot_accept_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.ACCEPT)
 
     bc1.receive_ballot(ballot_accept_3)
     bc1.receive_ballot(ballot_accept_4)
 
-    assert bc1.get_state() == IsaacState.ALLCONFIRM
+    assert message_1 in bc1.consensus.messages
 
     message_2 = Message.new('message-2')
+    ballot_init_2 = Ballot.new(node_name_2, message_2, IsaacState.INIT)
+    ballot_id_2 = ballot_init_2.ballot_id
+
+    ballot_init_3.ballot_id = ballot_id_2
+    ballot_init_4.ballot_id = ballot_id_2
 
     ballot_init_2.message = message_2
     ballot_init_3.message = message_2
@@ -86,7 +92,11 @@ def test_next_message():
     bc1.receive_ballot(ballot_init_3)
     bc1.receive_ballot(ballot_init_4)
 
-    assert bc1.get_state() == IsaacState.SIGN
+    assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.SIGN
+
+    ballot_sign_2.ballot_id = ballot_id_2
+    ballot_sign_3.ballot_id = ballot_id_2
+    ballot_sign_4.ballot_id = ballot_id_2
 
     ballot_sign_2.message = message_2
     ballot_sign_3.message = message_2
@@ -96,7 +106,10 @@ def test_next_message():
     bc1.receive_ballot(ballot_sign_3)
     bc1.receive_ballot(ballot_sign_4)
 
-    assert bc1.get_state() == IsaacState.ACCEPT
+    assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.ACCEPT
+
+    ballot_accept_3.ballot_id = ballot_id_2
+    ballot_accept_4.ballot_id = ballot_id_2
 
     ballot_accept_3.message = message_2
     ballot_accept_4.message = message_2
@@ -104,4 +117,4 @@ def test_next_message():
     bc1.receive_ballot(ballot_accept_3)
     bc1.receive_ballot(ballot_accept_4)
 
-    assert bc1.get_state() == IsaacState.ALLCONFIRM
+    assert message_2 in bc1.consensus.messages

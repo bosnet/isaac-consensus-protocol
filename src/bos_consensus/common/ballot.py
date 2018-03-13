@@ -42,6 +42,12 @@ class Ballot:
         assert isinstance(rhs, Ballot)
         return self.ballot_id == rhs.ballot_id and self.state == rhs.state and self.message == rhs.message and self.result == rhs.result  # noqa
 
+    def eq_id(self, rhs):
+        if rhs is None:
+            return False
+        assert isinstance(rhs, Ballot)
+        return self.ballot_id == rhs.ballot_id
+
     def has_different_ballot_id(self, rhs):
         if rhs is None:
             return False

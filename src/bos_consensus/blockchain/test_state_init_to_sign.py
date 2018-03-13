@@ -39,11 +39,12 @@ def test_state_init_to_sign():
 
     message = Message.new('message')
     ballot_init_1 = Ballot.new(node_name_1, message, IsaacState.INIT)
-    ballot_init_2 = Ballot.new(node_name_2, message, IsaacState.INIT)
-    ballot_init_3 = Ballot.new(node_name_3, message, IsaacState.INIT)
+    ballot_id = ballot_init_1.ballot_id
+    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT)
 
     bc1.receive_ballot(ballot_init_1)
     bc1.receive_ballot(ballot_init_2)
     bc1.receive_ballot(ballot_init_3)
 
-    assert bc1.get_state() == IsaacState.SIGN
+    assert bc1.consensus.slot.get_ballot_state(ballot_init_1) == IsaacState.SIGN

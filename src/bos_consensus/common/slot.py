@@ -4,6 +4,8 @@ from .message import Message
 
 
 class Slot:
+    NOT_FOUND = 'Not Found'
+
     def __init__(self, slot_size):
         self.slot = dict()
         self.slot_size = slot_size
@@ -25,7 +27,14 @@ class Slot:
             if self.slot[k].is_full is False:
                 return k
 
+    def get_all_ballots(self):
+        return [slot_element.ballot for slot_element in self.slot.values()]
+
     def get_ballot_state(self, ballot):
+        idx = self.get_ballot_index(ballot)
+        if idx == Slot.NOT_FOUND:
+            return get_fba_module('isaac').IsaacState.NONE
+
         return self.slot[self.get_ballot_index(ballot)].consensus_state
 
     def get_ballot_index(self, ballot):
@@ -33,10 +42,13 @@ class Slot:
             if v.is_full:
                 if ballot.ballot_id == v.ballot.ballot_id:
                     return k
-        return 'Not Found'
+        return Slot.NOT_FOUND
 
     def get_validator_ballots(self, ballot):
-        return self.slot[self.get_ballot_index(ballot)].validator_ballots
+        idx = self.get_ballot_index(ballot)
+        if idx == Slot.NOT_FOUND:
+            return dict()
+        return self.slot[idx].validator_ballots
 
     def check_full_and_insert_ballot(self, ballot):
         if self.is_empty():
@@ -108,6 +120,12 @@ class Slot:
             self.last_ballot = self.slot[self.timestamp_dict[self.timestamp_list[-1]]].ballot
         return
 
+    def has_diff_ballot_but_same_message(self, ballot):
+        assert isinstance(ballot, Ballot)
+        for slot_element in self.slot.values():
+            if not slot_element.ballot.eq_id(ballot) and slot_element.ballot.message.eq_id(ballot.message):
+                return True
+        return False
 
 class Slot_element:
     def __init__(self):

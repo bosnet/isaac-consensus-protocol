@@ -16,8 +16,10 @@ class FbaState(enum.IntEnum):
     pass
 
 
-class Fba(BaseConsensus):
+NOT_FOUND = Slot.NOT_FOUND
 
+
+class Fba(BaseConsensus):
     threshold = None
     validator_candidates = None
     transport = None
@@ -151,7 +153,6 @@ class Fba(BaseConsensus):
             1. middleware keep the state in `broadcast`
         '''
         assert isinstance(ballot, Ballot)
-
         middlewares = list(map(lambda x: x(self), self.middlewares))
 
         for m in middlewares:
@@ -167,7 +168,7 @@ class Fba(BaseConsensus):
         self.log.debug(
             '[%s] [%s] begin handle_ballot=%s',
             self.node.name,
-            self.get_ballot(ballot).consensus_state if self.slot.get_ballot_index(ballot) != 'Not Found' else 'None',
+            self.slot.get_ballot_state(ballot),
             ballot,
         )
 
@@ -178,7 +179,7 @@ class Fba(BaseConsensus):
         raise NotImplementedError()
 
     def _is_new_ballot(self, ballot):  # [TODO] search in ballot_history
-        if self.slot.get_ballot_index(ballot) == 'Not Found' and ballot.message.message_id not in self.message_ids:
+        if self.slot.get_ballot_index(ballot) == NOT_FOUND and ballot.message.message_id not in self.message_ids:
             return True
         if not self.get_ballot(ballot).validator_ballots:
             return True
@@ -189,7 +190,7 @@ class Fba(BaseConsensus):
         return False
 
     def make_self_ballot(self, ballot):
-        if self.slot.get_ballot_index(ballot) == 'Not Found':
+        if self.slot.get_ballot_index(ballot) == NOT_FOUND:
             self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.init_state, BallotVotingResult.agree)
             self_ballot.timestamp = ballot.timestamp
             return self_ballot
@@ -224,7 +225,7 @@ class Fba(BaseConsensus):
         self.log.debug(
             '[%s] [%s] begin broadcast to connected nodes=%s with retries=%d',
             self.node.name,
-            self.slot.get_ballot_state(ballot) if ((self.slot.get_ballot_index(ballot)) != 'Not Found') else 'None',
+            self.slot.get_ballot_state(ballot) if ((self.slot.get_ballot_index(ballot)) != NOT_FOUND) else 'None',
             tuple(self.validator_connected.keys()),
             retries,
         )
@@ -260,7 +261,7 @@ class Fba(BaseConsensus):
                 self.log.debug('stop consensus: %s', e)
                 return
 
-        if self.slot.get_ballot_index(ballot) != 'Not Found':
+        if self.slot.get_ballot_index(ballot) != NOT_FOUND:
             if self.slot.get_ballot_state(ballot) > ballot.state:
                 self.log.debug('found state regression ballot=%s state=%s', ballot, self.slot.get_ballot_state(ballot))
                 return

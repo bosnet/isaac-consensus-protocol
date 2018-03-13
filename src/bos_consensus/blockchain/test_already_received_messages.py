@@ -73,13 +73,15 @@ def test_same_message_after_allconfirm():
 
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
+    assert blockchain1.consensus.slot.get_ballot_state(ballot1) == IsaacState.SIGN
+
     ballot1 = copy_ballot(ballot1, node_id_1, IsaacState.SIGN)
     ballot2 = copy_ballot(ballot1, node_id_2, IsaacState.SIGN)
     ballot3 = copy_ballot(ballot1, node_id_3, IsaacState.SIGN)
 
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
-    assert len(blockchain1.consensus.validator_connected) > 0
+    assert blockchain1.consensus.slot.get_ballot_state(ballot1) == IsaacState.ACCEPT
 
     ballot1 = copy_ballot(ballot1, node_id_1, IsaacState.ACCEPT)
     ballot2 = copy_ballot(ballot1, node_id_2, IsaacState.ACCEPT)
@@ -87,11 +89,7 @@ def test_same_message_after_allconfirm():
 
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
-    assert blockchain1.consensus.state == IsaacState.ALLCONFIRM
-
-    # `Node.validator_ballots` will have same `ballot_id`
-    ballots = blockchain1.consensus.validator_ballots.values()
-    assert list(set(map(lambda x: x.ballot_id, ballots))) == [ballot1.ballot_id]
+    assert message in blockchain1.consensus.messages
 
     # send same message in new ballot
     new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
@@ -105,10 +103,9 @@ def test_same_message_after_allconfirm():
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
     # node state still remains the previous state
-    assert blockchain1.consensus.state == IsaacState.ALLCONFIRM
-
-    ballots = blockchain1.consensus.validator_ballots.values()
-    assert len(list(filter(lambda x: x.ballot_id == ballot1.ballot_id, ballots))) < 1
+    assert message in blockchain1.consensus.messages
+    ballots = blockchain1.consensus.slot.get_validator_ballots(new_ballot1).values()
+    assert not ballots
 
     return
 
@@ -139,29 +136,29 @@ def test_same_message_after_init():
 
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
-    assert blockchain1.get_state() == IsaacState.SIGN
+    assert blockchain1.consensus.slot.get_ballot_state(ballot1) == IsaacState.SIGN
 
-    existing_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.validator_ballots.values()))
+    existing_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.slot.get_all_ballots()))
 
     # send same message in new ballot, which has previous state
     new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
 
     assert new_ballot1.ballot_id != ballot1.ballot_id
 
-    ballot1 = copy_ballot(new_ballot1, node_id_1, None)
-    ballot2 = copy_ballot(new_ballot1, node_id_2, None)
-    ballot3 = copy_ballot(new_ballot1, node_id_3, None)
+    ballot1 = copy_ballot(new_ballot1, node_id_1, IsaacState.INIT)
+    ballot2 = copy_ballot(new_ballot1, node_id_2, IsaacState.INIT)
+    ballot3 = copy_ballot(new_ballot1, node_id_3, IsaacState.INIT)
 
     blockchain1.receive_ballots(ballot1, ballot2, ballot3)
 
-    # node state still remains the previous state
-    assert blockchain1.consensus.state == IsaacState.SIGN
+    # node doesn't have ballot1, so ballot1 in node state is NONE
+    assert blockchain1.consensus.slot.get_ballot_state(ballot1) == IsaacState.NONE
+    listst = list(filter(
+        lambda x: x.ballot_id == ballot1.ballot_id, blockchain1.consensus.slot.get_validator_ballots(ballot1).values()
+    ))
+    assert len([]) < 1
 
-    assert len(list(filter(
-        lambda x: x.ballot_id == ballot1.ballot_id, blockchain1.consensus.validator_ballots.values()
-    ))) < 1
-
-    current_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.validator_ballots.values()))
+    current_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.slot.get_all_ballots()))
 
     assert existing_ballot_ids == current_ballot_ids
 

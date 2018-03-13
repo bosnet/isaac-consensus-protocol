@@ -1,7 +1,10 @@
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
-from bos_consensus.common import Ballot
+from bos_consensus.common import Ballot, Slot
+
+
+NOT_FOUND = Slot.NOT_FOUND
 
 
 class IsaacState(FbaState):
@@ -21,7 +24,6 @@ class IsaacState(FbaState):
 
 
 class IsaacConsensus(Fba):
-
     def get_init_state(self):
         return IsaacState.INIT
 
@@ -38,7 +40,9 @@ class IsaacConsensus(Fba):
         #  1. if `ballot` is same except `ballot_id`, it will be passed
         assert isinstance(ballot, Ballot)
 
-        if self.slot.get_ballot_index(ballot) != 'Not Found':
+        if self.slot.get_ballot_index(ballot) != NOT_FOUND:
+            # bbb = self.get_ballot(ballot)
+            # vvv = self.get_ballot(ballot).validator_ballots
             if ballot.node_name in self.get_ballot(ballot).validator_ballots:
                 existing = self.get_ballot(ballot).validator_ballots[ballot.node_name]
                 if ballot == existing:
@@ -46,6 +50,9 @@ class IsaacConsensus(Fba):
 
                 if ballot.has_different_ballot_id(existing):
                     return
+
+        if self.slot.has_diff_ballot_but_same_message(ballot):
+            return
 
         if ballot.message_id in self.message_ids:
             self.log.debug('message already stored: %s', ballot.message)
@@ -55,7 +62,7 @@ class IsaacConsensus(Fba):
         self.log.debug(
             '[%s] [%s] receive ballot from %s(from_outside=%s)',
             self.node_name,
-            self.get_ballot(ballot).consensus_state if (self.slot.get_ballot_index(ballot) != 'Not Found') else 'None',
+            self.get_ballot(ballot).consensus_state if (self.slot.get_ballot_index(ballot) != NOT_FOUND) else 'None',
             ballot.node_name,
             from_outside,
         )
@@ -64,7 +71,7 @@ class IsaacConsensus(Fba):
             func = getattr(
                 self,
                 '_handle_%s' % (
-                    self.get_ballot(ballot).consensus_state.name.lower() if self.slot.get_ballot_index(ballot) != 'Not Found' else 'init',  # noqa
+                    self.get_ballot(ballot).consensus_state.name.lower() if self.slot.get_ballot_index(ballot) != NOT_FOUND else 'init',  # noqa
                 ),
             )
             func(ballot)
@@ -104,7 +111,7 @@ class IsaacConsensus(Fba):
         return
 
     def _check_threshold_and_state(self, ballot):
-        ballots = self.get_ballot(ballot).validator_ballots.values() if (self.slot.get_ballot_index(ballot) != 'Not Found') else list()  # noqa
+        ballots = self.get_ballot(ballot).validator_ballots.values() if (self.slot.get_ballot_index(ballot) != NOT_FOUND) else list()
         state_consensus = None
         state_check_init = self.minimum
         state_check_sign = self.minimum

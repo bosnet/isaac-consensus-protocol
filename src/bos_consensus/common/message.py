@@ -19,6 +19,9 @@ class Message:
     def __eq__(self, a):
         return self.message_id == a.message_id
 
+    def eq_id(self, rhs):
+        return self.message_id == rhs.message_id
+
     def __copy__(self):
         return self.__class__(
             self.message_id,
