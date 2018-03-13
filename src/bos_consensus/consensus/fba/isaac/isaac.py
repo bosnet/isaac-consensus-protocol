@@ -1,7 +1,7 @@
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
-from bos_consensus.common import Ballot, Slot
+from bos_consensus.common import Ballot
 
 
 class IsaacState(FbaState):
@@ -61,7 +61,12 @@ class IsaacConsensus(Fba):
         )
 
         if not from_outside:
-            func = getattr(self, '_handle_%s' % (self.get_ballot(ballot).consensus_state.name.lower() if (self.slot.get_ballot_index(ballot) != 'Not Found') else 'init'))
+            func = getattr(
+                self,
+                '_handle_%s' % (
+                    self.get_ballot(ballot).consensus_state.name.lower() if self.slot.get_ballot_index(ballot) != 'Not Found' else 'init',  # noqa
+                ),
+            )
             func(ballot)
 
         return
@@ -87,19 +92,19 @@ class IsaacConsensus(Fba):
         self.store(ballot)
         self._change_state_and_broadcasting(ballot)
 
+        if self.slot.get_ballot_state(ballot) is IsaacState.ALLCONFIRM:
+            self.save_message(ballot.message)
+            self.slot.remove_ballot(ballot)
+
         return
 
     def _handle_allconfirm(self, ballot):
-        if not self._is_new_ballot(ballot):
-            self.store(ballot)
-        else:
-            self.init()
-            self._handle_ballot(ballot)
+        self.log.error('weired ballot found: %s', ballot.serialize(to_string=False))
 
         return
 
     def _check_threshold_and_state(self, ballot):
-        ballots = self.get_ballot(ballot).validator_ballots.values() if (self.slot.get_ballot_index(ballot) != 'Not Found') else list()
+        ballots = self.get_ballot(ballot).validator_ballots.values() if (self.slot.get_ballot_index(ballot) != 'Not Found') else list()  # noqa
         state_consensus = None
         state_check_init = self.minimum
         state_check_sign = self.minimum
@@ -143,12 +148,12 @@ class IsaacConsensus(Fba):
 
         if check_threshold[2] < 1:
             state_consensus = IsaacState.ALLCONFIRM
+
         self.log.info('returning ballot state : %s', state_consensus)
 
         return state_consensus, check_threshold
 
     def _change_state_and_broadcasting(self, ballot):
-
         state = self._check_threshold_and_state(ballot)
 
         if state[0] is None:
@@ -161,10 +166,8 @@ class IsaacConsensus(Fba):
         self.log.debug("state change check : %s", state)
         if state_init < 1 or state_sign < 1 or state_accept < 1:
             self.set_state(ballot, state[0])
-            if state[0] is IsaacState.ALLCONFIRM:
-                self.save_message(ballot.message)
+
+            if state[0] is not IsaacState.ALLCONFIRM:
                 self.broadcast(self.make_self_ballot(ballot))
-                self.slot.remove_ballot(ballot)
-                return
-            self.broadcast(self.make_self_ballot(ballot))
+
         return

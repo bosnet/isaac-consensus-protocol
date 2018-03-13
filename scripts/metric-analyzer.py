@@ -181,6 +181,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
     nodes_analyzer = None
     node = None
     messaegs = None
+    messaeg_ids = None
     is_faulty_node = None
     connected_validators = None
 
@@ -190,6 +191,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         super(NodeHistoryAnalyzer, self).__init__(*a, **kw)
 
         self.node = node
+        self.message_ids = dict()
         self.nodes_analyzer = nodes_analyzer
         self.is_faulty_node = False
         self.connected_validators = list()
@@ -207,6 +209,32 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
             connected_validators = connected_validators.union(m['validators'])
 
         self.connected_validators = connected_validators
+
+        message_ids = dict()
+        for message in self.messages:
+            message_id = None
+            if 'message' in message:
+                message_id = message['message']
+            elif 'ballot' in message:
+                message_id = message['ballot']['ballot_id']
+
+            if message_id is None or message_id in message_ids:
+                continue
+
+            message_ids[message_id] = 'm%d' % len(message_ids)
+
+        self.message_ids = message_ids
+
+        max_length_message_ids = max(map(len, self.message_ids.values()))
+        for i, (message_id, message_name) in enumerate(self.message_ids.items()):
+            PRINTER.format(
+                ' ' * 10,
+                '%17s' % '* message:',
+                message_name,
+                ('%%%ds' % max_length_message_ids) % message_id,
+                print=True,
+            )
+            PRINTER.line('=' if i == len(self.message_ids) - 1 else '-')
 
         all_faulty_nodes = connected_validators & self.nodes_analyzer.faulty_node_history
         faulty_nodes = list()
@@ -260,12 +288,20 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         return
 
     def _format(self, message, m):
-        message_id = ' ' * 32
+        message_id = ' ' * max(map(len, self.message_ids.values()))
         if 'message' in message:
             message_id = message['message']
+        elif 'ballot' in message:
+            message_id = message['ballot']['ballot_id']
 
         d = '%0.3f' % (message['created'] - self.start_time)
-        PRINTER.format('%10s' % d, '%17s' % message['action'], message_id, m, print=True)
+        PRINTER.format(
+            '%10s' % d,
+            '%17s' % message['action'],
+            self.message_ids.get(message_id, message_id),
+            m,
+            print=True,
+        )
 
         return
 
@@ -273,7 +309,13 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         return '%s%s' % (node, '*' if node == self.node else '')
 
     def _format_change_state(self, message):
-        s = '%(before)s -> %(after)s' % message['state']
+        s = '%s -> %s' % (
+            termcolor.colored(message['state']['after'], 'yellow'),
+            termcolor.colored(
+                message['state']['after'],
+                'green' if message['state']['after'] in ('ALLCONFIRM',) else 'yellow',
+            ),
+        )
 
         return '%s' % s
 
@@ -290,9 +332,12 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
     def _format_receive_ballot(self, message):
         return PRINTER.format(
             'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
-            'ballot state=%s' % message['ballot']['state'],
+            self._make_ballot_state(message),
             'ballot=%s' % message['ballot']['ballot_id'],
         )
+
+    def _make_ballot_state(self, message):
+        return 'ballot state=%-6s' % message['ballot']['state']
 
     def _format_save_message(self, message):
         return ''
@@ -306,7 +351,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
             t = PRINTER.format(
                 t,
                 'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
-                'ballot state=%s' % message['ballot']['state'],
+                self._make_ballot_state(message),
             )
         elif message['fault_type'] == 'state_regression':
             t = PRINTER.print(
@@ -337,7 +382,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
     def _format_receive_new_ballot(self, message):
         return PRINTER.format(
             'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
-            'ballot=%s' % message['ballot']['ballot_id'],
+            self._make_ballot_state(message),
             'ballot state=%s' % message['ballot']['state'],
             'ballot result=%s' % message['ballot']['result'],
         )
@@ -345,7 +390,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
     def _format_store_ballot(self, message):
         return PRINTER.format(
             'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
-            'ballot=%s' % message['ballot']['ballot_id'],
+            self._make_ballot_state(message),
             'ballot state=%s' % message['ballot']['state'],
             'ballot result=%s' % message['ballot']['result'],
         )

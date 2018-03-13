@@ -1,4 +1,4 @@
-from .ballot import Ballot, BallotVotingResult
+from .ballot import Ballot
 from ..consensus import get_fba_module
 from .message import Message
 
@@ -58,7 +58,7 @@ class Slot:
             elif ballot.timestamp == self.timestamp_list[-1] and ballot.ballot_id == self.last_ballot.ballot_id:
                 pass
             else:
-                if self.slot[self.get_ballot_index(self.last_ballot)].consensus_state == get_fba_module('isaac').IsaacState.INIT:
+                if self.slot[self.get_ballot_index(self.last_ballot)].consensus_state == get_fba_module('isaac').IsaacState.INIT:  # noqa
                     self.send_to_queue(self.last_ballot)
                     if ballot.ballot_id not in list(map(lambda x: x.ballot.ballot_id, self.slot.values())):
                         empty_slot_idx = self.timestamp_dict[self.timestamp_list[-1]]
@@ -82,7 +82,7 @@ class Slot:
     def remove_ballot(self, ballot):
         self.slot[self.get_ballot_index(ballot)].remove_ballot()
         del self.timestamp_dict[ballot.timestamp]
-        for i in range(len(self.timestamp_list) -1, -1, -1):
+        for i in range(len(self.timestamp_list) - 1, -1, -1):
             if self.timestamp_list[i] == ballot.timestamp:
                 del self.timestamp_list[i]
         self.sort_slot()

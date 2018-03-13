@@ -89,6 +89,7 @@ class Fba(BaseConsensus):
                 before=self.get_ballot(ballot).consensus_state.name if self.get_ballot(ballot).consensus_state is not None else None,
             ),
             validators=tuple(self.validator_connected.keys()),
+            ballot=ballot.serialize(to_string=False),
         )
 
         self.slot.set_ballot_consensus_state(ballot, state)
