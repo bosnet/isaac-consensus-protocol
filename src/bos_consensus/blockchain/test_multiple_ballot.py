@@ -187,7 +187,7 @@ def test_multiple_ballot_init_to_all_confirm_sequence():
     bc3.receive_ballot(ballot_22)
     bc3.receive_ballot(ballot_13)
     bc3.receive_ballot(ballot_23)
-    
+
     # check all confirm by save message
     assert message in bc1.consensus.messages
     assert message2 in bc1.consensus.messages
@@ -253,11 +253,10 @@ def test_multiple_ballot_jump_from_init():
     ballot_24 = Ballot(ballot_id_2, node_name_4, message2, IsaacState.INIT)
 
     bc1.receive_ballot(ballot_12)
-    bc1.receive_ballot(ballot_13)
-    bc1.receive_ballot(ballot_14)
-
     bc1.receive_ballot(ballot_22)
+    bc1.receive_ballot(ballot_13)
     bc1.receive_ballot(ballot_23)
+    bc1.receive_ballot(ballot_14)
     bc1.receive_ballot(ballot_24)
 
     assert bc1.consensus.slot.get_ballot_state(ballot_12) == IsaacState.SIGN
@@ -272,13 +271,14 @@ def test_multiple_ballot_jump_from_init():
     ballot_22.state = IsaacState.ACCEPT
     ballot_23.state = IsaacState.SIGN
     ballot_24.state = IsaacState.SIGN
-    
-    bc1.receive_ballot(ballot_12)
-    bc1.receive_ballot(ballot_13)
-    bc1.receive_ballot(ballot_14)
 
+    bc1.receive_ballot(ballot_12)
     bc1.receive_ballot(ballot_22)
+
+    bc1.receive_ballot(ballot_13)
     bc1.receive_ballot(ballot_23)
+
+    bc1.receive_ballot(ballot_14)
     bc1.receive_ballot(ballot_24)
 
     assert bc1.consensus.slot.get_ballot_state(ballot_12) == IsaacState.ACCEPT
@@ -359,11 +359,12 @@ def test_multiple_ballot_after_allconfirm():
     ballot_24 = Ballot(ballot_id_2, node_name_4, message_2, IsaacState.INIT)
 
     bc1.receive_ballot(ballot_12)
-    bc1.receive_ballot(ballot_13)
-    bc1.receive_ballot(ballot_14)
-
     bc1.receive_ballot(ballot_22)
+
+    bc1.receive_ballot(ballot_13)
     bc1.receive_ballot(ballot_23)
+
+    bc1.receive_ballot(ballot_14)
     bc1.receive_ballot(ballot_24)
 
     assert bc1.consensus.slot.get_ballot_state(ballot_12) == IsaacState.SIGN
@@ -380,10 +381,11 @@ def test_multiple_ballot_after_allconfirm():
     ballot_24.state = IsaacState.SIGN
 
     bc1.receive_ballot(ballot_12)
+    bc1.receive_ballot(ballot_22)
+
     bc1.receive_ballot(ballot_13)
     bc1.receive_ballot(ballot_14)
 
-    bc1.receive_ballot(ballot_22)
     bc1.receive_ballot(ballot_23)
     bc1.receive_ballot(ballot_24)
 
@@ -397,9 +399,9 @@ def test_multiple_ballot_after_allconfirm():
     ballot_24.state = IsaacState.ACCEPT
 
     bc1.receive_ballot(ballot_13)
-    bc1.receive_ballot(ballot_14)
-
     bc1.receive_ballot(ballot_23)
+
+    bc1.receive_ballot(ballot_14)
     bc1.receive_ballot(ballot_24)
 
     # check all confirm by save message
@@ -421,11 +423,12 @@ def test_multiple_ballot_after_allconfirm():
     ballot_44 = Ballot(ballot_id_4, node_name_4, message_4, IsaacState.INIT)
 
     bc1.receive_ballot(ballot_32)
-    bc1.receive_ballot(ballot_33)
-    bc1.receive_ballot(ballot_34)
-
     bc1.receive_ballot(ballot_42)
+
+    bc1.receive_ballot(ballot_33)
     bc1.receive_ballot(ballot_43)
+
+    bc1.receive_ballot(ballot_34)
     bc1.receive_ballot(ballot_44)
 
     assert bc1.consensus.slot.get_ballot_state(ballot_32) == IsaacState.SIGN
@@ -440,11 +443,12 @@ def test_multiple_ballot_after_allconfirm():
     ballot_44.state = IsaacState.SIGN
 
     bc1.receive_ballot(ballot_32)
-    bc1.receive_ballot(ballot_33)
-    bc1.receive_ballot(ballot_34)
-
     bc1.receive_ballot(ballot_42)
+
+    bc1.receive_ballot(ballot_33)
     bc1.receive_ballot(ballot_43)
+
+    bc1.receive_ballot(ballot_34)
     bc1.receive_ballot(ballot_44)
 
     assert bc1.consensus.slot.get_ballot_state(ballot_32) == IsaacState.ACCEPT
@@ -456,9 +460,9 @@ def test_multiple_ballot_after_allconfirm():
     ballot_44.state = IsaacState.ACCEPT
 
     bc1.receive_ballot(ballot_33)
-    bc1.receive_ballot(ballot_34)
-
     bc1.receive_ballot(ballot_43)
+
+    bc1.receive_ballot(ballot_34)
     bc1.receive_ballot(ballot_44)
 
     # check all confirm by save message
