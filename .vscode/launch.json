@@ -284,6 +284,25 @@
         ]
     },
     {
+        "name": "test_message_same_id_but_diff_data",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_message_same_id_but_diff_data.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
         "name": "test_state_direct_jump",
         "type": "python",
         "request": "launch",

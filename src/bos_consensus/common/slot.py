@@ -127,6 +127,7 @@ class Slot:
                 return True
         return False
 
+
 class Slot_element:
     def __init__(self):
         self.ballot = Ballot(None, None, Message.new(None), get_fba_module('isaac').IsaacState.INIT)

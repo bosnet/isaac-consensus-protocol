@@ -17,7 +17,7 @@ class Message:
         return '<Message: message_id=%(message_id)s data="%(data)s">' % self.__dict__
 
     def __eq__(self, a):
-        return self.message_id == a.message_id
+        return self.message_id == a.message_id and self.data == a.data
 
     def eq_id(self, rhs):
         return self.message_id == rhs.message_id
