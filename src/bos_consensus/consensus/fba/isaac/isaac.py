@@ -41,8 +41,6 @@ class IsaacConsensus(Fba):
         assert isinstance(ballot, Ballot)
 
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
-            # bbb = self.get_ballot(ballot)
-            # vvv = self.get_ballot(ballot).validator_ballots
             if ballot.node_name in self.get_ballot(ballot).validator_ballots:
                 existing = self.get_ballot(ballot).validator_ballots[ballot.node_name]
                 if ballot == existing:
