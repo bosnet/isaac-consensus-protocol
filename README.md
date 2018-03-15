@@ -64,8 +64,8 @@ $ run-blockchain.py examples/node5001.ini
 
 Run the other nodes like this.
 ```
-$ python run-blockchain.py examples/node5002.ini
-$ python run-blockchain.py examples/node5003.ini
+$ run-blockchain.py examples/node5002.ini
+$ run-blockchain.py examples/node5003.ini
 ```
 
 ### Running Message Client, `run-client.py`
