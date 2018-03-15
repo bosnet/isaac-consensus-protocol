@@ -22,7 +22,7 @@ class Ballot:
     timestamp = None
     result = None
 
-    def __init__(self, ballot_id, node_name, message, state, result=BallotVotingResult.disagree):
+    def __init__(self, ballot_id, node_name, message, state, result=BallotVotingResult.none):
         assert isinstance(message, Message)
         assert isinstance(state, enum.IntEnum)
         assert isinstance(result, BallotVotingResult)
@@ -82,8 +82,11 @@ class Ballot:
         if self.result is BallotVotingResult.none:
             return True
 
+    def is_validated(self):
+        return True
+
     @classmethod
-    def new(cls, node_name, message, state, result=BallotVotingResult.disagree):
+    def new(cls, node_name, message, state, result=BallotVotingResult.none):
         assert isinstance(message, Message)
 
         return cls(

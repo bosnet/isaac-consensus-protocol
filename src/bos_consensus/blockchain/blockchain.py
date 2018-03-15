@@ -43,7 +43,7 @@ class Blockchain(BaseBlockchain):
             messge=message.message_id,
             state=None,
         )
-        ballot = Ballot.new(self.node_name, message, get_fba_module('isaac').IsaacState.INIT, BallotVotingResult.agree)  # noqa
+        ballot = Ballot.new(self.node_name, message, get_fba_module('isaac').IsaacState.INIT)  # noqa
         self.receive_ballot(ballot)
 
         return

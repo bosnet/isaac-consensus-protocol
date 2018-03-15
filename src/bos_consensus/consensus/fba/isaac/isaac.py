@@ -1,7 +1,7 @@
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
-from bos_consensus.common import Ballot, Slot
+from bos_consensus.common import Ballot, BallotVotingResult, Slot
 
 
 NOT_FOUND = Slot.NOT_FOUND
@@ -87,7 +87,6 @@ class IsaacConsensus(Fba):
                 self.broadcast(new_ballot, 3)
             else:
                 self.broadcast(new_ballot)
-
         self.store(ballot)
         self._change_state_and_broadcasting(ballot)
 
@@ -126,7 +125,7 @@ class IsaacConsensus(Fba):
             if state_check_init < 1 or state_check_sign < 1 or state_check_accept < 1:
                 break
 
-            if self.get_ballot(ballot).consensus_state <= ballot.state:
+            if self.get_ballot(ballot).consensus_state <= ballot.state and ballot.result == BallotVotingResult.agree:
                 if ballot.state >= IsaacState.INIT:
                     state_check_init -= 1
                 if ballot.state >= IsaacState.SIGN:

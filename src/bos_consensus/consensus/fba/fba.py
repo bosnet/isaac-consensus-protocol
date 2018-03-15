@@ -190,12 +190,20 @@ class Fba(BaseConsensus):
         return False
 
     def make_self_ballot(self, ballot):
-        if self.slot.get_ballot_index(ballot) == NOT_FOUND:
-            self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.init_state, BallotVotingResult.agree)
-            self_ballot.timestamp = ballot.timestamp
-            return self_ballot
-        self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.get_ballot_state(ballot), BallotVotingResult.agree)
-        self_ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
+        '''
+        1. If ballot is new ballot from other validator node,
+        make self ballot with init_state,
+        else state of self ballot is changed to same ballot's state in slot.
+        2. After validation Check about ballot.
+        if it is not validated, ballot.result is changed to disagree.
+        '''
+        self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.init_state, BallotVotingResult.agree)
+        self_ballot.timestamp = ballot.timestamp
+        if self.slot.get_ballot_index(ballot) != NOT_FOUND:
+            self_ballot.state = self.slot.get_ballot_state(ballot)
+            self_ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
+        if not self_ballot.is_validated():
+            self_ballot.result = BallotVotingResult.disagree
         return self_ballot
 
     def broadcast(self, ballot, retries=1):
@@ -268,7 +276,9 @@ class Fba(BaseConsensus):
 
         ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
 
-        self.slot.get_validator_ballots(ballot)[ballot.node_name] = ballot
+        if not ballot.result is BallotVotingResult.none:
+            self.slot.store_validator_ballots(ballot)
+        
         self.log.debug('ballot stored state=%s ballot=%s', self.slot.get_ballot_state(ballot), ballot)
         return
 

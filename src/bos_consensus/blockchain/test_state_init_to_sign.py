@@ -1,4 +1,4 @@
-from ..common import Ballot, Message
+from ..common import Ballot, BallotVotingResult, Message
 from ..consensus import get_fba_module
 from ..consensus.fba.isaac import IsaacState
 from .util import blockchain_factory
@@ -38,10 +38,10 @@ def test_state_init_to_sign():
     bc1.consensus.init()
 
     message = Message.new('message')
-    ballot_init_1 = Ballot.new(node_name_1, message, IsaacState.INIT)
+    ballot_init_1 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_init_1.ballot_id
-    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT)
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT)
+    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree)
 
     bc1.receive_ballot(ballot_init_1)
     bc1.receive_ballot(ballot_init_2)

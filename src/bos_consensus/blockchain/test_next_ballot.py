@@ -1,4 +1,4 @@
-from ..common import Ballot, Message
+from ..common import Ballot, BallotVotingResult, Message
 from ..consensus import get_fba_module
 from ..consensus.fba.isaac import IsaacState
 from .util import blockchain_factory
@@ -48,10 +48,10 @@ def test_next_message():
 
     message_1 = Message.new('message-1')
 
-    ballot_init_2 = Ballot.new(node_name_2, message_1, IsaacState.INIT)
+    ballot_init_2 = Ballot.new(node_name_2, message_1, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_init_2.ballot_id
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT)
-    ballot_init_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT, BallotVotingResult.agree)
+    ballot_init_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT, BallotVotingResult.agree)
 
     bc1.receive_ballot(ballot_init_2)
     bc1.receive_ballot(ballot_init_3)
@@ -59,9 +59,9 @@ def test_next_message():
 
     assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.SIGN
 
-    ballot_sign_2 = Ballot(ballot_id, node_name_2, message_1, IsaacState.ACCEPT)
-    ballot_sign_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.SIGN)
-    ballot_sign_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.SIGN)
+    ballot_sign_2 = Ballot(ballot_id, node_name_2, message_1, IsaacState.ACCEPT, BallotVotingResult.agree)
+    ballot_sign_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.SIGN, BallotVotingResult.agree)
+    ballot_sign_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.SIGN, BallotVotingResult.agree)
 
     bc1.receive_ballot(ballot_sign_2)
     bc1.receive_ballot(ballot_sign_3)
@@ -69,8 +69,8 @@ def test_next_message():
 
     assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.ACCEPT
 
-    ballot_accept_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.ACCEPT)
-    ballot_accept_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.ACCEPT)
+    ballot_accept_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.ACCEPT, BallotVotingResult.agree)
+    ballot_accept_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.ACCEPT, BallotVotingResult.agree)
 
     bc1.receive_ballot(ballot_accept_3)
     bc1.receive_ballot(ballot_accept_4)
@@ -78,7 +78,7 @@ def test_next_message():
     assert message_1 in bc1.consensus.messages
 
     message_2 = Message.new('message-2')
-    ballot_init_2 = Ballot.new(node_name_2, message_2, IsaacState.INIT)
+    ballot_init_2 = Ballot.new(node_name_2, message_2, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_2 = ballot_init_2.ballot_id
 
     ballot_init_3.ballot_id = ballot_id_2

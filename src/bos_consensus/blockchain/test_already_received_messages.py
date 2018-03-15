@@ -1,6 +1,6 @@
 import copy
 
-from bos_consensus.common import Ballot, Message, node_factory
+from bos_consensus.common import Ballot, BallotVotingResult, Message, node_factory
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.network import Endpoint
 from .blockchain import Blockchain
@@ -67,7 +67,7 @@ def test_same_message_after_allconfirm():
 
     message = Message.new('message')
 
-    ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
+    ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot2 = copy_ballot(ballot1, node_id_2, IsaacState.INIT)
     ballot3 = copy_ballot(ballot1, node_id_3, IsaacState.INIT)
 
@@ -92,7 +92,7 @@ def test_same_message_after_allconfirm():
     assert message in blockchain1.consensus.messages
 
     # send same message in new ballot
-    new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
+    new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT, BallotVotingResult.agree)
 
     assert new_ballot1.ballot_id != ballot1.ballot_id
 
@@ -130,7 +130,7 @@ def test_same_message_after_init():
 
     message = Message.new('message')
 
-    ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
+    ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot2 = copy_ballot(ballot1, node_id_2, IsaacState.INIT)
     ballot3 = copy_ballot(ballot1, node_id_3, IsaacState.INIT)
 
@@ -141,7 +141,7 @@ def test_same_message_after_init():
     existing_ballot_ids = set(map(lambda x: x.ballot_id, blockchain1.consensus.slot.get_all_ballots()))
 
     # send same message in new ballot, which has previous state
-    new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT)
+    new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT, BallotVotingResult.agree)
 
     assert new_ballot1.ballot_id != ballot1.ballot_id
 

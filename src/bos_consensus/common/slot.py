@@ -50,6 +50,10 @@ class Slot:
             return dict()
         return self.slot[idx].validator_ballots
 
+    def store_validator_ballots(self, ballot):
+        self.get_validator_ballots(ballot)[ballot.node_name] = ballot
+        return 
+
     def check_full_and_insert_ballot(self, ballot):
         if self.is_empty():
             empty_slot_idx = self.find_empty_slot()

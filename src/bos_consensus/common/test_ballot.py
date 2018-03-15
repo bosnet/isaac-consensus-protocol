@@ -16,7 +16,7 @@ def test_ballot():
     assert b.node_name == 1
     assert b.message == message
     assert b.state == IsaacState.INIT
-    assert b.result == BallotVotingResult.disagree
+    assert b.result == BallotVotingResult.none
 
     b2 = Ballot(ballot_id, 1, message, IsaacState.INIT, BallotVotingResult.agree)
     assert b2.result == BallotVotingResult.agree
