@@ -9,7 +9,7 @@ class Middleware(BaseBlockchainMiddleware):
         if ballot_idx == Slot.NOT_FOUND:
             validator_ballots = list()
         else:
-            validator_ballots = self.blockchain.consensus.slot.slot[ballot_idx].validator_ballots
+            validator_ballots = self.blockchain.consensus.slot.get_validator_ballots(ballot)
 
         self.log.debug(
             'ballot received: %s -> %s validator_ballots=%s ballot=%s',
@@ -31,5 +31,11 @@ class Middleware(BaseBlockchainMiddleware):
             return
 
         self.log.debug('found state regression previous_ballot=%s received_ballot=%s', existing, ballot)
+        self.log.metric(
+            action='audit',
+            type='state-regression',
+            ballot=ballot.serialize(to_string=False),
+            previous_ballot=existing.serialize(to_string=False),
+        )
 
         return
