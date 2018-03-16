@@ -3,6 +3,8 @@ common:
     # consensus: isaac
     network: default_http
     threshold: 60
+    audit_waiting: 1000
+    audit_time_limit: 2000  # infinite: -1
 
 nodes:
     n0:

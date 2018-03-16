@@ -18,6 +18,9 @@ class Slot:
             temp_name = 'b' + str(i)
             self.slot[temp_name] = Slot_element()
 
+    def __repr__(self):
+        return '<Ballot: slot=%(slot)s slot_size=%(slot_size)s timestamp_dict=%(timestamp_dict)s timestamp_list=%(timestamp_list)s last_ballot=%(last_ballot)s>' % self.__dict__  # noqa
+
     def clear_all_validator_ballots(self):
         for k in self.slot.keys():
             self.slot[k].validator_ballots.clear()
@@ -52,7 +55,7 @@ class Slot:
 
     def store_validator_ballots(self, ballot):
         self.get_validator_ballots(ballot)[ballot.node_name] = ballot
-        return 
+        return
 
     def check_full_and_insert_ballot(self, ballot):
         if self.is_empty():
@@ -139,6 +142,9 @@ class Slot_element:
         self.consensus_state = get_fba_module('isaac').IsaacState.INIT
         self.is_full = False
         self.validator_ballots = dict()
+
+    def __repr__(self):
+        return '<Ballot: ballot=%(ballot)s consensus_state=%(consensus_state)s is_full=%(is_full)s validator_ballots=%(validator_ballots)s>' % self.__dict__  # noqa
 
     def add_ballot(self, ballot):
         self.ballot = ballot

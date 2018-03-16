@@ -19,6 +19,12 @@ class Message:
     def __eq__(self, a):
         return self.message_id == a.message_id and self.data == a.data
 
+    def __gt__(self, rhs):
+        return self.message_id < rhs.message_id
+
+    def __ge__(self, rhs):
+        return self < rhs or self == rhs
+
     def eq_id(self, rhs):
         return self.message_id == rhs.message_id
 

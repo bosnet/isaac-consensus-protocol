@@ -276,9 +276,9 @@ class Fba(BaseConsensus):
 
         ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
 
-        if not ballot.result is BallotVotingResult.none:
+        if ballot.result is not BallotVotingResult.none:
             self.slot.store_validator_ballots(ballot)
-        
+
         self.log.debug('ballot stored state=%s ballot=%s', self.slot.get_ballot_state(ballot), ballot)
         return
 

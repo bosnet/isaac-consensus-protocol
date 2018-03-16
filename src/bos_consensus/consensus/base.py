@@ -37,5 +37,9 @@ class BaseConsensus(LoggingMixin):
         self.messages.append(message)
         self.message_ids.append(message.message_id)
 
+    def get_messages_hash(self):
+        self.messages.sort()
+        return hash(tuple([m.message_id for m in self.messages]))
+
     def is_guarantee_liveness(self):
         raise NotImplementedError()

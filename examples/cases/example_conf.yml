@@ -4,6 +4,8 @@ common:
     # consensus: isaac
     network: default_http
     threshold: 60
+    audit_waiting: 1000
+    audit_time_limit: 2000  # infinite: -1
 
 nodes:
     n0:
@@ -15,7 +17,7 @@ nodes:
                 - n4
                 - n5
                 - n6
-            threshold: 80
+            threshold: 60
 
     n1:
         port: 54320
@@ -69,5 +71,5 @@ nodes:
 
 messages:
     n1:
-        number: 5
-        interval: 1000
+        number: 3
+        interval: 500

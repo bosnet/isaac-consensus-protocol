@@ -77,7 +77,7 @@
             "pythonPath": "${config:python.pythonPath}",
             "program": "${workspaceRoot}/examples/cases/run-case-local-socket.py",
             "cwd": "${workspaceRoot}/examples/cases/",
-            "args": ["${workspaceRoot}/examples/cases/faulty-nodes/alive-but-not-voting/example.yml", "-log-level", "debug"],
+            "args": ["${workspaceRoot}/examples/cases/example_conf.yml", "-log-level", "error"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [

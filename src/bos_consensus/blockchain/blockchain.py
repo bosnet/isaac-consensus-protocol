@@ -26,14 +26,10 @@ class Blockchain(BaseBlockchain):
 
         self.middlewares = load_middlewares('blockchain')
 
-    def get_state(self):
-        return self.consensus.state
-
     def to_dict(self):
         return dict(
             node=self.node.to_dict(),
             consensus=self.consensus.to_dict(),
-            # state=self.consensus.state.name
         )
 
     def receive_message_from_client(self, message):

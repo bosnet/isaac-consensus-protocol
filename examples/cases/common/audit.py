@@ -9,18 +9,25 @@ from bos_consensus.util import (
 from bos_consensus.common import BallotVotingResult
 
 
+INFINITE = -1
+INIT = -1
+MS = 0.001
+
+
 class BaseAuditor:
     checkpoint = None
     loop = None
-    auditing_timeout = None
+    time_limit = None
+    waiting = None
     validator_names = None
     log = None
 
-    def __init__(self, blockchain, loop, auditing_timeout):
+    def __init__(self, blockchain, loop, waiting=3000, time_limit=INFINITE):
         self.consensus = blockchain.consensus
         self.loop = loop
-        self.checkpoint = 0
-        self.auditing_timeout = auditing_timeout
+        self.checkpoint = INIT
+        self.waiting = waiting * MS
+        self.time_limit = time_limit * MS
         self.validator_names = set(map(lambda x: x.name, self.consensus.validator_candidates))
         self.log = logger.get_logger(self._log_name(), node=self.consensus.node.name)
 
@@ -87,15 +94,22 @@ class BaseAuditor:
         1. remember the `checkpoint`
         1. print log metric
         '''
+
         self.log.debug('waiting for connecting validators')
         while not self._wait_for_connecting_validators():
             await asyncio.sleep(1)
 
         self.log.debug('started to audit; validators connected')
 
+        last_check_time = datetime_to_timestamp(utcnow())
+
         while True:
             await asyncio.sleep(1)
             histories = self.consensus.voting_histories[self.checkpoint:]
+            now = datetime_to_timestamp(utcnow())
+
+            if self.check_auditing_time_limit(last_check_time, now):
+                return
 
             if len(histories) < 1:
                 continue
@@ -105,10 +119,12 @@ class BaseAuditor:
                 continue
 
             last_voting_history = histories[last_voting_idx]
-            now = datetime_to_timestamp(utcnow())
-            if now - last_voting_history['received'] < self.auditing_timeout:
+            last_received_time = last_voting_history['received']
+
+            if now - last_received_time < self.waiting:
                 continue
 
+            last_check_time = now
             prev_checkpoint = self.checkpoint
             self.checkpoint = len(self.consensus.voting_histories)
 
@@ -116,6 +132,11 @@ class BaseAuditor:
             self._log_metric(prev_checkpoint, collected_history)
 
         return
+
+    def check_auditing_time_limit(self, last_check_time, now):
+        if self.time_limit == INFINITE:
+            return False
+        return now - last_check_time > self.time_limit
 
 
 class LivenessAuditor(BaseAuditor):
@@ -133,13 +154,6 @@ class LivenessAuditor(BaseAuditor):
 
 
 class DivergentAuditor(BaseAuditor):
-    checkpoint = None
-    loop = None
-    auditing_timeout = None
-
-    def __init__(self, blockchain, loop, auditing_timeout):
-        super(DivergentAuditor, self).__init__(blockchain, loop, auditing_timeout)
-
     def _log_name(self):
         return 'faulty-node.divergent-voting'
 
@@ -230,9 +244,6 @@ class DivergentAuditor(BaseAuditor):
 
 
 class NoVotingAuditor(BaseAuditor):
-    def __init__(self, blockchain, loop, auditing_timeout):
-        super(NoVotingAuditor, self).__init__(blockchain, loop, auditing_timeout)
-
     def _log_name(self):
         return 'faulty-node.no-voting'
 
@@ -244,11 +255,14 @@ class NoVotingAuditor(BaseAuditor):
 
             voted_nodes.add(i['node'])
 
+        no_voting_nodes = list(self.validator_names - voted_nodes)
+        [self.consensus.set_faulty_validator(node_name) for node_name in no_voting_nodes]
+
         self.log.metric(
             checkpoint=prev_checkpoint,
             validators=list(self.validator_names),
             voted_nodes=list(voted_nodes),
-            no_voting_nodes=list(self.validator_names - voted_nodes),
+            no_voting_nodes=no_voting_nodes,
         )
 
 
@@ -260,17 +274,17 @@ AUDITORS = (
 
 
 class FaultyNodeAuditor:
-    def __init__(self, blockchain, loop, auditing_timeout):
+    def __init__(self, blockchain, loop, audit_waiting, audit_time_limit=INFINITE):
         self.blockchain = blockchain
         self.loop = loop
-        self.auditing_timeout = auditing_timeout
+        self.audit_waiting = audit_waiting
+        self.audit_time_limit = audit_time_limit
 
         self.log = logger.get_logger('audit.faulty-node', node=self.blockchain.consensus.node.name)
 
-    async def start(self):
+    def get_coroutines(self):
+        auditor_coroutines = list()
         for auditor in AUDITORS:
-            asyncio.ensure_future(
-                auditor(self.blockchain, self.loop, self.auditing_timeout).coroutine(),
-                loop=self.loop,
-            )
-        return
+            auditor_coroutines.append(auditor(self.blockchain, self.loop, self.audit_waiting, self.audit_time_limit).coroutine())
+
+        return auditor_coroutines

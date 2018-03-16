@@ -44,63 +44,21 @@ parser.add_argument(
 MS = 0.001
 
 
-async def send_message_coroutine(local_server, node_info, message_infos):
-    for message_info in message_infos:
-        message = message_info[0]
-        interval = message_info[1]
-        endpoint = node_info.endpoint
-        log.debug(f'send message to {endpoint}')
-        local_server.blockchain.transport.send(endpoint, message.serialize())
-        await asyncio.sleep(interval * MS)
-
-
-async def log_nodes_state(blockchains, design, log_state):
-    prev = None
-    while True:
-        await asyncio.sleep(1)
-
-        now = set(map(lambda x: (x.consensus.node.name, x.consensus.state), blockchains))
-        if now == prev:
-            continue
-
-        prev = now
-        for node_name, state in sorted(now):
-            node_design = getattr(design.nodes_by_name, node_name)
-            faulties = getattr(design.faulties, node_design.node.name, list())
-            log_state.metric(
-                node=node_name,
-                state=state.name,
-                faulties=faulties,
-                quorum=dict(
-                    threshold=node_design.quorum.threshold,
-                    validators=list(map(lambda x: x.name, node_design.quorum.validators)),
-                ),
-            )
-
-    return
-
-
-def set_message_task(loop, design, nodes, local_server):
-    if 'messages' in design._fields:
-        for node_name, message in design.messages._asdict().items():
-            message_infos = []
-            for _ in range(message.number):
-                new_message = Message.new()
-                message_infos.append((new_message, message.interval))
-            node_info = nodes[node_name]
-            loop.create_task(send_message_coroutine(local_server, node_info, message_infos))
-
-
 def run(options, design):
     log_state = logger.get_logger('consensus.state')
 
     network_module = get_network_module('local_socket')
 
-    blockchains = list()
     loop = asyncio.get_event_loop()
+
+    blockchains = list()
     nodes = dict()
     servers = dict()
     auditors = dict()
+
+    audit_waiting = design.common.audit_waiting
+    audit_time_limit = design.common.audit_time_limit
+
     for node_design in design.nodes:
         node = node_design.node
         nodes[node.name] = node
@@ -122,22 +80,106 @@ def run(options, design):
 
         blockchains.append(blockchain)
         servers[node.name] = network_module.Server(blockchain)
-        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 5)
+        auditors[node.name] = FaultyNodeAuditor(blockchain, loop, audit_waiting, audit_time_limit)
 
     for server in servers.values():
         server.start()
 
-    [asyncio.ensure_future(auditor.start()) for auditor in auditors.values()]
-
     try:
-        local_server = list(servers.values())[0]
-        set_message_task(loop, design, nodes, local_server)
-        loop.create_task(log_nodes_state(blockchains, design, log_state))
-        loop.run_forever()
+        coros = list()
+        for auditor in auditors.values():
+            coros.extend(auditor.get_coroutines())
+        loop.run_until_complete(asyncio.gather(
+            asyncio.gather(*tuple(coros)),
+            send_bulk_message_coro(design, nodes, list(servers.values())[0]),
+            )
+        )
     except (KeyboardInterrupt, SystemExit):
         log.debug('exception occured!')
     finally:
-        pass
+        loop.close()
+
+    log_nodes_state(blockchains, design, log_state)
+    check_safety(blockchains)
+
+    return
+
+
+def check_safety(blockchains):
+    safety_result = dict()
+    for blockchain in blockchains:
+        messages_hash = blockchain.consensus.get_messages_hash()
+        if messages_hash not in safety_result:
+            safety_result[messages_hash] = list()
+        if messages_hash in safety_result:
+            safety_result[messages_hash].append(blockchain)
+
+    if len(safety_result) == 1:
+        log_state.metric(
+            action='safety_check',
+            result='success',
+        )
+    else:
+        result_list = list()
+        for messages_hash, blockchains in safety_result.items():
+            result_dict = dict()
+            result_dict['message_hash'] = messages_hash
+            result_dict['nodes'] = [b.consensus.node_name for b in blockchains]
+            result_dict['messages'] = list() if not blockchains else blockchains[0].consensus.messages
+            result_list.append(result_dict)
+
+        log_state.metric(
+            action='safety_check',
+            result='fail',
+            info=result_list
+        )
+
+    if len(safety_result) == 1:
+        log_state.info('[SAFETY] OK!')
+    else:
+        log_state.info('[SAFETY] FAIL!')
+
+    return
+
+
+async def send_bulk_message_coro(design, nodes, local_server):
+    if 'messages' in design._fields:
+        for node_name, message in design.messages._asdict().items():
+            message_infos = []
+            for i in range(message.number):
+                new_message = Message.new()
+                message_infos.append((new_message, message.interval))
+            node_info = nodes[node_name]
+            await send_message_coroutine(local_server, node_info, message_infos)
+
+    return
+
+async def send_message_coroutine(local_server, node_info, message_infos):
+    for message_info in message_infos:
+        message = message_info[0]
+        interval = message_info[1]
+        endpoint = node_info.endpoint
+        log.debug(f'send message to {endpoint}')
+        local_server.blockchain.transport.send(endpoint, message.serialize())
+        await asyncio.sleep(interval * MS)
+
+    return
+
+
+def log_nodes_state(blockchains, design, log_state):
+    now = set(map(lambda x: (x.consensus.node.name, x.consensus), blockchains))
+    for node_name, consensus in sorted(now):
+        node_design = getattr(design.nodes_by_name, node_name)
+        faulties = getattr(design.faulties, node_design.node.name, list())
+        log_state.metric(
+            node=node_name,
+            messages=consensus.messages,
+            faulties=faulties,
+            quorum=dict(
+                threshold=node_design.quorum.threshold,
+                validators=list(map(lambda x: x.name, node_design.quorum.validators)),
+            ),
+        )
 
     return
 

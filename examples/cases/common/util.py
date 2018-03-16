@@ -86,6 +86,10 @@ def load_design(filename):
 
     design_dict = convert_namedtuple_to_dict(design)
 
+    if 'audit_waiting' not in design_dict['common']:
+        design_dict['common']['audit_waiting'] = 1
+    if 'audit_time_limit' not in design_dict['common']:
+        design_dict['common']['audit_time_limit'] = 2
     design_dict['common']['network_module'] = NETWORK_MODULE
     design_dict['nodes'] = list(nodes.values())
     design_dict['nodes_by_name'] = nodes
