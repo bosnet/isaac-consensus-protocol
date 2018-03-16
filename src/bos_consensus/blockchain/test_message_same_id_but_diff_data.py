@@ -82,53 +82,6 @@ def test_state_init_to_all_confirm_diff_message_data():
     bc3.receive_ballot(ballot_2)
     bc3.receive_ballot(ballot_3)
 
-    assert bc1.consensus.slot.get_ballot_state(ballot_2) == IsaacState.SIGN
-    assert bc2.consensus.slot.get_ballot_state(ballot_2) == IsaacState.SIGN
-    assert bc3.consensus.slot.get_ballot_state(ballot_2) == IsaacState.SIGN
-
-    ballot_1.state = IsaacState.SIGN
-    ballot_2.state = IsaacState.SIGN
-    ballot_3.state = IsaacState.SIGN
-
-    bc1.receive_ballot(ballot_1)
-    bc1.receive_ballot(ballot_2)
-    bc1.receive_ballot(ballot_3)
-
-    bc2.receive_ballot(ballot_1)
-    bc2.receive_ballot(ballot_2)
-    bc2.receive_ballot(ballot_3)
-
-    bc3.receive_ballot(ballot_1)
-    bc3.receive_ballot(ballot_2)
-    bc3.receive_ballot(ballot_3)
-
-    assert bc1.consensus.slot.get_ballot_state(ballot_2) == IsaacState.ACCEPT
-    assert bc2.consensus.slot.get_ballot_state(ballot_2) == IsaacState.ACCEPT
-    assert bc3.consensus.slot.get_ballot_state(ballot_2) == IsaacState.ACCEPT
-
-    ballot_1.state = IsaacState.ACCEPT
-    ballot_2.state = IsaacState.ACCEPT
-    ballot_3.state = IsaacState.ACCEPT
-
-    bc1.receive_ballot(ballot_1)
-    bc1.receive_ballot(ballot_2)
-    bc1.receive_ballot(ballot_3)
-
-    bc2.receive_ballot(ballot_1)
-    bc2.receive_ballot(ballot_2)
-    bc2.receive_ballot(ballot_3)
-
-    bc3.receive_ballot(ballot_1)
-    bc3.receive_ballot(ballot_2)
-    bc3.receive_ballot(ballot_3)
-
-    assert message in bc1.consensus.messages
-    assert message in bc2.consensus.messages
-    assert message not in bc3.consensus.messages  # error before fix BOS-243
-
-    message_data_from_bc1 = bc1.consensus.messages[0].data
-    message_data_from_bc2 = bc2.consensus.messages[0].data
-    message_data_from_bc3 = bc3.consensus.messages[0].data
-
-    assert message_data_from_bc1 == message_data_from_bc2
-    assert message_data_from_bc1 != message_data_from_bc3
+    assert bc1.consensus.slot.get_ballot_state(ballot_2) == IsaacState.INIT
+    assert bc2.consensus.slot.get_ballot_state(ballot_2) == IsaacState.INIT
+    assert bc3.consensus.slot.get_ballot_state(ballot_2) == IsaacState.INIT
