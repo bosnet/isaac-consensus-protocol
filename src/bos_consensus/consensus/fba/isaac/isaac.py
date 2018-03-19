@@ -1,3 +1,4 @@
+import collections
 import enum
 
 from bos_consensus.consensus.fba import FbaState, Fba
@@ -154,6 +155,18 @@ class IsaacConsensus(Fba):
             state_consensus = IsaacState.ALLCONFIRM
 
         self.log.info('returning ballot state : %s', state_consensus)
+
+        self.log.metric(
+            action='check-threshold',
+            ballot=ballot.serialize(to_string=False),
+            ballots=list(map(lambda x: x.serialize(to_string=False), ballots)),
+            thresholds=collections.OrderedDict(
+                init=state_check_init,
+                sign=state_check_sign,
+                accept=state_check_accept,
+            ),
+            next_state=state_consensus if state_consensus != self.slot.get_ballot_state(ballot) else None,
+        )
 
         return state_consensus, check_threshold
 

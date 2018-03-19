@@ -18,6 +18,8 @@ try:
     _, TERMINAL_COLUMNS = os.popen('stty size', 'r').read().split()
 except ValueError:
     TERMINAL_COLUMNS = 0
+else:
+    TERMINAL_COLUMNS = int(TERMINAL_COLUMNS)
 
 AVAILABLE_LOGGING_LEVELS = tuple(map(
     lambda x: x.lower(),
@@ -479,3 +481,52 @@ def add_nodes(from_nodes, to_nodes, validatorList):
             node_list[from_nodes]['quorum']['validators'].append(to_nodes)
 
     return node_list
+
+
+class Printer:
+    out = None
+
+    def __init__(self, out):
+        self.out = out
+
+    def print(self, *a, **kw):
+        end = kw.get('end', '\n')
+
+        t = ' '.join(a)
+        if sys.stdout.isatty() and 'color' in kw and kw['color'] is not None:
+            t = colored(t, kw['color'], attrs=kw.get('attrs'))
+
+        self.out.write(t)
+        self.out.write(end)
+        self.out.flush()
+
+        return
+
+    def colored(self, *a, **kw):
+        if not sys.stdout.isatty():
+            return a[0]
+
+        return colored(*a, **kw)
+
+    def line(self, c=None):
+        if c is None:
+            c = '-'
+
+        self.print(c * (TERMINAL_COLUMNS - 1), color='grey', attrs=('bold',))
+
+        return
+
+    def head(self, s):
+        self.print('# %s' % s, color='cyan')
+
+    def format(self, *a, **kw):
+        fmt = kw.get('fmt')
+        if fmt is not None:
+            t = fmt % tuple(a)
+        else:
+            t = ' | '.join(a)
+
+        if kw.get('print', False):
+            return self.print(t, **kw)
+
+        return t

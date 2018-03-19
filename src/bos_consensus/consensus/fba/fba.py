@@ -88,7 +88,7 @@ class Fba(BaseConsensus):
             node=self.node.name,
             state=dict(
                 after=state.name,
-                before=self.get_ballot(ballot).consensus_state.name if self.get_ballot(ballot).consensus_state is not None else None,
+                before=self.get_ballot(ballot).consensus_state.name if self.get_ballot(ballot).consensus_state is not None else None,  # noqa
             ),
             validators=tuple(self.validator_connected.keys()),
             ballot=ballot.serialize(to_string=False),
@@ -197,13 +197,20 @@ class Fba(BaseConsensus):
         2. After validation Check about ballot.
         if it is not validated, ballot.result is changed to disagree.
         '''
-        self_ballot = Ballot(ballot.ballot_id, self.node.name, ballot.message, self.slot.init_state, BallotVotingResult.agree)
+        self_ballot = Ballot(
+            ballot.ballot_id,
+            self.node.name,
+            ballot.message,
+            self.slot.init_state,
+            BallotVotingResult.agree,
+        )
         self_ballot.timestamp = ballot.timestamp
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
             self_ballot.state = self.slot.get_ballot_state(ballot)
             self_ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
         if not self_ballot.is_validated():
             self_ballot.result = BallotVotingResult.disagree
+
         return self_ballot
 
     def broadcast(self, ballot, retries=1):
@@ -236,6 +243,12 @@ class Fba(BaseConsensus):
             self.slot.get_ballot_state(ballot) if ((self.slot.get_ballot_index(ballot)) != NOT_FOUND) else 'None',
             tuple(self.validator_connected.keys()),
             retries,
+        )
+
+        self.log.metric(
+            action='broadcast',
+            ballot=ballot.serialize(to_string=False),
+            nodes=list(self.validator_connected.keys()),
         )
 
         self.store(ballot)

@@ -1,3 +1,4 @@
+import collections
 import json
 import math
 import os
@@ -7,57 +8,8 @@ import termcolor
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
     logger,
+    Printer,
 )
-
-
-class Printer:
-    out = None
-
-    def __init__(self, out):
-        self.out = out
-
-    def print(self, *a, **kw):
-        end = kw.get('end', '\n')
-
-        t = ' '.join(a)
-        if sys.stdout.isatty() and 'color' in kw and kw['color'] is not None:
-            t = termcolor.colored(t, kw['color'], attrs=kw.get('attrs'))
-
-        self.out.write(t)
-        self.out.write(end)
-        self.out.flush()
-
-        return
-
-    def colored(self, *a, **kw):
-        if not sys.stdout.isatty():
-            return a[0]
-
-        return termcolor.colored(*a, **kw)
-
-    def line(self, c=None):
-        if c is None:
-            c = '-'
-
-        self.print(c * (TERMINAL_COLUMNS - 1), color='grey', attrs=('bold',))
-
-        return
-
-    def head(self, s):
-        self.print('# %s' % s, color='cyan')
-        self.print()
-
-    def format(self, *a, **kw):
-        fmt = kw.get('fmt')
-        if fmt is not None:
-            t = fmt % tuple(a)
-        else:
-            t = ' | '.join(a)
-
-        if kw.get('print', False):
-            return self.print(t, **kw)
-
-        return t
 
 
 class FaultyNodeHistory:
@@ -152,6 +104,9 @@ class NodesHistoryAnalyzer(BaseAnalyzer):
 
         nodes = dict()
         for i in self.messages:
+            if 'node' not in i:
+                continue
+
             nodes.setdefault(i['node'], list())
             nodes[i['node']].append(i)
 
@@ -229,12 +184,26 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         for i, (message_id, message_name) in enumerate(self.message_ids.items()):
             PRINTER.format(
                 ' ' * 10,
-                '%17s' % '* message:',
+                '%18s' % '* message:',
                 message_name,
                 ('%%%ds' % max_length_message_ids) % message_id,
                 print=True,
             )
-            PRINTER.line('=' if i == len(self.message_ids) - 1 else '-')
+
+        PRINTER.line()
+        PRINTER.format(
+            ' ' * 10,
+            '%18s' % '* validators:',
+            ('%%%ds' % max_length_message_ids) % str(len(self.connected_validators)),
+            ', '.join(
+                map(
+                    lambda x: self.get_node_name(x),
+                    sorted(self.connected_validators),
+                ),
+            ),
+            print=True,
+        )
+        PRINTER.line('=' if i == len(self.message_ids) - 1 else '-')
 
         all_faulty_nodes = connected_validators & self.nodes_analyzer.faulty_node_history
         faulty_nodes = list()
@@ -262,7 +231,8 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
                 if newly_found is not None:
                     self._check_health(faulty_nodes, newly_found)
 
-            self.format(m)
+            if not self.format(m):
+                continue
 
             PRINTER.line('-' if i < len(self.messages) - 2 else '=')
 
@@ -272,20 +242,21 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
 
     def format(self, message):
         if 'action' not in message:
-            return
+            return False
 
         fn = getattr(self, '_format_%s' % message['action'].replace('-', '_'), None)
         if fn is None:
             log.error('unknown action, "%s" found: %s', message['action'], message)
 
-            return
+            return False
 
         m = fn(message)
         if m is None:
-            return
+            return False
 
         self._format(message, m)
-        return
+
+        return True
 
     def _format(self, message, m):
         message_id = ' ' * max(map(len, self.message_ids.values()))
@@ -297,7 +268,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         d = '%0.3f' % (message['created'] - self.start_time)
         PRINTER.format(
             '%10s' % d,
-            '%17s' % message['action'],
+            '%18s' % message['action'],
             self.message_ids.get(message_id, message_id),
             m,
             print=True,
@@ -310,7 +281,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
 
     def _format_change_state(self, message):
         s = '%s -> %s' % (
-            termcolor.colored(message['state']['after'], 'yellow'),
+            termcolor.colored(message['state']['before'], 'yellow'),
             termcolor.colored(
                 message['state']['after'],
                 'green' if message['state']['after'] in ('ALLCONFIRM',) else 'yellow',
@@ -322,7 +293,7 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
     def _format_connected(self, message):
         target = message['target']
         if target == message['node']:
-            target = 'self'
+            target = '%s*' % target
 
         return target
 
@@ -333,7 +304,6 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         return PRINTER.format(
             'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
             self._make_ballot_state(message),
-            'ballot=%s' % message['ballot']['ballot_id'],
         )
 
     def _make_ballot_state(self, message):
@@ -383,7 +353,6 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         return PRINTER.format(
             'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
             self._make_ballot_state(message),
-            'ballot state=%s' % message['ballot']['state'],
             'ballot result=%s' % message['ballot']['result'],
         )
 
@@ -391,9 +360,32 @@ class NodeHistoryAnalyzer(BaseAnalyzer):
         return PRINTER.format(
             'from=%-4s' % self.get_node_name(message['ballot']['node_name']),
             self._make_ballot_state(message),
-            'ballot state=%s' % message['ballot']['state'],
             'ballot result=%s' % message['ballot']['result'],
         )
+
+    def _format_check_threshold(self, message):
+        voting = collections.OrderedDict(INIT=list(), SIGN=list(), ACCEPT=list())
+        for i in message['ballots']:
+            voting[i['state']].append(self.get_node_name(i['node_name']))
+
+        for k, v in voting.copy().items():
+            voting[k] = sorted(v)
+
+        return PRINTER.format(
+            self._make_ballot_state(message),
+            'ballots=%s' % dict(voting),
+            'threshold=%s' % message['thresholds'],
+        )
+
+    def _format_broadcast(self, message):
+        return PRINTER.format(
+            self._make_ballot_state(message),
+            'ballot result=%s' % message['ballot']['result'],
+            'targets=%s' % message['nodes'],
+        )
+
+    def _format_faulty_node_added(self, *a, **kw):
+        return
 
     def _check_health(self, faulty_nodes, info):
         message = dict(
