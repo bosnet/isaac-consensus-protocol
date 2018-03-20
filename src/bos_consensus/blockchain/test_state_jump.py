@@ -49,8 +49,8 @@ def test_state_jump():
     message = Message.new('message')
     ballot_init_2 = Ballot.new(node_name_2, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_init_2.ballot_id
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree)
-    ballot_init_4 = Ballot(ballot_id, node_name_4, message, IsaacState.INIT, BallotVotingResult.agree)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_init_4 = Ballot(ballot_id, node_name_4, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_2.timestamp)
 
     bc1.receive_ballot(ballot_init_2)
     bc1.receive_ballot(ballot_init_3)
@@ -58,9 +58,9 @@ def test_state_jump():
 
     assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.SIGN
 
-    ballot_sign_2 = Ballot(ballot_id, node_name_2, message, IsaacState.ACCEPT, BallotVotingResult.agree)
-    ballot_sign_3 = Ballot(ballot_id, node_name_3, message, IsaacState.SIGN, BallotVotingResult.agree)
-    ballot_sign_4 = Ballot(ballot_id, node_name_4, message, IsaacState.SIGN, BallotVotingResult.agree)
+    ballot_sign_2 = Ballot(ballot_id, node_name_2, message, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_sign_3 = Ballot(ballot_id, node_name_3, message, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_sign_4 = Ballot(ballot_id, node_name_4, message, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_2.timestamp)
 
     bc1.receive_ballot(ballot_sign_2)
     bc1.receive_ballot(ballot_sign_3)
@@ -68,8 +68,8 @@ def test_state_jump():
 
     assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.ACCEPT
 
-    ballot_accept_3 = Ballot(ballot_id, node_name_3, message, IsaacState.ACCEPT, BallotVotingResult.agree)
-    ballot_accept_4 = Ballot(ballot_id, node_name_4, message, IsaacState.ACCEPT, BallotVotingResult.agree)
+    ballot_accept_3 = Ballot(ballot_id, node_name_3, message, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_accept_4 = Ballot(ballot_id, node_name_4, message, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_2.timestamp)
 
     bc1.receive_ballot(ballot_accept_3)
     bc1.receive_ballot(ballot_accept_4)

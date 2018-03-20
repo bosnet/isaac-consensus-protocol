@@ -48,8 +48,8 @@ def test_state_lifecycle():
     message = Message.new('message')
     ballot_init_1 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_init_1.ballot_id
-    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree)
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree)
+    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_1.timestamp)
 
     bc1.receive_ballot(ballot_init_1)
     assert bc1.consensus.slot.get_validator_ballots(ballot_init_1)[bc1.node_name].state == IsaacState.INIT
@@ -69,9 +69,9 @@ def test_state_lifecycle():
     bc3.receive_ballot(ballot_init_2)
     bc3.receive_ballot(ballot_init_3)
 
-    ballot_sign_1 = Ballot(ballot_id, node_name_1, message, IsaacState.SIGN, BallotVotingResult.agree)
-    ballot_sign_2 = Ballot(ballot_id, node_name_2, message, IsaacState.SIGN, BallotVotingResult.agree)
-    ballot_sign_3 = Ballot(ballot_id, node_name_3, message, IsaacState.SIGN, BallotVotingResult.agree)
+    ballot_sign_1 = Ballot(ballot_id, node_name_1, message, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_sign_2 = Ballot(ballot_id, node_name_2, message, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_sign_3 = Ballot(ballot_id, node_name_3, message, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_1.timestamp)
 
     bc1.receive_ballot(ballot_sign_1)
     assert bc1.consensus.slot.get_validator_ballots(ballot_init_1)[bc1.node_name].state == IsaacState.SIGN
@@ -93,9 +93,9 @@ def test_state_lifecycle():
     assert bc2.consensus.slot.get_ballot_state(ballot_init_1) == IsaacState.ACCEPT
     assert bc3.consensus.slot.get_ballot_state(ballot_init_1) == IsaacState.ACCEPT
 
-    ballot_accept_1 = Ballot(ballot_id, node_name_1, message, IsaacState.ACCEPT, BallotVotingResult.agree)
-    ballot_accept_2 = Ballot(ballot_id, node_name_2, message, IsaacState.ACCEPT, BallotVotingResult.agree)
-    ballot_accept_3 = Ballot(ballot_id, node_name_3, message, IsaacState.ACCEPT, BallotVotingResult.agree)
+    ballot_accept_1 = Ballot(ballot_id, node_name_1, message, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_accept_2 = Ballot(ballot_id, node_name_2, message, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_accept_3 = Ballot(ballot_id, node_name_3, message, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_1.timestamp)
 
     bc1.receive_ballot(ballot_sign_1)    # different state ballot
     assert bc1.consensus.slot.get_validator_ballots(ballot_init_1)[bc1.node_name].state == IsaacState.ACCEPT

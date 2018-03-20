@@ -22,7 +22,7 @@ class Ballot:
     timestamp = None
     result = None
 
-    def __init__(self, ballot_id, node_name, message, state, result=BallotVotingResult.none):
+    def __init__(self, ballot_id, node_name, message, state, result=BallotVotingResult.none, timestamp=None):
         assert isinstance(message, Message)
         assert isinstance(state, enum.IntEnum)
         assert isinstance(result, BallotVotingResult)
@@ -30,8 +30,11 @@ class Ballot:
         self.node_name = node_name
         self.message = message
         self.state = state
-        self.timestamp = str(datetime.datetime.now())
         self.result = result
+        if timestamp is None:
+            self.timestamp = str(datetime.datetime.now())
+        else:
+            self.timestamp = timestamp 
 
     def __repr__(self):
         return '<Ballot: ballot_id=%(ballot_id)s timestamp=%(timestamp)s node_name=%(node_name)s state=%(state)s message=%(message)s result=%(result)s>' % self.__dict__  # noqa
@@ -100,14 +103,15 @@ class Ballot:
     @classmethod
     def from_dict(cls, o):
         state = get_fba_module('isaac').IsaacState
-
-        return cls(
+        ballot = cls(
             o['ballot_id'],
             o['node_name'],
             Message.from_dict(o['message']),
             state[o['state']],
             BallotVotingResult[o['result']],
+            o['timestamp']
         )
+        return ballot
 
     @classmethod
     def from_string(cls, s):

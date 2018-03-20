@@ -50,8 +50,8 @@ def test_next_message():
 
     ballot_init_2 = Ballot.new(node_name_2, message_1, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_init_2.ballot_id
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT, BallotVotingResult.agree)
-    ballot_init_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT, BallotVotingResult.agree)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_init_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT, BallotVotingResult.agree, ballot_init_2.timestamp)
 
     bc1.receive_ballot(ballot_init_2)
     bc1.receive_ballot(ballot_init_3)
@@ -59,9 +59,9 @@ def test_next_message():
 
     assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.SIGN
 
-    ballot_sign_2 = Ballot(ballot_id, node_name_2, message_1, IsaacState.ACCEPT, BallotVotingResult.agree)
-    ballot_sign_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.SIGN, BallotVotingResult.agree)
-    ballot_sign_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.SIGN, BallotVotingResult.agree)
+    ballot_sign_2 = Ballot(ballot_id, node_name_2, message_1, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_sign_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_sign_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.SIGN, BallotVotingResult.agree, ballot_init_2.timestamp)
 
     bc1.receive_ballot(ballot_sign_2)
     bc1.receive_ballot(ballot_sign_3)
@@ -69,8 +69,8 @@ def test_next_message():
 
     assert bc1.consensus.slot.get_ballot_state(ballot_init_2) == IsaacState.ACCEPT
 
-    ballot_accept_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.ACCEPT, BallotVotingResult.agree)
-    ballot_accept_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.ACCEPT, BallotVotingResult.agree)
+    ballot_accept_3 = Ballot(ballot_id, node_name_3, message_1, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_2.timestamp)
+    ballot_accept_4 = Ballot(ballot_id, node_name_4, message_1, IsaacState.ACCEPT, BallotVotingResult.agree, ballot_init_2.timestamp)
 
     bc1.receive_ballot(ballot_accept_3)
     bc1.receive_ballot(ballot_accept_4)
@@ -80,9 +80,12 @@ def test_next_message():
     message_2 = Message.new('message-2')
     ballot_init_2 = Ballot.new(node_name_2, message_2, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_2 = ballot_init_2.ballot_id
+    ballot_timestamp = ballot_init_2.timestamp
 
     ballot_init_3.ballot_id = ballot_id_2
     ballot_init_4.ballot_id = ballot_id_2
+    ballot_init_3.timestamp = ballot_timestamp
+    ballot_init_4.timestamp = ballot_timestamp
 
     ballot_init_2.message = message_2
     ballot_init_3.message = message_2
@@ -97,6 +100,9 @@ def test_next_message():
     ballot_sign_2.ballot_id = ballot_id_2
     ballot_sign_3.ballot_id = ballot_id_2
     ballot_sign_4.ballot_id = ballot_id_2
+    ballot_sign_2.timestamp = ballot_timestamp
+    ballot_sign_3.timestamp = ballot_timestamp
+    ballot_sign_4.timestamp = ballot_timestamp
 
     ballot_sign_2.message = message_2
     ballot_sign_3.message = message_2
@@ -113,6 +119,8 @@ def test_next_message():
 
     ballot_accept_3.message = message_2
     ballot_accept_4.message = message_2
+    ballot_accept_3.timestamp = ballot_timestamp
+    ballot_accept_4.timestamp = ballot_timestamp
 
     bc1.receive_ballot(ballot_accept_3)
     bc1.receive_ballot(ballot_accept_4)

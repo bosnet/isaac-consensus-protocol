@@ -1,5 +1,3 @@
-import copy
-
 from ..common import Ballot, Message, node_factory, BallotVotingResult
 from ..network import Endpoint
 from ..blockchain import Blockchain
@@ -9,11 +7,6 @@ from .util import StubTransport
 
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus
-
-
-def receive_copy_ballot(self, ballot):
-    new_ballot = copy.deepcopy(ballot)
-    self.consensus.handle_ballot(new_ballot)
 
 
 def blockchain_factory(name, address, threshold, validator_endpoint_uris):
@@ -57,7 +50,6 @@ def test_state_init_to_all_confirm_diff_message_data():
         [node_name_1, node_name_2],
     )
 
-
     bc1.consensus.add_to_validator_connected(bc2.node)
     bc1.consensus.add_to_validator_connected(bc3.node)
     bc1.consensus.init()
@@ -77,9 +69,22 @@ def test_state_init_to_all_confirm_diff_message_data():
     ballot_id = ballot_1.ballot_id
     ballot_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree, ballot_1.timestamp)
     ballot_3 = Ballot(ballot_id, node_name_3, diff_data_message, IsaacState.INIT, BallotVotingResult.agree, ballot_1.timestamp)
-
+    
     bc1.receive_ballot(ballot_1)
     bc1.receive_ballot(ballot_2)
     bc1.receive_ballot(ballot_3)
+    print(bc1.consensus.slot.slot['b0'].validator_ballots.items())
 
-    assert bc1.consensus.slot.get_ballot_state(ballot_2) == IsaacState.INIT
+    bc2.receive_ballot(ballot_1)
+    bc2.receive_ballot(ballot_2)
+    bc2.receive_ballot(ballot_3)
+    print(bc2.consensus.slot.slot['b0'].validator_ballots.items())
+
+    bc3.receive_ballot(ballot_1)
+    bc3.receive_ballot(ballot_2)
+    bc3.receive_ballot(ballot_3)
+    print(bc3.consensus.slot.slot['b0'].validator_ballots.items())
+
+    assert bc1.consensus.slot.get_ballot_state(ballot_1) == IsaacState.INIT
+    assert bc2.consensus.slot.get_ballot_state(ballot_1) == IsaacState.INIT
+    assert bc3.consensus.slot.get_ballot_state(ballot_1) == IsaacState.INIT

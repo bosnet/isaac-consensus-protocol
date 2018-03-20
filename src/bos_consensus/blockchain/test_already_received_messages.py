@@ -10,6 +10,7 @@ from .util import StubTransport
 def copy_ballot(ballot, node_name, state):
     new_ballot = copy.copy(ballot)
     new_ballot.node_name = node_name
+    new_ballot.timestamp = ballot.timestamp
     if state is not None:
         new_ballot.state = state
 

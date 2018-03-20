@@ -118,7 +118,14 @@ class Fba(BaseConsensus):
 
         return
 
-    def from_outside(self, name):
+    def from_outside(self, name, ballot):
+        self.log.debug(
+            '[%s] [%s] receive ballot from %s(from_outside=%s)',
+            self.node_name,
+            self.get_ballot(ballot).consensus_state if (self.slot.get_ballot_index(ballot) != NOT_FOUND) else 'None',
+            ballot.node_name,
+            name not in self.validator_node_names,
+        )
         return name not in self.validator_node_names
 
     def clear_validator_ballots(self):
@@ -197,17 +204,17 @@ class Fba(BaseConsensus):
         2. After validation Check about ballot.
         if it is not validated, ballot.result is changed to disagree.
         '''
+
         self_ballot = Ballot(
             ballot.ballot_id,
             self.node.name,
             ballot.message,
             self.slot.init_state,
             BallotVotingResult.agree,
+            ballot.timestamp
         )
-        self_ballot.timestamp = ballot.timestamp
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
             self_ballot.state = self.slot.get_ballot_state(ballot)
-            self_ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
         if not self_ballot.is_validated():
             self_ballot.result = BallotVotingResult.disagree
 
@@ -286,8 +293,6 @@ class Fba(BaseConsensus):
             if self.slot.get_ballot_state(ballot) > ballot.state:
                 self.log.debug('found state regression ballot=%s state=%s', ballot, self.slot.get_ballot_state(ballot))
                 return
-
-        ballot.timestamp = self.get_ballot(ballot).ballot.timestamp
 
         if ballot.result is not BallotVotingResult.none:
             self.slot.store_validator_ballots(ballot)

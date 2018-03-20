@@ -41,41 +41,44 @@ class IsaacConsensus(Fba):
         #  1. if `ballot` is same except `ballot_id`, it will be passed
         assert isinstance(ballot, Ballot)
 
+        if not self._is_valid_ballot(ballot):
+            return
+
+        func = getattr(
+            self,
+            '_handle_%s' % (
+                self.get_ballot(ballot).consensus_state.name.lower() if self.slot.get_ballot_index(ballot) != NOT_FOUND else 'init',  # noqa
+            ),
+        )
+        func(ballot)
+
+        return
+
+    def _is_valid_ballot(self, ballot):
+        if ballot.message_id in self.message_ids:
+            self.log.debug('message already stored: %s', ballot.message)
+            return False
+
+        if self.slot.has_diff_ballot_but_same_message(ballot):
+            return False
+
+        if self.slot.has_same_message_id_but_different_data(ballot):
+            return False
+
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
             if ballot.node_name in self.get_ballot(ballot).validator_ballots:
                 existing = self.get_ballot(ballot).validator_ballots[ballot.node_name]
                 if ballot == existing:
-                    return
+                    return False
 
                 if ballot.has_different_ballot_id(existing):
-                    return
+                    return False
 
-        if self.slot.has_diff_ballot_but_same_message(ballot):
-            return
+        from_outside = self.from_outside(ballot.node_name, ballot)
+        if from_outside:
+            return False
 
-        if ballot.message_id in self.message_ids:
-            self.log.debug('message already stored: %s', ballot.message)
-            return
-
-        from_outside = self.from_outside(ballot.node_name)
-        self.log.debug(
-            '[%s] [%s] receive ballot from %s(from_outside=%s)',
-            self.node_name,
-            self.get_ballot(ballot).consensus_state if (self.slot.get_ballot_index(ballot) != NOT_FOUND) else 'None',
-            ballot.node_name,
-            from_outside,
-        )
-
-        if not from_outside:
-            func = getattr(
-                self,
-                '_handle_%s' % (
-                    self.get_ballot(ballot).consensus_state.name.lower() if self.slot.get_ballot_index(ballot) != NOT_FOUND else 'init',  # noqa
-                ),
-            )
-            func(ballot)
-
-        return
+        return True
 
     def _handle_init(self, ballot):
         if self._is_new_ballot(ballot):
@@ -96,7 +99,6 @@ class IsaacConsensus(Fba):
     def _handle_accept(self, ballot):
         self.store(ballot)
         self._change_state_and_broadcasting(ballot)
-
         if self.slot.get_ballot_state(ballot) is IsaacState.ALLCONFIRM:
             self.save_message(ballot.message)
             self.slot.remove_ballot(ballot)
@@ -124,7 +126,7 @@ class IsaacConsensus(Fba):
             if state_check_init < 1 or state_check_sign < 1 or state_check_accept < 1:
                 break
 
-            if self.get_ballot(ballot).consensus_state <= ballot.state and ballot.result == BallotVotingResult.agree:
+            if self.get_ballot(ballot).consensus_state <= ballot.state and ballot.result == BallotVotingResult.agree and ballot.message == self.get_ballot(ballot).ballot.message:
                 if ballot.state >= IsaacState.INIT:
                     state_check_init -= 1
                 if ballot.state >= IsaacState.SIGN:
