@@ -194,11 +194,11 @@ class IsaacConsensus(Fba):
         return
 
     def _check_slot_time(self, ballot):
-        timer = threading.Timer(60, self._remove_stucked_ballot, args=[ballot])
+        timer = threading.Timer(60, self._remove_stuck_ballot, args=[ballot])
         timer.start()
 
-    def _remove_stucked_ballot(self, ballot):
+    def _remove_stuck_ballot(self, ballot):
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
             if self._check_threshold_and_state(ballot) is not IsaacState.ALLCONFIRM:
                 self.slot.remove_ballot(ballot)
-                self.log.metric(action='remove-stucked-ballot', ballot=ballot.serialize(to_string=False))
+                self.log.metric(action='remove-stuck-ballot', ballot=ballot.serialize(to_string=False))

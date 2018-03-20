@@ -108,7 +108,7 @@ class BaseAuditor:
             histories = self.consensus.voting_histories[self.checkpoint:]
             now = datetime_to_timestamp(utcnow())
 
-            if self.check_auditing_time_limit(last_check_time, now):
+            if self.is_audit_reached_time_limit(last_check_time, now):
                 return
 
             if len(histories) < 1:
@@ -133,7 +133,7 @@ class BaseAuditor:
 
         return
 
-    def check_auditing_time_limit(self, last_check_time, now):
+    def is_audit_reached_time_limit(self, last_check_time, now):
         if self.time_limit == INFINITE:
             return False
         return now - last_check_time > self.time_limit

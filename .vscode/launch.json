@@ -303,7 +303,7 @@
         ]
     },
     {
-        "name": "test_stucked_ballot",
+        "name": "test_stuck_ballot",
         "type": "python",
         "request": "launch",
         "stopOnEntry": false,
@@ -312,7 +312,7 @@
         "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
         "program": "${file}",
         "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_stucked_ballot.py"],
+        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_stuck_ballot.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [
