@@ -25,6 +25,7 @@ def blockchain_factory(name, address, threshold, validator_endpoint_uris):
         )
 
     consensus = IsaacConsensus(node, threshold, validators)
+    Blockchain.receive_ballot = receive_copy_ballot
     return Blockchain(
         consensus,
         StubTransport()

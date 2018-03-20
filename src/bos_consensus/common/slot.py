@@ -136,7 +136,6 @@ class Slot:
 
     def has_same_message_id_but_different_data(self, ballot):
         assert isinstance(ballot, Ballot)
- 
         for slot_element in self.slot.values():
             flag = slot_element.ballot.message.eq_id(ballot.message)
             flag = flag and slot_element.ballot.message.data != ballot.message.data
