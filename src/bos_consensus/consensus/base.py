@@ -1,3 +1,5 @@
+import hashlib
+
 from ..network import BaseTransport
 from ..util import LoggingMixin
 
@@ -14,6 +16,12 @@ class BaseConsensus(LoggingMixin):
         self.set_logging('consensus', node=self.node.name)
         self.messages = list()
         self.message_ids = list()
+
+    def __hash__(self):
+        self.messages.sort()
+        hash_value = hashlib.sha256()
+        [hash_value.update(m.message_id.encode('utf-8')) for m in self.messages]
+        return int(hash_value.hexdigest(), 16)
 
     def init(self):
         raise NotImplementedError()
@@ -36,10 +44,6 @@ class BaseConsensus(LoggingMixin):
         )
         self.messages.append(message)
         self.message_ids.append(message.message_id)
-
-    def get_messages_hash(self):
-        self.messages.sort()
-        return hash(tuple([m.message_id for m in self.messages]))
 
     def is_guarantee_liveness(self):
         raise NotImplementedError()

@@ -1,5 +1,6 @@
 import collections
 import enum
+import threading
 
 from bos_consensus.consensus.fba import FbaState, Fba
 from bos_consensus.common import Ballot, BallotVotingResult, Slot
@@ -90,6 +91,7 @@ class IsaacConsensus(Fba):
             else:
                 self.broadcast(new_ballot)
         self.store(ballot)
+        self._check_slot_time(ballot)
         self._change_state_and_broadcasting(ballot)
 
     def _handle_sign(self, ballot):
@@ -190,3 +192,13 @@ class IsaacConsensus(Fba):
                 self.broadcast(self.make_self_ballot(ballot))
 
         return
+
+    def _check_slot_time(self, ballot):
+        timer = threading.Timer(60, self._remove_stucked_ballot, args=[ballot])
+        timer.start()
+
+    def _remove_stucked_ballot(self, ballot):
+        if self.slot.get_ballot_index(ballot) != NOT_FOUND:
+            if self._check_threshold_and_state(ballot) is not IsaacState.ALLCONFIRM:
+                self.slot.remove_ballot(ballot)
+                self.log.metric(action='remove-stucked-ballot', ballot=ballot.serialize(to_string=False))

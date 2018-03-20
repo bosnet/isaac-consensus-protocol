@@ -1,3 +1,5 @@
+import hashlib
+
 from ..network import Endpoint
 
 
@@ -20,6 +22,9 @@ class Node:
 
     def __repr__(self):
         return '<Node: %s(%s)>' % (self.name, self.endpoint)
+
+    def __hash__(self):
+        return int(hashlib.sha256(self.name.encode('utf-8')).hexdigest(), 16)
 
     def to_dict(self):
         return dict(

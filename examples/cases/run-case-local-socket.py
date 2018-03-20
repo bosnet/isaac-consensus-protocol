@@ -108,7 +108,7 @@ def run(options, design):
 def check_safety(blockchains):
     safety_result = dict()
     for blockchain in blockchains:
-        messages_hash = blockchain.consensus.get_messages_hash()
+        messages_hash = hash(blockchain.consensus)
         if messages_hash not in safety_result:
             safety_result[messages_hash] = list()
         if messages_hash in safety_result:
