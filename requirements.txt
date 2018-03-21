@@ -7,3 +7,4 @@ requests
 termcolor
 pyyaml
 pytest
+flake8

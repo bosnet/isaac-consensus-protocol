@@ -92,8 +92,7 @@ def run(options, design):
         loop.run_until_complete(asyncio.gather(
             asyncio.gather(*tuple(coros)),
             send_bulk_message_coro(design, nodes, list(servers.values())[0]),
-            )
-        )
+        ))
     except (KeyboardInterrupt, SystemExit):
         log.debug('exception occured!')
     finally:
@@ -153,6 +152,7 @@ async def send_bulk_message_coro(design, nodes, local_server):
             await send_message_coroutine(local_server, node_info, message_infos)
 
     return
+
 
 async def send_message_coroutine(local_server, node_info, message_infos):
     for message_info in message_infos:

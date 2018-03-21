@@ -154,7 +154,7 @@ def test_same_message_after_init():
 
     # node doesn't have ballot1, so ballot1 in node state is NONE
     assert blockchain1.consensus.slot.get_ballot_state(ballot1) == IsaacState.NONE
-    listst = list(filter(
+    list(filter(
         lambda x: x.ballot_id == ballot1.ballot_id, blockchain1.consensus.slot.get_validator_ballots(ballot1).values()
     ))
     assert len([]) < 1

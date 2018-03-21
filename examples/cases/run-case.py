@@ -6,21 +6,6 @@ import pprint  # noqa
 import sys  # noqa
 import time
 
-from bos_consensus.blockchain import Blockchain
-from bos_consensus.consensus import get_fba_module
-from bos_consensus.network import get_network_module
-from bos_consensus.util import (
-    ArgumentParserShowDefaults,
-    convert_dict_to_namedtuple,
-    convert_json_config,
-    convert_namedtuple_to_dict,
-    get_free_port,
-    get_local_ipaddress,
-    get_module,
-    logger,
-    Printer,
-)
-
 from common import (
     FaultyBlockchain,
     load_design,
@@ -28,6 +13,16 @@ from common import (
 )
 from common.audit import FaultyNodeAuditor
 
+from bos_consensus.blockchain import Blockchain
+from bos_consensus.consensus import get_fba_module
+from bos_consensus.network import get_network_module
+from bos_consensus.util import (
+    ArgumentParserShowDefaults,
+    convert_namedtuple_to_dict,
+    get_module,
+    logger,
+    Printer,
+)
 
 CONSENSUS_MODULE = get_fba_module('isaac')
 

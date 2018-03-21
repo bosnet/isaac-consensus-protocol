@@ -285,6 +285,7 @@ class FaultyNodeAuditor:
     def get_coroutines(self):
         auditor_coroutines = list()
         for auditor in AUDITORS:
-            auditor_coroutines.append(auditor(self.blockchain, self.loop, self.audit_waiting, self.audit_time_limit).coroutine())
+            auditor_coroutines.append(
+                auditor(self.blockchain, self.loop, self.audit_waiting, self.audit_time_limit).coroutine())
 
         return auditor_coroutines

@@ -113,7 +113,8 @@ class IsaacConsensus(Fba):
         return
 
     def _check_threshold_and_state(self, ballot):
-        ballots = self.get_ballot(ballot).validator_ballots.values() if (self.slot.get_ballot_index(ballot) != NOT_FOUND) else list()
+        ballots = self.get_ballot(ballot).validator_ballots.values() if (
+                    self.slot.get_ballot_index(ballot) != NOT_FOUND) else list()
         state_consensus = None
         state_check_init = self.minimum
         state_check_sign = self.minimum

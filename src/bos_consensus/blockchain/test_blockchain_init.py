@@ -1,6 +1,5 @@
 from ..consensus import get_fba_module
-from ..consensus.fba.isaac import IsaacState
-from .util import StubTransport, blockchain_factory
+from .util import blockchain_factory
 
 
 IsaacConsensus = get_fba_module('isaac').IsaacConsensus

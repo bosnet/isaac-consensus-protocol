@@ -153,6 +153,7 @@ done
 ```
 $ cd bosnet-prototype-fba
 $ pytest
+$ flake8
 ```
 
 ## Examples

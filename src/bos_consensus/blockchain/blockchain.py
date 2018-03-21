@@ -1,4 +1,4 @@
-from ..common import Ballot, BallotVotingResult, Message
+from ..common import Ballot, Message
 from ..blockchain.base import BaseBlockchain
 from ..middlewares import (
     load_middlewares,
@@ -61,7 +61,8 @@ class Blockchain(BaseBlockchain):
         self.log.metric(
             action='receive-ballot',
             ballot=ballot.serialize(to_string=False),
-            state=self.consensus.slot.slot[self.consensus.slot.get_ballot_index(ballot)].consensus_state.name if ((self.consensus.slot.get_ballot_index(ballot)) != 'Not Found') else None,
+            state=self.consensus.slot.slot[self.consensus.slot.get_ballot_index(ballot)].consensus_state.name if (
+                        (self.consensus.slot.get_ballot_index(ballot)) != 'Not Found') else None,
         )
         for m in middlewares:
             try:
