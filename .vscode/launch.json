@@ -156,6 +156,23 @@
                 "RedirectOutput"
             ]
         },
+        {
+            "name": "run-performance-by-slot-size",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/examples/experiment/run-performance-by-slot-size.py",
+            "cwd": "${workspaceRoot}/examples/cases/",
+            "args": ["-log-level", "info"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
         {//alive-but-not-voting/example.yml -log-level info
             "name": "run-case alive-but-not-voting liveness",
             "type": "python",
@@ -275,6 +292,25 @@
         "program": "${file}",
         "cwd": "${workspaceRoot}",
         "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_multiple_slot.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
+        "name": "test_performance_by_slot_size",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        //"pythonPath": "${config:python.pythonPath}",
+        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_performance_by_slot_size.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [

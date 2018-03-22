@@ -28,5 +28,6 @@ setup(
         'scripts/run-client-new.py',
         'scripts/send-message.py',
         'scripts/metric-analyzer.py',
+        'examples/experiment/run-performance-by-slot-size.py',
     ),
 )
