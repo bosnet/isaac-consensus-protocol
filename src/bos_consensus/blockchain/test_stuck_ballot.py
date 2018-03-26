@@ -79,8 +79,8 @@ def test_confirm_stuck_ballot():
 
     ballot_init_1 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_init_1.ballot_id
-    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree)
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree)
+    ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_1.timestamp)
 
     bc1.receive_ballot(ballot_init_1)
     bc1.receive_ballot(ballot_init_2)

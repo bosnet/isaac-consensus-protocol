@@ -43,7 +43,7 @@ class Ballot:
         if rhs is None:
             return False
         assert isinstance(rhs, Ballot)
-        return self.ballot_id == rhs.ballot_id and self.state == rhs.state and self.message == rhs.message and self.result == rhs.result  # noqa
+        return self.ballot_id == rhs.ballot_id and self.state == rhs.state and self.message == rhs.message and self.result == rhs.result and self.timestamp == rhs.timestamp  # noqa
 
     def eq_id(self, rhs):
         if rhs is None:

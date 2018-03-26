@@ -67,6 +67,9 @@ class IsaacConsensus(Fba):
             return False
 
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
+            if ballot.ballot_id == self.get_ballot(ballot).ballot.ballot_id and ballot.timestamp != self.get_ballot(ballot).ballot.timestamp:
+                return False
+
             if ballot.node_name in self.get_ballot(ballot).validator_ballots:
                 existing = self.get_ballot(ballot).validator_ballots[ballot.node_name]
                 if ballot == existing:
