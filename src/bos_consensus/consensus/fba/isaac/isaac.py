@@ -5,7 +5,6 @@ import threading
 from bos_consensus.consensus.fba import FbaState, Fba
 from bos_consensus.common import Ballot, BallotVotingResult, Slot
 
-
 NOT_FOUND = Slot.NOT_FOUND
 
 
@@ -107,7 +106,12 @@ class IsaacConsensus(Fba):
         if self.slot.get_ballot_state(ballot) is IsaacState.ALLCONFIRM:
             self.save_message(ballot.message)
             self.slot.remove_ballot(ballot)
+            if not self.slot.slot_queue.empty():
+                ballots_in_queue = self.slot.slot_queue.get_nowait()
+                self.slot.check_full_and_insert_ballot(ballots_in_queue)
+                self.slot.slot_queue.task_done()
 
+                return
         return
 
     def _handle_allconfirm(self, ballot):

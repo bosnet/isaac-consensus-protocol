@@ -27,7 +27,8 @@ class Fba(BaseConsensus):
     voting_histories = None  # for auditing received ballots
     slot = None
 
-    def __init__(self, node, threshold, validator_candidates, slot_size=5):
+    def __init__(self, node, threshold, validator_candidates, slot_size=2, queue_size=2):
+
         assert isinstance(node, Node)
         super(Fba, self).__init__(node)
         assert type(threshold) in (float, int)
@@ -43,7 +44,7 @@ class Fba(BaseConsensus):
         self.validator_connected = dict()
         self.validator_faulty = set()
         self.voting_histories = list()
-        self.slot = Slot(slot_size)
+        self.slot = Slot(slot_size, queue_size)
         self.middlewares = load_middlewares('consensus')
         self.set_self_node_to_validators()
         self.init()
@@ -204,6 +205,7 @@ class Fba(BaseConsensus):
         if it is not validated, ballot.result is changed to disagree.
         '''
 
+
         self_ballot = Ballot(
             ballot.ballot_id,
             self.node.name,
@@ -212,6 +214,7 @@ class Fba(BaseConsensus):
             BallotVotingResult.agree,
             ballot.timestamp
         )
+
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
             self_ballot.state = self.slot.get_ballot_state(ballot)
         if not self_ballot.is_validated():

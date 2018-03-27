@@ -1,18 +1,25 @@
-from .ballot import Ballot
+import queue
+
+from .ballot import Ballot, BallotVotingResult
 from ..consensus import get_fba_module
 from .message import Message
+from ..util import LoggingMixin
 
 
-class Slot:
+class Slot(LoggingMixin):
     NOT_FOUND = 'Not Found'
 
-    def __init__(self, slot_size):
+    def __init__(self, slot_size, queue_size):
+
         self.slot = dict()
         self.slot_size = slot_size
         self.timestamp_dict = dict()
         self.timestamp_list = list()
+        self.slot_queue = queue.Queue(queue_size)
+        self.queue_size = queue_size
         self.last_ballot = None
         self.init_state = get_fba_module('isaac').IsaacState.INIT
+        self.set_logging('SLOT')
 
         for i in range(slot_size):
             temp_name = 'b' + str(i)
@@ -44,6 +51,7 @@ class Slot:
         for k, v in self.slot.items():
             if v.is_full:
                 if ballot.ballot_id == v.ballot.ballot_id:
+
                     return k
         return Slot.NOT_FOUND
 
@@ -58,6 +66,7 @@ class Slot:
         return
 
     def check_full_and_insert_ballot(self, ballot):
+
         if self.is_empty():
             empty_slot_idx = self.find_empty_slot()
             self.insert_ballot(empty_slot_idx, ballot)
@@ -99,7 +108,9 @@ class Slot:
             self.slot[k].consensus_state = state
 
     def remove_ballot(self, ballot):
+
         self.slot[self.get_ballot_index(ballot)].remove_ballot()
+
         del self.timestamp_dict[ballot.timestamp]
         for i in range(len(self.timestamp_list) - 1, -1, -1):
             if self.timestamp_list[i] == ballot.timestamp:
@@ -119,7 +130,31 @@ class Slot:
         return True
 
     def send_to_queue(self, ballot):
-        pass
+        try:
+            self.slot_queue.put_nowait(ballot)
+            self.queue_in_ordering_by_timestamp()
+        except queue.Full:
+            self.log.error("queue is full")
+
+    def queue_in_ordering_by_timestamp(self):
+        items = []
+        while True:
+            # self.log.metric(action='queue empty first', data=self.slot_queue.empty())
+            if self.slot_queue.empty():
+                break
+            i = self.slot_queue.get()
+            self.slot_queue.task_done()
+            # self.log.metric(action='check ballot timestamp ', data=i)
+            # self.log.metric(action='queue empty middle', data=self.slot_queue.empty())
+            items.append(i)
+
+        items.sort(key=lambda x: x.timestamp)
+
+        for i in items:
+            self.log.metric(action='get data in list', data=i)
+            self.slot_queue.put(i)
+
+        return
 
     def sort_slot(self):
         if not len(self.timestamp_list) < 1:
@@ -143,6 +178,7 @@ class Slot:
             if has_same_message_id_but_diff_data:
                 return True
         return False
+
 
 class Slot_element:
     def __init__(self):

@@ -5,3 +5,4 @@
 lastfailed
 *.egg-info
 tmp
+.idea

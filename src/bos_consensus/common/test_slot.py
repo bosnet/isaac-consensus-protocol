@@ -4,27 +4,29 @@ from .slot import Slot
 from .message import Message
 from ..util import get_uuid
 
-
 IsaacState = get_fba_module('isaac').IsaacState
 
 
 def test_slot_size():
     slot_size = 3
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     assert len(s0.slot) == slot_size
 
 
 def test_slot_elements_are_unique():
     slot_size = 3
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     assert len(set(s0.slot.keys())) == slot_size
 
 
 def test_slot_insert_ballot():
     slot_size = 3
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     # this ballot will be inserted at `b0`
     b0 = Ballot(get_uuid(), 1, Message.new(get_uuid()), IsaacState.INIT)
@@ -42,7 +44,8 @@ def test_slot_insert_ballot():
 
 def test_slot_check_state():
     slot_size = 3
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     # this ballot will be inserted at `b0`
     b0 = Ballot(get_uuid(), 1, Message.new(get_uuid()), IsaacState.INIT)
@@ -58,7 +61,8 @@ def test_slot_check_state():
 
 def test_check_full_and_insert_ballot():
     slot_size = 3
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     # this ballot will be inserted at `b0`
     b0 = Ballot(get_uuid(), 1, Message.new(get_uuid()), IsaacState.INIT)
@@ -74,7 +78,8 @@ def test_check_full_and_insert_ballot():
 
 def test_is_empty():
     slot_size = 3
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     assert s0.is_empty() is True
 
@@ -88,7 +93,8 @@ def test_is_empty():
 
 def test_is_full():
     slot_size = 2
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     assert s0.is_empty() is True
 
@@ -105,7 +111,8 @@ def test_is_full():
 
 def test_clear_all_validator_ballots():
     slot_size = 2
-    s0 = Slot(slot_size)
+    queue_size = 0
+    s0 = Slot(slot_size, queue_size)
 
     assert s0.is_empty() is True
 
