@@ -2,6 +2,7 @@ from bos_consensus.network import Endpoint
 from bos_consensus.consensus import get_fba_module
 from bos_consensus.common import Message, Node
 
+
 def test_base_consensus():
     node = Node('n1', Endpoint('http', 'localhost', 5001))
     consensus_module = get_fba_module('isaac')

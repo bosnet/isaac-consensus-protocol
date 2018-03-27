@@ -58,7 +58,6 @@ def test_state_init_to_all_confirm_diff_message_data():
         [node_name_1, node_name_2],
     )
 
-
     bc1.consensus.add_to_validator_connected(bc2.node)
     bc1.consensus.add_to_validator_connected(bc3.node)
     bc1.consensus.init()

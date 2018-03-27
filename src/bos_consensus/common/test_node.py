@@ -15,6 +15,7 @@ def test_node():
         'name': 'n1',
     }
 
+
 def test_node_hash():
     n1 = node_factory('n1', Endpoint.from_uri('http://localhost:5001'))
 

@@ -157,14 +157,31 @@
             ]
         },
         {
-            "name": "run-performance-by-slot-size",
+            "name": "run-consensus-performance",
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/examples/experiment/run-performance-by-slot-size.py",
+            "program": "${workspaceRoot}/examples/experiment/run-consensus-performance.py",
             "cwd": "${workspaceRoot}/examples/cases/",
-            "args": ["-log-level", "info"],
+            "args": ["-log-level", "info", "-t", "60", "-s", "2"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "run-consensus-performance",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/examples/experiment/run-consensus-performance.py",
+            "cwd": "${workspaceRoot}/examples/cases/",
+            "args": ["-log-level", "info", "-t", "60", "-s", "2"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
@@ -263,6 +280,25 @@
         ]
     },
     {
+        "name": "test_blockchain_scalability",
+        "type": "python",
+        "request": "launch",
+        "stopOnEntry": false,
+        "module": "pytest",
+        "pythonPath": "${config:python.pythonPath}",
+        // "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
+        "program": "${file}",
+        "cwd": "${workspaceRoot}",
+        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_blockchain_scalability.py"],
+        "env": {},
+        "envFile": "${workspaceRoot}/.env",
+        "debugOptions": [
+            "WaitOnAbnormalExit",
+            "WaitOnNormalExit",
+            "RedirectOutput"
+        ]
+    },
+    {
         "name": "test_consensus_process",
         "type": "python",
         "request": "launch",
@@ -292,25 +328,6 @@
         "program": "${file}",
         "cwd": "${workspaceRoot}",
         "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_multiple_slot.py"],
-        "env": {},
-        "envFile": "${workspaceRoot}/.env",
-        "debugOptions": [
-            "WaitOnAbnormalExit",
-            "WaitOnNormalExit",
-            "RedirectOutput"
-        ]
-    },
-    {
-        "name": "test_performance_by_slot_size",
-        "type": "python",
-        "request": "launch",
-        "stopOnEntry": false,
-        "module": "pytest",
-        //"pythonPath": "${config:python.pythonPath}",
-        "pythonPath": "/Library/Frameworks/Python.framework/Versions/3.6/bin/python3",
-        "program": "${file}",
-        "cwd": "${workspaceRoot}",
-        "args": ["${workspaceRoot}/src/bos_consensus/blockchain/test_performance_by_slot_size.py"],
         "env": {},
         "envFile": "${workspaceRoot}/.env",
         "debugOptions": [

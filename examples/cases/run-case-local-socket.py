@@ -107,6 +107,8 @@ def run(options, design):
 def check_safety(blockchains):
     safety_result = dict()
     for blockchain in blockchains:
+        if isinstance(blockchain, FaultyBlockchain):
+            continue
         messages_hash = hash(blockchain.consensus)
         if messages_hash not in safety_result:
             safety_result[messages_hash] = list()
@@ -114,10 +116,18 @@ def check_safety(blockchains):
             safety_result[messages_hash].append(blockchain)
 
     if len(safety_result) == 1:
-        log_state.metric(
-            action='safety_check',
-            result='success',
-        )
+        blockchain = list(safety_result.values())[0][0]
+        if len(blockchain.consensus.messages) > 0:
+            log_state.metric(
+                action='safety_check',
+                result='success',
+            )
+        else:
+            log_state.metric(
+                action='safety_check',
+                result='fail',
+                info='empty messages'
+            )
     else:
         result_list = list()
         for messages_hash, blockchains in safety_result.items():
@@ -145,7 +155,7 @@ async def send_bulk_message_coro(design, nodes, local_server):
     if 'messages' in design._fields:
         for node_name, message in design.messages._asdict().items():
             message_infos = []
-            for i in range(message.number):
+            for _ in range(message.number):
                 new_message = Message.new()
                 message_infos.append((new_message, message.interval))
             node_info = nodes[node_name]
