@@ -7,7 +7,7 @@ For detailed process of this issues, please check [BOS-187](https://blockchainos
 The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
 
 ```sh
-$ cd ./examples/faulty-nodes
+$ cd ./examples/cases
 ```
 
 ## Quorum Design

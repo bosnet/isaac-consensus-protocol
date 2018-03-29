@@ -21,7 +21,7 @@ def receive_copy_ballot(self, ballot):
     self.consensus.handle_ballot(new_ballot)
 
 
-def blockchain_factory(name, address, threshold, validator_endpoint_uris):
+def blockchain_factory(name, address, threshold, validator_endpoint_uris, slot_size=2, queue_size=2):
     node = node_factory(name, Endpoint.from_uri(address))
     validators = list()
     for uri in validator_endpoint_uris:
@@ -29,7 +29,7 @@ def blockchain_factory(name, address, threshold, validator_endpoint_uris):
             node_factory(uri, Endpoint.from_uri(uri)),
         )
 
-    consensus = IsaacConsensus(node, threshold, validators)
+    consensus = IsaacConsensus(node, threshold, validators, slot_size, queue_size)
     Blockchain.receive_ballot = receive_copy_ballot
     return Blockchain(
         consensus,
@@ -237,7 +237,7 @@ def test_queue_is_make_consensus():
     ballot_for_slot_13 = Ballot(ballot_id_1, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_1)
 
     # make ballot 2
-    message2= Message.new('message_2')
+    message2 = Message.new('message_2')
     test_time_for_slot_2 = datetime.datetime.now()
     ballot_for_slot_21 = Ballot.new(node_name_1, message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_2)
     ballot_id_2 = ballot_for_slot_21.ballot_id

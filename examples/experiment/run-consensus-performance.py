@@ -257,7 +257,6 @@ def main(options):
 
     start = time.time()
 
-
     Consensus = get_fba_module(consensus_protocol).Consensus
     test_performance_init_to_all_confirm_sequence(Consensus, nodes, threshold, ballots, sending)
     end = time.time()

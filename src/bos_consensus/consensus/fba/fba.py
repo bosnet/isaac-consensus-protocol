@@ -27,7 +27,7 @@ class Fba(BaseConsensus):
     voting_histories = None  # for auditing received ballots
     slot = None
 
-    def __init__(self, node, threshold, validator_candidates, slot_size=2, queue_size=2):
+    def __init__(self, node, threshold, validator_candidates, slot_size=1000, queue_size=100):
 
         assert isinstance(node, Node)
         super(Fba, self).__init__(node)
@@ -204,7 +204,6 @@ class Fba(BaseConsensus):
         2. After validation Check about ballot.
         if it is not validated, ballot.result is changed to disagree.
         '''
-
 
         self_ballot = Ballot(
             ballot.ballot_id,

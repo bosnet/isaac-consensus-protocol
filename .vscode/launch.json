@@ -87,6 +87,23 @@
             ]
         },
         {//alive-but-not-voting/example.yml -log-level info
+            "name": "run-case-local-socket flower-form-f1.yml",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/examples/cases/run-case-local-socket.py",
+            "cwd": "${workspaceRoot}/examples/cases/",
+            "args": ["${workspaceRoot}/examples/cases/quorum-safety/flower-form/flower-form-f1.yml", "-log-level", "error"],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {//alive-but-not-voting/example.yml -log-level info
             "name": "run-case-local-socket divergent node",
             "type": "python",
             "request": "launch",
@@ -148,23 +165,6 @@
             "cwd": "${workspaceRoot}/examples/cases/",
             "args": ["${workspaceRoot}/examples/cases/liveness/liveness-fail-2-is-faulty.yml",
                 "-log-level", "info", "-log-output-metric", "/tmp/metric_liveness-2-is-faulty.json"],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit",
-                "RedirectOutput"
-            ]
-        },
-        {
-            "name": "run-consensus-performance",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": true,
-            "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/examples/experiment/run-consensus-performance.py",
-            "cwd": "${workspaceRoot}/examples/cases/",
-            "args": ["-log-level", "info", "-t", "60", "-s", "2"],
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [

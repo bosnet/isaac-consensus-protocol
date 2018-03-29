@@ -1,0 +1,111 @@
+# five quorums
+# * All Nodes(N): 8
+# * Commons: n0 n1 n2 n3
+#
+# * q0:
+#   - validators: n0 n1 n2 n3 n4
+# * q1:
+#   - validators: n0 n1 n2 n3 n5
+# * q2:
+#   - validators: n0 n1 n2 n3 n6
+# * q3:
+#   - validators: n0 n1 n2 n3 n7
+#
+# * Faulty Node: n2
+# * The number of faulty nodes: 1
+#    +===+=================+=============+====================+
+#    | ? | name            | formula     | result             |
+#    +---+-----------------+-------------+--------------------+
+#    | O | fault tolerance | N >= 3f + 1 | 8 >= 3 * 1 + 1 = 4 |
+#    +===+=================+=============+====================+
+#
+#--------------------------------------------------------------------------------
+
+---
+common:
+    network: default_http
+    threshold: 60
+    audit_waiting: 2000
+    audit_time_limit: -1  # infinite: -1
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+                - n7
+    n1:
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+                - n7
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n4
+                - n5
+                - n6
+                - n7
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n4
+                - n5
+                - n6
+                - n7
+    n4:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+    n5:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+    n6:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+    n7:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+
+faulties:
+    n2:
+        - case:
+            kind: no_voting
+            frequency:
+                per_consensus: 100
+
+messages:
+    n4:
+        number: 5
+        interval: 500
