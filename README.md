@@ -1,4 +1,4 @@
-# FBA Prototype Of BOSNet
+# ISAAC Consensus Protocol
 
 Validate the consensus model of the FBA
 
@@ -9,24 +9,15 @@ To install and deploy the source, you need to install these packages,
  - python: 3.5 or higher
  - pip
 
-```
-$ pip install virtualenv
-$ virtualenv bosnet-prototype-fba
-$ cd bosnet-prototype-fba
-$ source bin/activate
-$ mkdir src/
-$ cd src
-$ git clone git@github.com:owlchain/bosnet-prototype-fba.git
-$ cd bosnet-prototype-fba
-```
+Clone this repository and then run below command.
 
-```
+```sh
 $ python setup.py develop
 ```
 
 ## Deployment
 
-```
+```sh
 $ run-blockchain.py -h
 usage: run-blockchain.py [-h] [-verbose]
                          [-log-level {critical,fatal,error,warn,warning,info,debug}]
@@ -55,7 +46,8 @@ optional arguments:
 ### Running Node Server
 
 Set the config file.
-```
+
+```sh
 $ run-blockchain.py examples/node5001.ini
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node ID: 5001
 2017-12-06 15:21:48,459 - __main__ - DEBUG - Node PORT: 5001
@@ -63,14 +55,15 @@ $ run-blockchain.py examples/node5001.ini
 ```
 
 Run the other nodes like this.
-```
+
+```sh
 $ run-blockchain.py examples/node5002.ini
 $ run-blockchain.py examples/node5003.ini
 ```
 
 ### Running Message Client, `run-client.py`
 
-```
+```sh
 $ run-client.py  -h
 usage: run-client.py [-h] [-verbose]
                      [-log-level {critical,fatal,error,warn,warning,info,debug}]
@@ -101,15 +94,17 @@ optional arguments:
 
 After checking node state in cmd line, then run client like this.
 Send one message to `5001`
-```
-$ python scripts/run-client.py --ip "localhost" --port 5001 --message "message"
+
+```sh
+$ run-client.py --ip "localhost" --port 5001 --message "message"
 ```
 
 Send five messages at a time every 4 seconds to `5001`
-```
-for i in $(seq 5)
+
+```sh
+$ for i in $(seq 5)
 do
-    python scripts/run-client.py \
+    run-client.py \
         --ip localhost \
         --port 5001 \
         --message "message-$i"
@@ -117,13 +112,14 @@ do
 done
 ```
 
-Send five messages at a time every 4 seconds to `5001` and` 5002`,
-```
-for port in 5001 5002
+Send five messages at a time every 4 seconds to `5001` and `5002`,
+
+```sh
+$ for port in 5001 5002
 do
     for i in $(seq 5)
     do
-        python scripts/run-client.py \
+        run-client.py \
             --ip localhost \
             --port $port \
             --message "message-$i"
@@ -132,14 +128,15 @@ do
 done
 ```
 
-Send five messages at a time every 4 seconds to `5000-5003` randomly three times
-```
-for _ in $(seq 3)
+Send five messages at a time every 4 seconds to `5000`-`5003` randomly three times
+
+```sh
+$ for _ in $(seq 3)
 do
     p=$(expr $RANDOM % 4)
     for i in $(seq 5)
     do
-        python scripts/run-client.py \
+        run-client.py \
             --ip localhost \
             --port "500$p" \
             --message "message-$i"
@@ -150,8 +147,7 @@ done
 
 ## Test
 
-```
-$ cd bosnet-prototype-fba
+```sh
 $ pytest
 $ flake8
 ```
@@ -165,7 +161,7 @@ See the [examples](./examples/).
 
 > Before running this script, please run `python setup.py develop`.
 
-```
+```sh
 $ send-message.py -h
 usage: send-message.py [-h] [-verbose]
                        [-log-level {critical,fatal,error,warn,warning,info,debug}]
@@ -197,25 +193,26 @@ optional arguments:
 
 This script will try to send messages to multiple nodes simultaneously.
 
-```
+```sh
 $ send-message.py http://localhost:54320
 ```
 
-This will send one random message to 'http://localhost:54320'.
+This will send one random message to <http://localhost:54320>.
 
 
-```
+```sh
 $ send-message.py http://localhost:54320 http://localhost:54321
 ```
 
-This will send one random message to 'http://localhost:54320' and 'http://localhost:54321' at the same time.
+This will send one random message to <http://localhost:54320> and <http://localhost:54321> at the same time.
 
 You can set the number of messages for one node like this,
-```
+
+```sh
 $ send-message.py http://localhost:54320?m=9 http://localhost:54321?m=10
 ```
 
-This will send 9 random messages to 'http://localhost:54320' and 10 random messages to 'http://localhost:54321'.
+This will send 9 random messages to <http://localhost:54320> and 10 random messages to <http://localhost:54321>.
 
 ## `metric-analyzer.py`
 
@@ -230,9 +227,34 @@ The definition of these terms will be found in stellar documentation page or SCP
 
 ### Usage
 
-Before running this script, please run this, `$ python setup.py develop`, and then generate 'metric' messages from running nodes and make something happened.
+Before running this script, please 'metric' messages from running nodes and make something happened.
+
+For instance, metric logs should be genertated in `/tmp/metric.json`.
 
 ```
+$ run-blockchain.py examples/node5001.ini -log-output-metric /tmp/metric.json
+$ run-blockchain.py examples/node5002.ini -log-output-metric /tmp/metric.json
+$ run-blockchain.py examples/node5003.ini -log-output-metric /tmp/metric.json
+$ run-blockchain.py examples/node5004.ini -log-output-metric /tmp/metric.json
+```
+
+Then send messages to nodes.
+
+```
+$ for port in 5001 5002 5003 5004
+do
+    for i in $(seq 5)
+    do
+        python scripts/run-client.py \
+            --ip localhost \
+            --port $port \
+            --message "message-$i"
+            sleep 2
+    done
+done
+```
+
+```sh
 $ metric-analyzer.py -h
 usage: metric-analyzer.py [-h] [-verbose]
                           [-log-level {critical,fatal,error,warn,warning,info,debug}]
@@ -263,15 +285,15 @@ optional arguments:
   -nodes NODES          set the nodes to be shown (default: None)
 ```
 
-If you have the `/tmp/metric.json',
+If you have the `/tmp/metric.json`,
 
-```
+```sh
 $ metric-analyzer.py /tmp/metric.json
 ```
 
 You can filter multiple types you want,
 
+```sh
+$ metric-analyzer.py -type safety,fault-tolerance -nodes 5001 /tmp/metric.json
 ```
-$ metric-analyzer.py -type safety,fault-tolerance -nodes n0 /tmp/metric.json
-```
-This will show result only for safety and fault tolerance of 'n0'.
+This will show result only for safety and fault tolerance of `5001`.
