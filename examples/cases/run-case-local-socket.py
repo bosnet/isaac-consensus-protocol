@@ -15,6 +15,7 @@ from bos_consensus.util import (
     get_module,
     logger,
 )
+from util import log_current_state
 
 from common import (
     FaultyBlockchain,
@@ -178,18 +179,7 @@ async def send_message_coroutine(local_server, node_info, message_infos):
 
 def log_nodes_state(blockchains, design, log_state):
     now = set(map(lambda x: (x.consensus.node.name, x.consensus), blockchains))
-    for node_name, consensus in sorted(now):
-        node_design = getattr(design.nodes_by_name, node_name)
-        faulties = getattr(design.faulties, node_design.node.name, list())
-        log_state.metric(
-            node=node_name,
-            messages=consensus.messages,
-            faulties=faulties,
-            quorum=dict(
-                threshold=node_design.quorum.threshold,
-                validators=list(map(lambda x: x.name, node_design.quorum.validators)),
-            ),
-        )
+    log_current_state(now, design, log_state)
 
     return
 

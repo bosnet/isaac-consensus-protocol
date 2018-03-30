@@ -23,6 +23,7 @@ from bos_consensus.util import (
     logger,
     Printer,
 )
+from util import log_current_state
 
 CONSENSUS_MODULE = get_fba_module('isaac')
 
@@ -79,10 +80,15 @@ def run_default(options, design):
         NodeRunner(blockchain).start()
         auditors[node.name] = FaultyNodeAuditor(blockchain, loop, 3)
 
-    [asyncio.ensure_future(auditor.start()) for auditor in auditors.values()]
+    coroutines = list()
+    for auditor in auditors.values():
+        coroutines.extend(auditor.get_coroutines())
 
     try:
-        loop.run_forever()
+        loop.run_until_complete(asyncio.gather(
+            asyncio.gather(*tuple(coroutines))
+            )
+        )
     except (KeyboardInterrupt, SystemExit):
         log.debug('exception occured!')
 
@@ -130,23 +136,12 @@ def run(options, design):
     while True:
         time.sleep(1)
 
-        now = set(map(lambda x: (x.consensus.node.name, x.consensus.state), blockchains))
+        now = set(map(lambda x: (x.consensus.node.name, x.consensus), blockchains))
         if now == prev:
             continue
 
         prev = now
-        for node_name, state in sorted(now):
-            node_design = getattr(design.nodes_by_name, node_name)
-            faulties = getattr(design.faulties, node_design.node.name, list())
-            log_state.metric(
-                node=node_name,
-                state=state.name,
-                faulties=faulties,
-                quorum=dict(
-                    threshold=node_design.quorum.threshold,
-                    validators=list(map(lambda x: x.name, node_design.quorum.validators)),
-                ),
-            )
+        log_current_state(now, design, log_state)
 
     return
 
