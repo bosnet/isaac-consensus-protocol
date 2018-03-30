@@ -2,6 +2,11 @@
 
 Validate the consensus model of the FBA
 
+
+## Notice
+
+** This is not a repository for running a node. This is only a proof of concept for BOSCoin's ISAAC consensus protocol. Feel free to test. **
+
 ## Installation
 
 To install and deploy the source, you need to install these packages,
