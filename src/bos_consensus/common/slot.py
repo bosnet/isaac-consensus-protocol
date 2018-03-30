@@ -8,8 +8,11 @@ from ..util import LoggingMixin
 
 class Slot(LoggingMixin):
     NOT_FOUND = 'Not Found'
+    STATE = None
 
     def __init__(self, slot_size, queue_size):
+        if Slot.STATE is None:
+            Slot.STATE = get_fba_module('isaac').IsaacState
 
         self.slot = dict()
         self.slot_size = slot_size
@@ -18,7 +21,7 @@ class Slot(LoggingMixin):
         self.slot_queue = queue.Queue(queue_size)
         self.queue_size = queue_size
         self.last_ballot = None
-        self.init_state = get_fba_module('isaac').IsaacState.INIT
+        self.init_state = Slot.STATE.INIT
         self.set_logging('SLOT')
 
         for i in range(slot_size):
@@ -43,7 +46,7 @@ class Slot(LoggingMixin):
     def get_ballot_state(self, ballot):
         idx = self.get_ballot_index(ballot)
         if idx == Slot.NOT_FOUND:
-            return get_fba_module('isaac').IsaacState.NONE
+            return Slot.STATE.NONE
 
         return self.slot[self.get_ballot_index(ballot)].consensus_state
 
@@ -51,7 +54,6 @@ class Slot(LoggingMixin):
         for k, v in self.slot.items():
             if v.is_full:
                 if ballot.ballot_id == v.ballot.ballot_id:
-
                     return k
         return Slot.NOT_FOUND
 
@@ -66,14 +68,13 @@ class Slot(LoggingMixin):
         return
 
     def check_full_and_insert_ballot(self, ballot):
-
         if self.is_empty():
             empty_slot_idx = self.find_empty_slot()
             self.insert_ballot(empty_slot_idx, ballot)
             return
 
         if not self.is_full():
-            if ballot.ballot_id not in list(map(lambda x: x.ballot.ballot_id, self.slot.values())):
+            if ballot.ballot_id not in list(map(lambda x: x.ballot.ballot_id, filter(lambda x: x.ballot is not None, self.slot.values()))):
                 empty_slot_idx = self.find_empty_slot()
                 self.insert_ballot(empty_slot_idx, ballot)
                 return
@@ -86,7 +87,7 @@ class Slot(LoggingMixin):
             elif ballot.timestamp == self.timestamp_list[-1] and ballot.ballot_id == self.last_ballot.ballot_id:
                 pass
             else:
-                if self.slot[self.get_ballot_index(self.last_ballot)].consensus_state == get_fba_module('isaac').IsaacState.INIT:  # noqa
+                if self.slot[self.get_ballot_index(self.last_ballot)].consensus_state == Slot.STATE.INIT:  # noqa
                     self.send_to_queue(self.last_ballot)
                     if ballot.ballot_id not in list(map(lambda x: x.ballot.ballot_id, self.slot.values())):
                         empty_slot_idx = self.timestamp_dict[self.timestamp_list[-1]]
@@ -139,13 +140,10 @@ class Slot(LoggingMixin):
     def queue_in_ordering_by_timestamp(self):
         items = []
         while True:
-            # self.log.metric(action='queue empty first', data=self.slot_queue.empty())
             if self.slot_queue.empty():
-                break
+               break
             i = self.slot_queue.get()
             self.slot_queue.task_done()
-            # self.log.metric(action='check ballot timestamp ', data=i)
-            # self.log.metric(action='queue empty middle', data=self.slot_queue.empty())
             items.append(i)
 
         items.sort(key=lambda x: x.timestamp)
@@ -165,13 +163,16 @@ class Slot(LoggingMixin):
     def has_diff_ballot_but_same_message(self, ballot):
         assert isinstance(ballot, Ballot)
         for slot_element in self.slot.values():
-            if not slot_element.ballot.eq_id(ballot) and slot_element.ballot.message.eq_id(ballot.message):
-                return True
+            if slot_element.is_full:
+                if not slot_element.ballot.eq_id(ballot) and slot_element.ballot.message.eq_id(ballot.message):
+                    return True
         return False
 
     def has_same_message_id_but_different_data(self, ballot):
         assert isinstance(ballot, Ballot)
         for slot_element in self.slot.values():
+            if not slot_element.is_full:
+                continue
             flag = slot_element.ballot.message.eq_id(ballot.message)
             flag = flag and slot_element.ballot.message.data != ballot.message.data
             has_same_message_id_but_diff_data = flag
@@ -181,10 +182,13 @@ class Slot(LoggingMixin):
 
 
 class Slot_element:
+    STATE = None
+
     def __init__(self):
-        self.ballot = Ballot(None, None, Message.new(None), get_fba_module('isaac').IsaacState.INIT)
-        self.ballot.timestamp = None
-        self.consensus_state = get_fba_module('isaac').IsaacState.INIT
+        if Slot_element.STATE is None:
+            Slot_element.STATE = get_fba_module('isaac').IsaacState
+
+        self.ballot = None
         self.is_full = False
         self.validator_ballots = dict()
 
@@ -193,13 +197,12 @@ class Slot_element:
 
     def add_ballot(self, ballot):
         self.ballot = ballot
-        self.consensus_state = get_fba_module('isaac').IsaacState.INIT
+        self.consensus_state = Slot_element.STATE.INIT
         self.is_full = True
         self.validator_ballots = dict()
 
     def remove_ballot(self):
-        self.ballot = Ballot(None, None, Message.new(None), get_fba_module('isaac').IsaacState.INIT)
-        self.ballot.timestamp = None
+        self.ballot = None
         self.consensus_state = None
         self.is_full = False
         self.validator_ballots = dict()
