@@ -4,7 +4,7 @@ For detailed process of this issues, please check [BOS-172](https://blockchainos
 
 ## Running by Http Protocol
 
-The `run-case.py` will just launch the servers, which are instructed by design json or yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
+The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
 
 ```
 $ cd ./examples/cases

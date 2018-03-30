@@ -4,233 +4,184 @@
 
 ```
 $ cd examples/cases
-$ python run-case.py -log-level error example_conf.json
-or
 $ python run-case.py -log-level error example_conf.yml
 ```
 
-## Input Json File Format
-
+### example_conf.yml
 ```
-{
-    "common":
-    {
-        "network": string
-    },
-    "nodes":
-    {
-        "Node Name":
-        {
-            "threshold": integer,
-            "faulty_percent": integer,
-            "faulty_kind": string
-        },
-        "Node Name": {} // default threshold 51
-    },
-    "groups": // The left operand and the right operand are bidirectional validators
-    {
-        "Group Name":
-            [
-                "Node Name",
-                "Node Name"
-            ],
-        "Group Name":
-            [
-                "Node Name",
-                "Node Name"
-            ]
-    },
-    "binary_link": // The left operand and the right operand are bidirectional validators
-    [
-        [
-          ["Node Name"], // left operand
-          ["Node Name", "Node Name"] // right operand
-        ],
-        [
-          ["Node Name"], // left operand
-          ["Node Name", "Node Name"] // right operand
-        ]
-    ],
-    "unary_link": // The left operand and the right operand are unidirectional validators
-    [
-        [ ["Node Name"], ["Node Name"] ]
-    ],
-    "messages":
-    {
-        "Node Name":                    // Node name that to send messages
-        {
-            "number": integer,          // The number of messages
-            "interval": integer         // Interval between messages(ms)
-        }
-    }
-}
-```
+---
+common:
+    # consensus: isaac
+    network: default_http
+    threshold: 60
 
-### example_conf.json
-```
-{
-    "common":
-        {
-            "network": "default_http",
-            "threshold": 60
-        },
 
-    "nodes":
-    {
-        "n1":
-        {
-            "threshold": 80
-        },
-        "n2":
-        {
-            "threshold": 80
-        },
-        "n3":
-        {
-            "threshold": 80
-        },
-        "n4":
-        {
-        },
-        "n5":
-        {
-            "threshold": 80
-        },
-        "n6":
-        {
-            "threshold": 51
-        },
-        "n7":
-        {
-            "threshold": 51
-        },
-        "n8":
-        {
-            "threshold": 51
-        },
-        "n9":
-        {
-        }
-    },
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+            threshold: 60
 
-    "groups":
-    {
-        "g1": ["n1", "n2", "n3"],
-        "g2": ["n4", "n5", "n6", "n7"]
-    },
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n7
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n7
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n5
+    n4:
+        quorum:
+            validators:
+                - n1
+                - n5
+                - n6
+    n5:
+        quorum:
+            validators:
+                - n3
+                - n4
+                - n6
+                - n7
+    n6:
+        quorum:
+            validators:
+                - n0
+                - n4
+                - n5
+                - n7
+    n7:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n5
+                - n6
 
-    "binary_link":
-    [
-        [ ["n8"], ["n3", "n4"] ],
-        [ ["n9"], ["n3", "n6"] ]
-    ],
-    
-    "unary_link":
-    [
-        [ ["n9"], ["n1"] ]
-    ],
-    
-    "messages":
-    {
-        "n1":
-        {
-            "number": 5,
-            "interval": 500
-        }
-    }
-}
+messages:
+    n1:
+        number: 3
+        interval: 500
 ```
 
-### example_faulty.json
+### example_faulty.yml
 ```
-{
+---
+common:
+    # consensus: isaac
+    network: default_http
+    threshold: 60
 
-    "common":
-        {
-            "network": "default_http",
-            "threshold": 60
-        },
 
-    "nodes":
-    {
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+                - n6
+            threshold: 60
 
-        "n1":
-        {
-            "threshold": 80,
-            "faulty_kind": "no_voting",
-            "faulty_percent":
-            {
-                "per_consensus": 100
-            }
-        },
-        "n2":
-        {
-            "threshold": 80,
-            "faulty_kind": "duplicated_message_sent",
-            "faulty_percent": 1
-        },
-        "n3":
-        {
-            "threshold": 80,
-            "faulty_kind": "node_unreachable",
-            "faulty_percent": 20,
-            "duration": 3
-        },
-        "n4":
-        {
-            "faulty_kind": "divergent_voting",
-            "faulty_percent": 1
-        },
-        "n5":
-        {
-            "threshold": 80,
-            "faulty_kind": "state_regression",
-            "faulty_percent": 1,
-            "target_nodes" : ["n0", "n2"]
-        },
-        "n6":
-        {
-            "threshold": 51
-        },
-        "n7":
-        {
-            "threshold": 51
-        },
-        "n8":
-        {
-            "threshold": 51
-        },
-        "n9":
-        {
-        }
-    },
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n7
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n7
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n5
+    n4:
+        quorum:
+            validators:
+                - n1
+                - n5
+                - n6
+    n5:
+        quorum:
+            validators:
+                - n3
+                - n4
+                - n6
+                - n7
+    n6:
+        quorum:
+            validators:
+                - n0
+                - n4
+                - n5
+                - n7
+    n7:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n5
+                - n6
 
-    "groups":
-    {
-        "g1": ["n1", "n2", "n3"],
-        "g2": ["n4", "n5", "n6", "n7"]
-    },
+faulties:
+    n0:
+        - case:  # multiple cases can be set
+            kind: no_voting
+            frequency:
+                per_consensus: 100  # means, this node will be faulty node in every time
+    n1:
+        - case:
+            kind: state_regression
+            frequency: 100  # how often make regressed state within one consensus
+            target_nodes:
+                - n0
+                - n2
+    n6:
+        - case:
+            kind: divergent_voting
+            frequency: 100
+    n7:
+        - case:
+            kind: node_unreachable
+            frequency: 10  # how often stop response for `/ping`
+            duration: 3  # when stopping response, how long will sustain the no response state
 
-    "binary_link":
-    [
-        [ ["n8"], ["n3", "n4"] ],
-        [ ["n9"], ["n3", "n6"] ]
-    ],
-    
-    "unary_link":
-    [
-        [ ["n9"], ["n1"] ]
-    ],
-    
-    "messages":
-    {
-        "n1":
-        {
-            "number": 5,
-            "interval": 500
-        }
-    }
-}
+messages:
+    n1:
+        number: 3
+        interval: 500
 ```
 
 ## Checking Possibility Of Consensus
@@ -238,7 +189,7 @@ $ python run-case.py -log-level error example_conf.yml
 You can simply check that in the given case the consensus will be possible or not. Just add `check` at the end of command line.
 
 ```
-$ python run-case.py example_conf.json check
+$ python run-case.py example_conf.yml check
 # n0
 =========================================================================================
      validators | n0, n1, n2, n3, n4
@@ -327,8 +278,6 @@ $ python run-case.py example_conf.json check
 ```
 $ cd examples/cases
 $ python run-case-local-socket.py -log-level info example_conf.yml
-or
-$ python run-case-local-socket.py -log-level info example_conf.json
 ```
 #### Result
 ```
@@ -506,8 +455,6 @@ $ python run-case-local-socket.py -log-level info example_conf.json
 ```
 $ cd examples/cases
 $ python run-case-local-socket.py -log-level info faulty-nodes/alive-but-not-voting/example.yml
-or
-$ python run-case-local-socket.py -log-level info faulty-nodes/alive-but-not-voting/example.json
 ```
 #### Console Result
 ```
