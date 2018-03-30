@@ -1684,6 +1684,8 @@ This will show the all the nodes except n5 and n6 which are faulty nodes saved t
 
 * filtered the `save-message` actions
 ```json
-
+{"action":"save-message","created":1522398225.900884,"logger":"consensus","message":"a803c22633f311e880698c85902bd902","node":"n2"}
+{"action":"save-message","created":1522398225.931477,"logger":"consensus","message":"a803c22633f311e880698c85902bd902","node":"n0"}
+{"action":"save-message","created":1522398226.7983732,"logger":"consensus","message":"a803c22633f311e880698c85902bd902","node":"n1"}
 ```
-The quorums are not satisfied with Fault Tolerance. So all nodes failed to reach the `ALLCONFIRM` state.
+All quorums are not satisfied with Fault Tolerance. So only n0, n1 and n2 reached the `ALLCONFIRM` state.
