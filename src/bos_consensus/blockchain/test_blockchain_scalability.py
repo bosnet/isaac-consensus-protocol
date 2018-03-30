@@ -44,7 +44,8 @@ def generate_ballots(node_names):
     ballot = Ballot.new(node_names[0], message, IsaacState.INIT, BallotVotingResult.agree)
     ballots.append(ballot)
     for i in range(1, n_node):
-        ballots.append(Ballot(ballot.ballot_id, node_names[i], message, IsaacState.INIT, BallotVotingResult.agree, ballot.timestamp))
+        ballots.append(Ballot(ballot.ballot_id, node_names[i], message, IsaacState.INIT, BallotVotingResult.agree,
+                              ballot.timestamp))
 
     return ballots
 

@@ -43,7 +43,8 @@ def test_state_ballot_timestamp():
     # ballot with same ballot_id, message, state, voting result, timestamp
     ballot_init_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree)
     # ballot with same ballot_id, message, state, voting result but different timestamp
-    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, ballot_init_1.timestamp)
+    ballot_init_3 = Ballot(ballot_id, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree,
+                           ballot_init_1.timestamp)
 
     bc1.receive_ballot(ballot_init_1)
     bc1.receive_ballot(ballot_init_2)

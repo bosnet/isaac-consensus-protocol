@@ -66,7 +66,8 @@ class IsaacConsensus(Fba):
             return False
 
         if self.slot.get_ballot_index(ballot) != NOT_FOUND:
-            if ballot.ballot_id == self.get_ballot(ballot).ballot.ballot_id and ballot.timestamp != self.get_ballot(ballot).ballot.timestamp:
+            if (ballot.ballot_id == self.get_ballot(ballot).ballot.ballot_id and
+                    ballot.timestamp != self.get_ballot(ballot).ballot.timestamp):
                 return False
 
             if ballot.node_name in self.get_ballot(ballot).validator_ballots:
@@ -136,7 +137,9 @@ class IsaacConsensus(Fba):
             if state_check_init < 1 or state_check_sign < 1 or state_check_accept < 1:
                 break
 
-            if self.get_ballot(ballot).consensus_state <= ballot.state and ballot.result == BallotVotingResult.agree and ballot.message == self.get_ballot(ballot).ballot.message:
+            if (self.get_ballot(ballot).consensus_state <= ballot.state and
+                    ballot.result == BallotVotingResult.agree and
+                    ballot.message == self.get_ballot(ballot).ballot.message):
                 if ballot.state >= IsaacState.INIT:
                     state_check_init -= 1
                 if ballot.state >= IsaacState.SIGN:

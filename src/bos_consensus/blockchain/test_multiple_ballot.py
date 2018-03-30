@@ -75,15 +75,19 @@ def test_multiple_ballot_init_to_all_confirm_sequence():
     message = Message.new('message')
     ballot_11 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_1 = ballot_11.ballot_id
-    ballot_12 = Ballot(ballot_id_1, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree, ballot_11.timestamp)
-    ballot_13 = Ballot(ballot_id_1, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, ballot_11.timestamp)
+    ballot_12 = Ballot(ballot_id_1, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_11.timestamp)
+    ballot_13 = Ballot(ballot_id_1, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_11.timestamp)
 
     # make ballot 2
     message2 = Message.new('message2')
     ballot_21 = Ballot.new(node_name_1, message2, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_2 = ballot_21.ballot_id
-    ballot_22 = Ballot(ballot_id_2, node_name_2, message2, IsaacState.INIT, BallotVotingResult.agree, ballot_21.timestamp)
-    ballot_23 = Ballot(ballot_id_2, node_name_3, message2, IsaacState.INIT, BallotVotingResult.agree, ballot_21.timestamp)
+    ballot_22 = Ballot(ballot_id_2, node_name_2, message2, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_21.timestamp)
+    ballot_23 = Ballot(ballot_id_2, node_name_3, message2, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_21.timestamp)
 
     # receive ballot 1 and 2 simultaniously
     bc1.receive_ballot(ballot_11)
@@ -249,8 +253,10 @@ def test_multiple_ballot_jump_from_init():
     message2 = Message.new('message2')
     ballot_22 = Ballot.new(node_name_2, message2, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_2 = ballot_22.ballot_id
-    ballot_23 = Ballot(ballot_id_2, node_name_3, message2, IsaacState.INIT, BallotVotingResult.agree, ballot_22.timestamp)
-    ballot_24 = Ballot(ballot_id_2, node_name_4, message2, IsaacState.INIT, BallotVotingResult.agree, ballot_22.timestamp)
+    ballot_23 = Ballot(ballot_id_2, node_name_3, message2, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_22.timestamp)
+    ballot_24 = Ballot(ballot_id_2, node_name_4, message2, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_22.timestamp)
 
     bc1.receive_ballot(ballot_12)
     bc1.receive_ballot(ballot_22)
@@ -347,16 +353,20 @@ def test_multiple_ballot_after_allconfirm():
 
     ballot_12 = Ballot.new(node_name_2, message_1, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_12.ballot_id
-    ballot_13 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT, BallotVotingResult.agree, ballot_12.timestamp)
-    ballot_14 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT, BallotVotingResult.agree, ballot_12.timestamp)
+    ballot_13 = Ballot(ballot_id, node_name_3, message_1, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_12.timestamp)
+    ballot_14 = Ballot(ballot_id, node_name_4, message_1, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_12.timestamp)
 
     # make ballot 2
     message_2 = Message.new('message-2')
 
     ballot_22 = Ballot.new(node_name_2, message_2, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_2 = ballot_22.ballot_id
-    ballot_23 = Ballot(ballot_id_2, node_name_3, message_2, IsaacState.INIT, BallotVotingResult.agree, ballot_22.timestamp)
-    ballot_24 = Ballot(ballot_id_2, node_name_4, message_2, IsaacState.INIT, BallotVotingResult.agree, ballot_22.timestamp)
+    ballot_23 = Ballot(ballot_id_2, node_name_3, message_2, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_22.timestamp)
+    ballot_24 = Ballot(ballot_id_2, node_name_4, message_2, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_22.timestamp)
 
     bc1.receive_ballot(ballot_12)
     bc1.receive_ballot(ballot_22)
@@ -412,15 +422,19 @@ def test_multiple_ballot_after_allconfirm():
 
     ballot_32 = Ballot.new(node_name_2, message_3, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_3 = ballot_32.ballot_id
-    ballot_33 = Ballot(ballot_id_3, node_name_3, message_3, IsaacState.INIT, BallotVotingResult.agree, ballot_32.timestamp)
-    ballot_34 = Ballot(ballot_id_3, node_name_4, message_3, IsaacState.INIT, BallotVotingResult.agree, ballot_32.timestamp)
+    ballot_33 = Ballot(ballot_id_3, node_name_3, message_3, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_32.timestamp)
+    ballot_34 = Ballot(ballot_id_3, node_name_4, message_3, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_32.timestamp)
 
     message_4 = Message.new('message-4')
 
     ballot_42 = Ballot.new(node_name_2, message_4, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id_4 = ballot_42.ballot_id
-    ballot_43 = Ballot(ballot_id_4, node_name_3, message_4, IsaacState.INIT, BallotVotingResult.agree, ballot_42.timestamp)
-    ballot_44 = Ballot(ballot_id_4, node_name_4, message_4, IsaacState.INIT, BallotVotingResult.agree, ballot_42.timestamp)
+    ballot_43 = Ballot(ballot_id_4, node_name_3, message_4, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_42.timestamp)
+    ballot_44 = Ballot(ballot_id_4, node_name_4, message_4, IsaacState.INIT, BallotVotingResult.agree,
+                       ballot_42.timestamp)
 
     bc1.receive_ballot(ballot_32)
     bc1.receive_ballot(ballot_42)

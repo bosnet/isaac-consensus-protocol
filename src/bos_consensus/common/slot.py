@@ -1,8 +1,7 @@
 import queue
 
-from .ballot import Ballot, BallotVotingResult
+from .ballot import Ballot
 from ..consensus import get_fba_module
-from .message import Message
 from ..util import LoggingMixin
 
 
@@ -74,7 +73,8 @@ class Slot(LoggingMixin):
             return
 
         if not self.is_full():
-            if ballot.ballot_id not in list(map(lambda x: x.ballot.ballot_id, filter(lambda x: x.ballot is not None, self.slot.values()))):
+            if ballot.ballot_id not in list(
+                    map(lambda x: x.ballot.ballot_id, filter(lambda x: x.ballot is not None, self.slot.values()))):
                 empty_slot_idx = self.find_empty_slot()
                 self.insert_ballot(empty_slot_idx, ballot)
                 return
@@ -141,7 +141,7 @@ class Slot(LoggingMixin):
         items = []
         while True:
             if self.slot_queue.empty():
-               break
+                break
             i = self.slot_queue.get()
             self.slot_queue.task_done()
             items.append(i)

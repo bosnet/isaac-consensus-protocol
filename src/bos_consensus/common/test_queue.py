@@ -231,29 +231,37 @@ def test_queue_is_make_consensus():
     # make ballot 1
     message = Message.new('message_1')
     test_time_for_slot_1 = datetime.datetime.now()
-    ballot_for_slot_11 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_1)
+    ballot_for_slot_11 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree,
+                                    test_time_for_slot_1)
     ballot_id_1 = ballot_for_slot_11.ballot_id
-    ballot_for_slot_12 = Ballot(ballot_id_1, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_1)
-    ballot_for_slot_13 = Ballot(ballot_id_1, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_1)
+    ballot_for_slot_12 = Ballot(ballot_id_1, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree,
+                                test_time_for_slot_1)
+    ballot_for_slot_13 = Ballot(ballot_id_1, node_name_3, message, IsaacState.INIT, BallotVotingResult.agree,
+                                test_time_for_slot_1)
 
     # make ballot 2
     message2 = Message.new('message_2')
     test_time_for_slot_2 = datetime.datetime.now()
-    ballot_for_slot_21 = Ballot.new(node_name_1, message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_2)
+    ballot_for_slot_21 = Ballot.new(node_name_1, message2, IsaacState.INIT, BallotVotingResult.agree,
+                                    test_time_for_slot_2)
     ballot_id_2 = ballot_for_slot_21.ballot_id
-    ballot_for_slot_22 = Ballot(ballot_id_2, node_name_2, message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_2)
-    ballot_for_slot_23 = Ballot(ballot_id_2, node_name_3, message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_slot_2)
+    ballot_for_slot_22 = Ballot(ballot_id_2, node_name_2, message2, IsaacState.INIT, BallotVotingResult.agree,
+                                test_time_for_slot_2)
+    ballot_for_slot_23 = Ballot(ballot_id_2, node_name_3, message2, IsaacState.INIT, BallotVotingResult.agree,
+                                test_time_for_slot_2)
 
     # make queue 1
     queue_message1 = Message.new('Q_message1')
     test_time_for_queue_1 = datetime.datetime.now()
-    ballot_for_queue_1 = Ballot.new(node_name_1, queue_message1, IsaacState.INIT, BallotVotingResult.agree, test_time_for_queue_1)
+    ballot_for_queue_1 = Ballot.new(node_name_1, queue_message1, IsaacState.INIT, BallotVotingResult.agree,
+                                    test_time_for_queue_1)
     ballot_for_queue_id_1 = ballot_for_queue_1.ballot_id
 
     # make queue 2
     queue_message2 = Message.new('Q_message2')
     test_time_for_queue_2 = datetime.datetime.now()
-    ballot_for_queue_2 = Ballot.new(node_name_1, queue_message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_queue_2)
+    ballot_for_queue_2 = Ballot.new(node_name_1, queue_message2, IsaacState.INIT, BallotVotingResult.agree,
+                                    test_time_for_queue_2)
     ballot_for_queue_id_2 = ballot_for_queue_2.ballot_id
 
     # receive all ballot from client to bc1.
@@ -393,8 +401,10 @@ def test_queue_is_make_consensus():
     assert message2 == bc3.consensus.messages.pop(0)
 
     # Queue 1 make consensus.
-    ballot_for_queue_11 = Ballot(ballot_for_queue_id_1, node_name_2, queue_message1, IsaacState.INIT, BallotVotingResult.agree, test_time_for_queue_1)
-    ballot_for_queue_12 = Ballot(ballot_for_queue_id_1, node_name_3, queue_message1, IsaacState.INIT, BallotVotingResult.agree, test_time_for_queue_1)
+    ballot_for_queue_11 = Ballot(ballot_for_queue_id_1, node_name_2, queue_message1, IsaacState.INIT,
+                                 BallotVotingResult.agree, test_time_for_queue_1)
+    ballot_for_queue_12 = Ballot(ballot_for_queue_id_1, node_name_3, queue_message1, IsaacState.INIT,
+                                 BallotVotingResult.agree, test_time_for_queue_1)
 
     bc1.receive_ballot(ballot_for_queue_11)
     bc1.receive_ballot(ballot_for_queue_12)
@@ -409,7 +419,8 @@ def test_queue_is_make_consensus():
 
     queue_index_1 = bc1.consensus.slot.get_ballot_index(ballot_for_queue_1)
     assert bc1.consensus.slot.slot[queue_index_1].is_full is True
-    assert ballot_for_queue_1.ballot_id is bc1.consensus.slot.slot[queue_index_1].validator_ballots[node_name_1].ballot_id
+    assert ballot_for_queue_1.ballot_id is bc1.consensus.slot.slot[queue_index_1].validator_ballots[
+        node_name_1].ballot_id
 
     assert bc1.consensus.slot.get_ballot_state(ballot_for_queue_1) is IsaacState.SIGN
     assert bc2.consensus.slot.get_ballot_state(ballot_for_queue_11) is IsaacState.SIGN
@@ -456,8 +467,10 @@ def test_queue_is_make_consensus():
     assert queue_message1 == bc3.consensus.messages.pop(0)
 
     # Queue 2 make consensus.
-    ballot_for_queue_21 = Ballot(ballot_for_queue_id_2, node_name_2, queue_message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_queue_2)
-    ballot_for_queue_22 = Ballot(ballot_for_queue_id_2, node_name_3, queue_message2, IsaacState.INIT, BallotVotingResult.agree, test_time_for_queue_2)
+    ballot_for_queue_21 = Ballot(ballot_for_queue_id_2, node_name_2, queue_message2, IsaacState.INIT,
+                                 BallotVotingResult.agree, test_time_for_queue_2)
+    ballot_for_queue_22 = Ballot(ballot_for_queue_id_2, node_name_3, queue_message2, IsaacState.INIT,
+                                 BallotVotingResult.agree, test_time_for_queue_2)
 
     bc1.receive_ballot(ballot_for_queue_21)
     bc1.receive_ballot(ballot_for_queue_22)
@@ -477,7 +490,8 @@ def test_queue_is_make_consensus():
     assert bc1.consensus.slot.slot_queue.empty() is True
     queue_index_2 = bc1.consensus.slot.get_ballot_index(ballot_for_queue_2)
     assert bc1.consensus.slot.slot[queue_index_2].is_full is True
-    assert ballot_for_queue_2.ballot_id is bc1.consensus.slot.slot[queue_index_2].validator_ballots[node_name_1].ballot_id
+    assert ballot_for_queue_2.ballot_id is bc1.consensus.slot.slot[queue_index_2].validator_ballots[
+        node_name_1].ballot_id
 
     ballot_for_queue_2.state = IsaacState.SIGN
     ballot_for_queue_21.state = IsaacState.SIGN

@@ -1,6 +1,3 @@
-import hashlib
-import time
-
 from .node import node_factory
 from ..network import Endpoint
 

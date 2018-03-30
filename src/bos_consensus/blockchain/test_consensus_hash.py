@@ -1,8 +1,7 @@
-from ..common import Ballot, BallotVotingResult, Message, node_factory
+from ..common import node_factory
 from ..network import Endpoint
 from ..blockchain import Blockchain
 from ..consensus import get_fba_module
-from ..consensus.fba.isaac import IsaacState
 from .util import StubTransport
 
 

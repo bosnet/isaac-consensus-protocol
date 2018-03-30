@@ -76,7 +76,8 @@ def test_state_init_to_all_confirm_diff_message_data():
     ballot_1 = Ballot.new(node_name_1, message, IsaacState.INIT, BallotVotingResult.agree)
     ballot_id = ballot_1.ballot_id
     ballot_2 = Ballot(ballot_id, node_name_2, message, IsaacState.INIT, BallotVotingResult.agree, ballot_1.timestamp)
-    ballot_3 = Ballot(ballot_id, node_name_3, diff_data_message, IsaacState.INIT, BallotVotingResult.agree, ballot_1.timestamp)
+    ballot_3 = Ballot(ballot_id, node_name_3, diff_data_message, IsaacState.INIT, BallotVotingResult.agree,
+                      ballot_1.timestamp)
 
     bc1.receive_ballot(ballot_1)
     bc1.receive_ballot(ballot_2)

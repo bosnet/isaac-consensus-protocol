@@ -139,7 +139,8 @@ def test_same_message_after_init():
 
     assert blockchain1.consensus.slot.get_ballot_state(ballot1) == IsaacState.SIGN
 
-    existing_ballot_ids = set(map(lambda x: x.ballot_id, filter(lambda x: x is not None, blockchain1.consensus.slot.get_all_ballots())))
+    existing_ballot_ids = set(
+        map(lambda x: x.ballot_id, filter(lambda x: x is not None, blockchain1.consensus.slot.get_all_ballots())))
 
     # send same message in new ballot, which has previous state
     new_ballot1 = Ballot.new(node_id_1, message, IsaacState.INIT, BallotVotingResult.agree)
@@ -159,7 +160,8 @@ def test_same_message_after_init():
     ))
     assert len([]) < 1
 
-    current_ballot_ids = set(map(lambda x: x.ballot_id, filter(lambda x: x is not None, blockchain1.consensus.slot.get_all_ballots())))
+    current_ballot_ids = set(
+        map(lambda x: x.ballot_id, filter(lambda x: x is not None, blockchain1.consensus.slot.get_all_ballots())))
 
     assert existing_ballot_ids == current_ballot_ids
 
