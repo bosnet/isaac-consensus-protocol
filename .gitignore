@@ -6,3 +6,4 @@ lastfailed
 *.egg-info
 tmp
 .idea
+.vscode/
