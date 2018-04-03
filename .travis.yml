@@ -6,7 +6,7 @@ os:
   - linux
 
 dist: trusty
-sudo: false
+sudo: required
 
 install:
   - python setup.py develop
