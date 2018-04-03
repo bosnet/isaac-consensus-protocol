@@ -11,7 +11,7 @@ Validate the consensus model of the FBA
 
 To install and deploy the source, you need to install these packages,
 
- - python: 3.5 or higher
+ - python: 3.6 or higher
  - pip
 
 Clone this repository and then run below command.
