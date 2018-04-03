@@ -285,6 +285,7 @@ class Transport(BaseTransport):
         if self.server.ping is not None:
             self.server.ping.event.clear()
 
+        self.server.shutdown()
         self.server.server_close()
 
         return
