@@ -1,0 +1,10 @@
+language: python
+python:
+  - '3.6'
+
+install:
+  - python setup.py develop
+
+script:
+  - flake8
+  - pytest

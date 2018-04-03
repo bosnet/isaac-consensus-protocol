@@ -2,6 +2,7 @@
 
 Validate the consensus model of the FBA
 
+[![Build Status](https://travis-ci.org/bosnet/isaac-consensus-protocol.svg?branch=master)](https://travis-ci.org/bosnet/isaac-consensus-protocol)
 
 ## Notice
 
