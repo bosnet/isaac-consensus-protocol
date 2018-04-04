@@ -1,8 +1,10 @@
 import lorem
+import random
 import sys
 
 from bos_consensus.util import (
     ArgumentParserShowDefaults,
+    get_uuid,
     logger,
 )
 
@@ -16,6 +18,13 @@ parser = ArgumentParserShowDefaults()
 log = None
 logger.set_argparse(parser)
 
+parser.add_argument(
+    '-id',
+    '--id',
+    default=get_uuid(),
+    help='Message id',
+    type=str,
+)
 parser.add_argument(
     '-m',
     '--message',
@@ -48,7 +57,7 @@ if __name__ == '__main__':
 
     log.info('Sending Message: %s' % options.message)
 
-    message_info = MessageInfo(options.ip, options.port, options.message)
+    message_info = MessageInfo(options.id, options.ip, options.port, options.message)
 
     message = send_message(message_info)
     if message is None:

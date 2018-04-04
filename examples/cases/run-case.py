@@ -1,4 +1,5 @@
 import asyncio
+import graphviz
 import logging
 import os
 import pathlib
@@ -31,12 +32,23 @@ PRINTER = Printer(sys.stdout)
 
 parser = ArgumentParserShowDefaults()
 logger.set_argparse(parser)
+
 parser.add_argument(
     '-case',
     help='set the case name',
     default=None,
     type=str,
 )
+
+parser.add_argument(
+    '-viz-format',
+    default='png',
+    help='network topology image format',
+    type=str,
+    choices=graphviz.FORMATS,
+)
+parser.add_argument('-viz-dpi', help='network topology image dpi', type=int, default=300)
+parser.add_argument('-viz-output', help='network topology image output file', type=str)
 
 parser.add_argument(
     'design',
@@ -85,10 +97,7 @@ def run_default(options, design):
         coroutines.extend(auditor.get_coroutines())
 
     try:
-        loop.run_until_complete(asyncio.gather(
-            asyncio.gather(*tuple(coroutines))
-            )
-        )
+        loop.run_until_complete(asyncio.gather(asyncio.gather(*tuple(coroutines))))
     except (KeyboardInterrupt, SystemExit):
         log.debug('exception occured!')
 
@@ -233,6 +242,78 @@ def check(options, design):
     return
 
 
+def vizualize_quorums(options, design):
+    quorums = dict()
+    for node_design in design.nodes:
+        node = node_design.node
+
+        quorums[node.name] = [node.name]
+        for validator in node_design.quorum.validators:
+            quorums[node.name].append(validator.name)
+
+    g = graphviz.Digraph('G', format=options.viz_format, engine='fdp')
+    g.graph_attr.update(
+        fontname='monospace',
+        size='100,100',
+        dpi=str(options.viz_dpi),
+        fontsize='10',
+        style='rounded',
+        splines='curved',
+    )
+    g.edge_attr.update(
+        fontname='monospace', fontsize='6', penwidth='0.5', arrowsize='0.5', arrowhead=None, color='gray',
+    )
+    g.node_attr.update(
+        fontname='monospace',
+        fontsize='10',
+        style='filled',
+        color='snow',
+        fontcolor='snow',
+        fillcolor='crimson',
+        shape='circle',
+        penwidth='0'
+    )
+
+    line_connected = dict()
+
+    for node, validators in quorums.items():
+        for validator in validators:
+            if node == validator:
+                continue
+
+            arrowhead = 'normal'
+            arrowtail = 'normal'
+            unary = False
+
+            if node not in quorums[validator]:
+                arrowtail = 'dot'
+                unary = True
+
+            key = tuple(sorted([node, validator]))
+            if key in line_connected:
+                continue
+
+            line_connected[key] = True
+            g.edge(
+                node,
+                validator,
+                arrowsize='0.3',
+                arrowhead=arrowhead,
+                arrowtail=arrowtail,
+                color='gray79' if unary else 'gray31',
+                dir='both',
+                fontcolor='gray79' if unary else 'gray31',
+                penwidth='1',
+            )
+
+    if options.viz_output.split('.')[-1].lower() == options.viz_format:
+        options.viz_output = options.viz_output[:-1 * (len(options.viz_format) + 1)]
+
+    g.render(options.viz_output, cleanup=True)
+
+    return
+
+
 if __name__ == '__main__':
     options = parser.parse_args()
 
@@ -255,7 +336,9 @@ if __name__ == '__main__':
 
     log.info('design loaded:\n%s', pprint.pformat(convert_namedtuple_to_dict(design), width=1))
 
-    if options.action in ('run',):
+    if options.viz_output is not None:
+        vizualize_quorums(options, design)
+    elif options.action in ('run',):
         run(options, design)
     elif options.action in ('check',):
         check(options, design)

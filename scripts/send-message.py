@@ -16,6 +16,11 @@ log = None
 logger.set_argparse(parser)
 
 parser.add_argument(
+    '-same-message-id',
+    action='store_true',
+    help='messsages will have same `message_id`, but different `data`',
+)
+parser.add_argument(
     'endpoints',
     nargs='+',
     help='endpoints with the number of endpoints\'s messages want to send; ex) http://localhost:80?m=5 http://localhost:80?m=10',  # noqa
@@ -50,7 +55,11 @@ if __name__ == '__main__':
             message = Message.new(i)
 
     log.debug('trying to send message, %s to %s', message, endpoints)
-    messages = send_message_multiple(message, *endpoints)
+    messages = send_message_multiple(
+        message,
+        *endpoints,
+        **dict(same_message_id=options.same_message_id),
+    )
     for (message, endpoint) in messages:
         log.debug('sent message, %s to %s', message.serialize(to_string=False), endpoint)
 
