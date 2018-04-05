@@ -1,0 +1,95 @@
+common:
+    network: default_http
+    threshold: 60
+
+nodes:
+    n0:
+        quorum:
+            validators:
+                - n1
+                - n2
+                - n3
+                - n4
+                - n5
+    n1:
+        port: 54320
+        quorum:
+            validators:
+                - n0
+                - n2
+                - n3
+                - n4
+                - n5
+    n2:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n3
+                - n4
+                - n5
+    n3:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n4
+                - n5
+    n4:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n5
+                - n6
+                - n7
+                - n8
+                - n9
+    n5:
+        quorum:
+            validators:
+                - n0
+                - n1
+                - n2
+                - n3
+                - n4
+                - n6
+                - n7
+                - n8
+                - n9
+    n6:
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n7
+                - n8
+                - n9
+    n7:
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n6
+                - n8
+                - n9
+    n8:
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n6
+                - n7
+                - n9
+    n9:
+        port: 54321
+        quorum:
+            validators:
+                - n4
+                - n5
+                - n6
+                - n7
+                - n8
