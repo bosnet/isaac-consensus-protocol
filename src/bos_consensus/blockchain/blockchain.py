@@ -61,8 +61,7 @@ class Blockchain(BaseBlockchain):
         self.log.metric(
             action='receive-ballot',
             ballot=ballot.serialize(to_string=False),
-            state=self.consensus.slot.slot[self.consensus.slot.get_ballot_index(ballot)].consensus_state.name if (
-                        (self.consensus.slot.get_ballot_index(ballot)) != 'Not Found') else None,
+            state=self.consensus.slot.slot[self.consensus.slot.get_ballot_index(ballot)].consensus_state.name if ((self.consensus.slot.get_ballot_index(ballot)) != 'Not Found') else None,  # noqa
         )
         for m in middlewares:
             try:

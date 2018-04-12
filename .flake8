@@ -2,4 +2,5 @@
 exclude =
     .git,
     venv
+ignore = E731
 max-line-length = 120
