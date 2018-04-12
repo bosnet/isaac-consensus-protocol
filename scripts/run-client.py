@@ -1,5 +1,4 @@
 import lorem
-import random
 import sys
 
 from bos_consensus.util import (
