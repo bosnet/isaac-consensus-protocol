@@ -1,39 +1,40 @@
-# Verifying Quroum Safety
+# Verifying Quorum Safety
 
 For detailed process of this issues, please check [BOS-187](https://blockchainos.atlassian.net/browse/BOS-187).
 
 ## Running
 
-The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
+The `run-case.py` will just launch the servers that are constructed by the yaml formatted design file. To verify a message through consensus, we need to run `run-client-new.py` to send message to server.
 
+
+Substitute the `<DESIGN_FILE>.yml` to run a specific case for quorum safety
 ```sh
-$ cd ./examples/cases
+$ cd ../../cases
+$ python run-case.py -log-level error -log-output-metric /tmp/metric.json quorum-safety/<DESIGN_FILE>.yml
 ```
+
+then in another shell, run the following command to send a message to port `54320`
+
+```
+$ run-client-new.py http://localhost:54320
+```
+> The port `54320` is already assigned to node 'n1' by the design file
 
 ## Quorum Design
 
 * We have 2 quorums
 * Each quorum satisfies,
-    - has number of nodes for fault tolderance at least
+    - has number of nodes for fault tolerance at least
     - has number of common nodes for safety
     - has number of extra nodes for liveness
 
 ## None Faulty Nodes: `safe-common-1.yml`
 
-```sh
-$ python run-case.py -log-level error -log-output-metric /tmp/metric.json quorum-safety/safe-common-1.yml
-```
-
-and then send message
-```sh
-$ python run-client-new.py http://localhost:54320
-```
-
-> The `54320` is already assigned port by the design file for the node, 'n1'.
+Substitute the `<DESIGN_FILE>.yml` to `safe-common-1.yml` in the above example
 
 ### Verifying In Logs
 
-* the important metric messages in all nodes
+* filter important metric messages in all nodes
 ```sh
 $ for i in $(seq 0 8)
 do
@@ -157,7 +158,7 @@ done
 {"action":"save-message","created":1519102473.784682,"logger":"consensus","message":"21bc87a815fa11e880fa8c85903262b4","node":"n8"}```
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```sh
 $ cat /tmp/metric.json | jq -S --indent 0 -r 'select(.action=="save-message")' 2> /dev/null
 ```
@@ -174,11 +175,13 @@ $ cat /tmp/metric.json | jq -S --indent 0 -r 'select(.action=="save-message")' 2
 {"action":"save-message","created":1519102473.784682,"logger":"consensus","message":"21bc87a815fa11e880fa8c85903262b4","node":"n8"}
 ```
 
-This will show the all the nodes saved the same message(`21bc87a815fa11e880fa8c85903262b4`) and reached the `ALLCONFIRM` state.
+This log message shows that all the nodes saved the same message(`21bc87a815fa11e880fa8c85903262b4`) and reached the `ALLCONFIRM` state.
 
 ## One Faulty Nodes: `safe-common-1-is-faulty.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `safe-common-1-is-faulty.yml` in the above example
+
+* filter important metric messages in all nodes
 ```json
 ["------------------------------------"]
 {"action":"change-state","created":1519105361.199402,"logger":"consensus","node":"n0","state":{"after":"INIT","before":null},"validators":[]}
@@ -272,7 +275,7 @@ This will show the all the nodes saved the same message(`21bc87a815fa11e880fa8c8
 {"action":"change-state","created":1519105365.663137,"logger":"consensus","node":"n8","state":{"after":"INIT","before":"INIT"},"validators":["n8","n4","n5","n6","n7"]}
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```json
 {"action":"save-message","created":1519105370.562658,"logger":"consensus","message":"e2928082160011e8bc6d0050b68fda61","node":"n0"}
 {"action":"save-message","created":1519105370.606077,"logger":"consensus","message":"e2928082160011e8bc6d0050b68fda61","node":"n1"}
@@ -280,11 +283,13 @@ This will show the all the nodes saved the same message(`21bc87a815fa11e880fa8c8
 {"action":"save-message","created":1519105370.575648,"logger":"consensus","message":"e2928082160011e8bc6d0050b68fda61","node":"n3"}
 ```
 
-`n4` is the common node between `q0` and `q1`, if it failed, the message was not broadcasted to the `q1`, so only `q0` was reached to the `ALLCONFIRM`.
+Node `n4` is the common node between `q0` and `q1`. The failure of 'n4' results in the failure of message broadcasting to `q1`, so only `q0` reached the `ALLCONFIRM` state.
 
 ## One Faulty Node In 2 Commons: `safe-common-2-1-is-faulty.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `safe-common-2-1-is-faulty.yml` in the above example
+
+* filter important metric messages in all nodes
 ```json
 ["------------------------------------"]
 {"action":"change-state","created":1519105822.585845,"logger":"consensus","node":"n0","state":{"after":"INIT","before":null},"validators":[]}
@@ -399,7 +404,7 @@ This will show the all the nodes saved the same message(`21bc87a815fa11e880fa8c8
 {"action":"save-message","created":1519105833.9364831,"logger":"consensus","message":"f46b34f6160111e8af220050b68fda61","node":"n8"}
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```json
 {"action":"save-message","created":1519105830.8349729,"logger":"consensus","message":"f46b34f6160111e8af220050b68fda61","node":"n2"}
 {"action":"save-message","created":1519105830.858902,"logger":"consensus","message":"f46b34f6160111e8af220050b68fda61","node":"n0"}
@@ -411,4 +416,5 @@ This will show the all the nodes saved the same message(`21bc87a815fa11e880fa8c8
 {"action":"save-message","created":1519105833.9364831,"logger":"consensus","message":"f46b34f6160111e8af220050b68fda61","node":"n8"}
 ```
 
-One faulty node in 2 common nodes, all the quorum was reached the consensus.
+Since there is only one faulty node among two common nodes, all the nodes in quorum 'q1' and 'q2' saved the same message(`f46b34f6160111e8af220050b68fda61`) and reached consensus. 
+This quorum design guarantees safety.

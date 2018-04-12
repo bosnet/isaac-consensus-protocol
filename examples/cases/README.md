@@ -8,8 +8,8 @@ $ python run-case.py -log-level error example_conf.yml
 ```
 
 ### example_conf.yml
+
 ```
----
 common:
     # consensus: isaac
     network: default_http
@@ -84,9 +84,10 @@ messages:
         interval: 500
 ```
 
+
 ### example_faulty.yml
+
 ```
----
 common:
     # consensus: isaac
     network: default_http
@@ -186,7 +187,7 @@ messages:
 
 ## Checking Possibility Of Consensus
 
-You can simply check that in the given case the consensus will be possible or not. Just add `check` at the end of command line.
+You can simply check the given case on whether the consensus is possible or not. Just add `check` at the end of the command line.
 
 ```
 $ python run-case.py example_conf.yml check
@@ -273,7 +274,9 @@ $ python run-case.py example_conf.yml check
 ```
 
 ## Run Quorum Topology Server and periodically send messages in local
-### Safety OK
+
+### Safety(Success)
+
 #### Input
 ```
 $ cd examples/cases
@@ -450,12 +453,14 @@ $ python run-case-local-socket.py -log-level info example_conf.yml
 }
 ● 1521159724.94825602 - consensus.state - INFO - [SAFETY] OK! - {}
 ```
-### Safety Fail
+### Safety(Fail)
+
 #### Input
 ```
 $ cd examples/cases
 $ python run-case-local-socket.py -log-level info faulty-nodes/alive-but-not-voting/example.yml
 ```
+
 #### Console Result
 ```
 ● 1521159755.30369592 - consensus.state - METR - {
