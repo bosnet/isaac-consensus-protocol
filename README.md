@@ -98,7 +98,7 @@ optional arguments:
                         5001)
 ```
 
-After checking node state in the cmd line, run client and send one message to node `5001`
+After checking node state in the cmd line, run the run-client.py to send a message to node '5001' as below.
 
 ```sh
 $ run-client.py --ip "localhost" --port 5001 --message "message"
