@@ -7,3 +7,4 @@ lastfailed
 tmp
 .idea
 .vscode/
+.pytest_cache

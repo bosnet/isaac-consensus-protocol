@@ -113,7 +113,7 @@ class Ballot:
             state[o['state']],
             BallotVotingResult[o['result']],
             o['timestamp']
-            )
+        )
         # ballot.timestamp = o['timestamp']
 
         return ballot

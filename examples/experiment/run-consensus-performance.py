@@ -80,7 +80,7 @@ def generate_node_names(node_name_prefix, n):
     INIT = 5000
     node_names = list()
     node_endpoints = list()
-    for i in range(1, n+1):
+    for i in range(1, n + 1):
         node_names.append(f'n{i}')
         node_endpoints.append(f'{node_name_prefix}:{INIT+i}')
 
@@ -253,7 +253,7 @@ def main(options):
         Threshold=threshold,
         ballots=ballots,
         sending=sending,
-        )
+    )
 
     start = time.time()
 

@@ -87,7 +87,7 @@ def get_messages_from_ballots_list(ballots_list):
 def generate_node_names(node_name_prefix, n):
     INIT = 5000
     node_names = list()
-    for i in range(1, n+1):
+    for i in range(1, n + 1):
         node_names.append(f'http://localhost:{INIT+i}')
 
     return node_names
