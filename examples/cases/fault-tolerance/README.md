@@ -1,37 +1,40 @@
 # Verifying Fault Tolerance
 
-For detailed process of this issues, please check [BOS-184](https://blockchainos.atlassian.net/browse/BOS-184).
-
-## Running
-
-The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
-
-```sh
-$ cd ./examples/cases
-```
+For detailed process of this issue, please check [BOS-184](https://blockchainos.atlassian.net/browse/BOS-184).
 
 ## Quorum Design
 
 * We have 1 quorum
 * The quorum satisfies,
-    - has number of nodes for fault tolderance at least.(T = 3f + 1)
+    - has number of nodes for fault tolerance at least.(T = 3f + 1)
+
+
+
+## Running
+
+The `run-case.py` will just launch the servers that are constructed by the yaml formatted design file. To verify a message through 
+consensus, we need to run `run-client-new.py` to send message to server.
+
+
+Substitute the `<DESIGN_FILE>.yml` to run a specific case for fault-tolerance
+```sh
+$ cd ../../cases
+$ python run-case.py -log-level error -log-output-metric /tmp/metric.json fault-tolerance/<DESIGN_FILE>.yml
+```
+then in another shell, run the following command to send a message to port `54320`
+```
+$ run-client-new.py http://localhost:54320
+```
+> The port `54320` is already assigned to node 'n1' by the design file
+
 
 ## Five Validators One Faulty Node: `fault-tolerance-q1-n5-f1.yml`
 
-```sh
-$ python run-case.py -log-level error -log-output-metric /tmp/metric.json fault-tolerance/fault-tolerance-q1-n5-f1.yml
-```
-
-and then send message
-```sh
-$ python ../../scripts/run-client-new.py http://localhost:54320
-```
-
-> The `54320` is already assigned port by the design file for the node, 'n1'.
+Substitute the `<DESIGN_FILE>.yml` to `fault-tolerance-q1-n5-f1.yml` in the above example
 
 ### Verifying In Logs
 
-* the important metric messages in all nodes
+* filter important metric messages in all nodes
 ```sh
 $ for i in $(seq 0 4)
 do
@@ -102,7 +105,7 @@ done
 {"action":"change-state","created":1519989912.0488782,"logger":"consensus","node":"n4","state":{"after":"INIT","before":"INIT"},"validators":["n4","n0","n1","n2","n3"]}
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```sh
 $ cat /tmp/metric.json | jq -S --indent 0 -r 'select(.action=="save-message")' 2> /dev/null
 ```
@@ -114,11 +117,13 @@ $ cat /tmp/metric.json | jq -S --indent 0 -r 'select(.action=="save-message")' 2
 {"action":"save-message","created":1519989961.284422,"logger":"consensus","message":"7b1614a81e0c11e8b53b8c85902bd902","node":"n1"}
 ```
 
-This will show the all the nodes except n4 which is faulty node saved the same message(`7b1614a81e0c11e8b53b8c85902bd902`) and reached the `ALLCONFIRM` state.
+This log message shows that all nodes except the faulty node 'n4' saved the same message(`7b1614a81e0c11e8b53b8c85902bd902`) and reached the `ALLCONFIRM` state.
 
 ## Five Validators Two Faulty Nodes: `fault-tolerance-q1-n5-f2.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `fault-tolerance-q1-n5-f2.yml` in the above example
+
+* filter important metric messages in all nodes
 ```json
 ["------------------------------------"]
 {"action":"change-state","created":1519990378.841015,"logger":"consensus","node":"n0","state":{"after":"INIT","before":null},"validators":[]}
@@ -163,16 +168,18 @@ This will show the all the nodes except n4 which is faulty node saved the same m
 {"action":"change-state","created":1519990383.1888058,"logger":"consensus","node":"n4","state":{"after":"INIT","before":"INIT"},"validators":["n4","n0","n1","n2","n3"]}
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```json
 
 ```
 
-The quorum is not satisfied with `Fault Tolerance`. So The state of all nodes maintained `INIT`.
+This quorum is does not satisfy `Fault Tolerance`. The state of all nodes are left as the `INIT` state.
 
 ## Seven Validators Two Faulty Nodes: `fault-tolerance-q1-n7-f2.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `fault-tolerance-q1-n7-f2.yml` in the above example
+
+* filter important metric messages in all nodes
 ```sh
 $ for i in $(seq 0 7)
 do
@@ -297,7 +304,7 @@ done
 {"action":"change-state","created":1519991443.037836,"logger":"consensus","node":"n7","state":{"after":"INIT","before":"INIT"},"validators":["n7","n0","n1","n2","n3","n4","n5","n6"]}
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```json
 {"action":"save-message","created":1519991468.431489,"logger":"consensus","message":"fd2e21781e0f11e8a7bf8c85902bd902","node":"n5"}
 {"action":"save-message","created":1519991468.500284,"logger":"consensus","message":"fd2e21781e0f11e8a7bf8c85902bd902","node":"n3"}
@@ -307,11 +314,13 @@ done
 {"action":"save-message","created":1519991469.414835,"logger":"consensus","message":"fd2e21781e0f11e8a7bf8c85902bd902","node":"n4"}
 ```
 
-This will show the all the nodes except n6 and n7 which are faulty nodes saved the same message(`fd2e21781e0f11e8a7bf8c85902bd902`) and reached the `ALLCONFIRM` state.
+This log message shows that all the nodes except the faulty nodes 'n6' and 'n7' saved the same message(`fd2e21781e0f11e8a7bf8c85902bd902`) and reached the `ALLCONFIRM` state.
 
 ## Seven Validators Three Faulty Nodes: `fault-tolerance-q1-n7-f3.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `fault-tolerance-q1-n7-f3.yml` in the above example
+
+* important metric messages in all nodes
 ```json
 ["------------------------------------"]
 {"action":"change-state","created":1519991821.542617,"logger":"consensus","node":"n0","state":{"after":"INIT","before":null},"validators":[]}
@@ -408,11 +417,13 @@ This will show the all the nodes except n6 and n7 which are faulty nodes saved t
 ```json
 
 ```
-The quorum is not satisfied with Fault Tolerance. So The state of all nodes maintained INIT.
+This quorum does not satisfy Fault Tolerance. The state of all nodes are left as the `INIT` state.
 
 ## Two Quorums Ten Validators Four Commons Two Faulty Nodes: `fault-tolerance-q2-n10-c4-f2.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `fault-tolerance-q2-n10-c4-f2.yml` in the above example
+
+* important metric messages in all nodes
 ```sh
 $ for i in $(seq 0 10)
 do
@@ -1211,7 +1222,7 @@ done
 ["------------------------------------"]
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```json
 {"action":"save-message","created":1520831445.0832908,"logger":"consensus","message":"b5dda0fe25b311e8a5e2acde48001122","node":"n1"}
 {"action":"save-message","created":1520831445.08764,"logger":"consensus","message":"b5dda0fe25b311e8a5e2acde48001122","node":"n0"}
@@ -1223,11 +1234,13 @@ done
 {"action":"save-message","created":1520831445.4272482,"logger":"consensus","message":"b5dda0fe25b311e8a5e2acde48001122","node":"n4"}
 ```
 
-This will show the all the nodes except n5 and n6 which are faulty nodes saved the same message(`b5dda0fe25b311e8a5e2acde48001122`) and reached the `ALLCONFIRM` state.
+This will show that all the nodes except the faulty nodes 'n5' and 'n6' saved the same message(`b5dda0fe25b311e8a5e2acde48001122`) and reached the `ALLCONFIRM` state.
 
 ## Two Quorums Ten Validators Four Commons Three Faulty Nodes: `fault-tolerance-q2-n10-c4-f3.yml`
 
-* the important metric messages in all nodes
+Substitute the `<DESIGN_FILE>.yml` to `fault-tolerance-q2-n10-c4-f3.yml` in the above example
+
+* filter important metric messages in all nodes
 ```json
 ["------------------------------------"]
 {"action":"connected","created":1520832043.941608,"logger":"consensus","node":"n0","target":"n0","validators":["n0"]}
@@ -1682,10 +1695,10 @@ This will show the all the nodes except n5 and n6 which are faulty nodes saved t
 ["------------------------------------"]
 ```
 
-* filtered the `save-message` actions
+* filter the `save-message` actions
 ```json
 {"action":"save-message","created":1522398225.900884,"logger":"consensus","message":"a803c22633f311e880698c85902bd902","node":"n2"}
 {"action":"save-message","created":1522398225.931477,"logger":"consensus","message":"a803c22633f311e880698c85902bd902","node":"n0"}
 {"action":"save-message","created":1522398226.7983732,"logger":"consensus","message":"a803c22633f311e880698c85902bd902","node":"n1"}
 ```
-All quorums are not satisfied with Fault Tolerance. So only n0, n1 and n2 reached the `ALLCONFIRM` state.
+The quorums do not satisfy `Fault Tolerance`. Only 'n0', 'n1' and 'n2' reached the `ALLCONFIRM` state.

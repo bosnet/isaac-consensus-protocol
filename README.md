@@ -1,6 +1,6 @@
 # ISAAC Consensus Protocol
 
-Validate the consensus model of the FBA
+Official implementation of ISAAC protocol based on the consensus model of mFBA
 
 [![Build Status](https://travis-ci.org/bosnet/isaac-consensus-protocol.svg?branch=master)](https://travis-ci.org/bosnet/isaac-consensus-protocol)
 
@@ -15,7 +15,7 @@ To install and deploy the source, you need to install these packages,
  - python: 3.6 or higher
  - pip
 
-Clone this repository and then run below command.
+Once the dependencies are installed, clone this repository and run.
 
 ```sh
 $ python setup.py develop
@@ -98,14 +98,13 @@ optional arguments:
                         5001)
 ```
 
-After checking node state in cmd line, then run client like this.
-Send one message to `5001`
+After checking node state in the cmd line, run the run-client.py to send a message to node '5001' as below.
 
 ```sh
 $ run-client.py --ip "localhost" --port 5001 --message "message"
 ```
 
-Send five messages at a time every 4 seconds to `5001`
+Send five messages at a time every 4 seconds to node `5001`
 
 ```sh
 $ for i in $(seq 5)
@@ -118,7 +117,7 @@ do
 done
 ```
 
-Send five messages at a time every 4 seconds to `5001` and `5002`,
+Send five messages at a time every 4 seconds to node `5001` and `5002`,
 
 ```sh
 $ for port in 5001 5002
@@ -199,26 +198,26 @@ optional arguments:
 
 This script will try to send messages to multiple nodes simultaneously.
 
+
+This will send one random message to <http://localhost:54320>.
+
 ```sh
 $ send-message.py http://localhost:54320
 ```
 
-This will send one random message to <http://localhost:54320>.
-
+This will send one random message to <http://localhost:54320> and <http://localhost:54321> at the same time.
 
 ```sh
 $ send-message.py http://localhost:54320 http://localhost:54321
 ```
 
-This will send one random message to <http://localhost:54320> and <http://localhost:54321> at the same time.
-
-You can set the number of messages for one node like this,
+You can set the number of messages for each node. For example, this will send 9 random messages to 
+<http://localhost:54320> and 10 random messages to <http://localhost:54321>.
 
 ```sh
 $ send-message.py http://localhost:54320?m=9 http://localhost:54321?m=10
 ```
 
-This will send 9 random messages to <http://localhost:54320> and 10 random messages to <http://localhost:54321>.
 
 ## `metric-analyzer.py`
 
@@ -229,13 +228,14 @@ This simple script will try to analyze the metric messages from node. Mainly thi
 * safety between quorum(2 nodes)
 * ~~liveness between quorum(2 nodes)~~
 
-The definition of these terms will be found in stellar documentation page or SCP paper, or even in confluence page of BlockchainOS. The interesting thing is that to check the health of quorum, this script will create superset in all the validators and compose the quorum with each 2 nodes.
+The terminology of these terms are described in the [BOSCoin official homepage](https://boscoin.io/article/introduction-of-isaac-consensus-protocol-for-bosnet/). 
+The interesting thing is that to check the health of quorum, this script will create a superset in all the validators and compose the quorum with each 2 nodes.
 
 ### Usage
 
-Before running this script, please 'metric' messages from running nodes and make something happened.
+Before running the `metric-analyzer.py`, the 'metric' messages from running nodes should be stored in an output file.
 
-For instance, metric logs should be genertated in `/tmp/metric.json`.
+For example, metric logs can be generated in `/tmp/metric.json` by the following scripts
 
 ```
 $ run-blockchain.py examples/node5001.ini -log-output-metric /tmp/metric.json
@@ -291,15 +291,16 @@ optional arguments:
   -nodes NODES          set the nodes to be shown (default: None)
 ```
 
-If you have the `/tmp/metric.json`,
+If you have `/tmp/metric.json`,
 
 ```sh
 $ metric-analyzer.py /tmp/metric.json
 ```
 
-You can filter multiple types you want,
+You can filter multiple types as you want. For example the following script will only show the results for safety and fault tolerance of node `5001`.
 
 ```sh
 $ metric-analyzer.py -type safety,fault-tolerance -nodes 5001 /tmp/metric.json
 ```
-This will show result only for safety and fault tolerance of `5001`.
+
+

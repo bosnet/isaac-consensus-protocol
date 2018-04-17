@@ -1,14 +1,18 @@
-# Verifying Quroum Safety of Flower Form
+# Verifying Quorum Safety of Flower Form
 
 Create a topology case that can actually operate on the network.
 
 ## Running
 
-The `run-case.py` will just launch servers, which are instructed by designed yaml file, so to occur consensus, we need to run `run-client.py` to send message to server.
+The `run-case.py` will just launch the servers that are constructed by the yaml formatted design file. To verify a message through consensus, we need to run `run-client-new.py` to send message to server.
 
+
+Substitute the `<DESIGN_FILE>.yml` to run a specific case for flower-form
 ```sh
-$ cd ./examples/cases
+$ cd ../../cases
+$ python run-case.py -log-level error -log-output-metric /tmp/flower.json quorum-safety/flower-form/<DESIGN_FILE>.yml
 ```
+
 
 ## Quorum Design
 
@@ -24,15 +28,13 @@ $ cd ./examples/cases
     * q3:
       - validators: n0 n1 n2 n3 n7
 
-## None Faulty Nodes: `flower-form.yml`
+## No Faulty Nodes: `flower-form.yml`
 
-```sh
-$ python run-case-local-socket.py -log-level error quorum-safety/flower-form/flower-form.yml -log-output-metric /tmp/flower.json
-```
+Substitute the `<DESIGN_FILE>.yml` to `flower-form.yml` in the above example
 
 ### Verifying In Logs
 
-* the important metric messages in all nodes
+* filter important metric messages in all nodes
 ```sh
 $ cat /tmp/flower.json | jq -S --indent 0 -r 'select(.action=="safety_check")' 2> /dev/null
 ```
@@ -43,17 +45,15 @@ $ cat /tmp/flower.json | jq -S --indent 0 -r 'select(.action=="safety_check")' 2
 {"action":"safety_check","created":1522136444.0832052,"logger":"consensus.state","result":"success"}
 ```
 
-Without the faulty node, all nodes were reached the consensus.
+Since there are no faulty nodes, all nodes reached consensus.
 
 ## With One Faulty Node: `flower-form-f1.yml`
 
-```sh
-$ python run-case-local-socket.py -log-level error quorum-safety/flower-form/flower-form-f1.yml -log-output-metric /tmp/flower-f1.json
-```
+Substitute the `<DESIGN_FILE>.yml` to `flower-form-f1.yml` in the above example
 
 ### Verifying In Logs
 
-* the important metric messages in all nodes
+* filter important metric messages in all nodes
 ```sh
 $ cat /tmp/flower-f1.json | jq -S --indent 0 -r 'select(.action=="safety_check")' 2> /dev/null
 ```
@@ -64,17 +64,16 @@ $ cat /tmp/flower-f1.json | jq -S --indent 0 -r 'select(.action=="safety_check")
 {"action":"safety_check","created":1522136431.3979268,"logger":"consensus.state","result":"success"}
 ```
 
-Even though there is one faulty node, the other nodes have reached the consensus.
+Even though there is one faulty node, all nodes have reached consensus.
 
 ## With Two Faulty Nodes: `flower-form-f2.yml`
 
-```sh
-$ python run-case-local-socket.py -log-level error quorum-safety/flower-form/flower-form-f2.yml -log-output-metric /tmp/flower-f2.json
-```
+Substitute the `<DESIGN_FILE>.yml` to `flower-form-f2.yml` in the above example
+
 
 ### Verifying In Logs
 
-* the important metric messages in all nodes
+* filter important metric messages in all nodes
 ```sh
 $ cat /tmp/flower-f2.json | jq -S --indent 0 -r 'select(.action=="safety_check")' 2> /dev/null
 ```
@@ -85,17 +84,15 @@ $ cat /tmp/flower-f2.json | jq -S --indent 0 -r 'select(.action=="safety_check")
 {"action":"safety_check","created":1522136431.3979268,"logger":"consensus.state","result":"success"}
 ```
 
-Even though there is two faulty nodes, the other nodes have reached the consensus.
+Even though there are two faulty nodes, all nodes have reached consensus.
 
 ## With Three Faulty Nodes: `flower-form-f3.yml`
 
-```sh
-$ python run-case-local-socket.py -log-level error quorum-safety/flower-form/flower-form-f3-failed.yml -log-output-metric /tmp/flower-f3-failed.json
-```
+Substitute the `<DESIGN_FILE>.yml` to `flower-form-f3.yml` in the above example
 
 ### Verifying In Logs
 
-* the important metric messages in all nodes
+* filter important metric messages in all nodes
 ```sh
 $ cat /tmp/flower-f3-failed.json | jq -S --indent 0 -r 'select(.action=="safety_check")' 2> /dev/null
 ```
@@ -106,4 +103,4 @@ $ cat /tmp/flower-f3-failed.json | jq -S --indent 0 -r 'select(.action=="safety_
 {"action":"safety_check","created":1522136406.095058,"info":"empty messages","logger":"consensus.state","result":"fail"}
 ```
 
-When there are three faulty nodes, the other nodes have not reached the consensus.
+When there are three faulty nodes, the network failed to reach consensus.

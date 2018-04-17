@@ -1,35 +1,41 @@
-# Verifying Quroum Safety
+# Verifying Quorum Liveness
 
 For detailed process of this issues, please check [BOS-185](https://blockchainos.atlassian.net/browse/BOS-185).
 
+
 ## Running
 
-The `run-case.py` will just launch the servers, which are instructed by design yaml file, so to occur the consensus, we need to run `run-client.py` to send message to server.
+The `run-case.py` will just launch the servers that are constructed by the yaml formatted design file. To verify a message through consensus, we need to run `run-client-new.py` to send message to server.
 
+
+Substitute the `<DESIGN_FILE>.yml` to run a specific case for quorum liveness
 ```sh
-$ cd ./examples/cases
+$ cd ../../cases
+$ python run-case.py -log-level error -log-output-metric /tmp/metric-liveness.json liveness/<DESIGN_FILE>.yml
 ```
 
-## Design: `liveness-1-is-faulty.yml`
-
-```sh
-$ python run-case.py -log-level info -log-output-metric /tmp/metric_liveness.json liveness/liveness-1-is-faulty.yml
+Check that the state of all nodes are changed to `INIT`
+then in another shell, run the following command to send a message to port `54320`
+```
+$ run-client-new.py http://localhost:54320
 ```
 
-Check that state of all nodes are changed to INIT
-and then send message
-```sh
-$ python ../../scripts/run-client-new.py http://localhost:54320
-```
-
-Check that state of all nodes are changed to ALL_CONFIRM
+Check that the state of all nodes are changed to `ALLCONFIRM`
 and then send message again
 
 ```sh
 $ python ../../scripts/run-client-new.py http://localhost:54320
 ```
 
-> The `54320` is already assigned port by the design file for the node, 'n1'.
+> The port `54320` is already assigned to node 'n1' by the design file
+
+
+
+
+## Design: `liveness-1-is-faulty.yml`
+
+Substitute the `<DESIGN_FILE>.yml` to `liveness-1-is-faulty.yml` in the above example
+
 
 ### Verifying In Logs
 
@@ -200,32 +206,15 @@ $ cat /tmp/metric_liveness.json | jq -S --indent 0 -r 'select(.liveness)' 2> /de
 > To run this bash script, we need `jq`. To install `jq`, `brew install jq`.
 
 ```json
-
 ```
 
-This will show "n1" is liveness safe.
+This shows that node 'n1' guarantees liveness.
 
 
 ## Design: `liveness-fail-2-is-faulty.yml`
 
-```sh
-$ python run-case.py -log-level info -log-output-metric /tmp/metric_liveness.json liveness/liveness-fail-2-is-faulty.yml
-```
+Substitute the `<DESIGN_FILE>.yml` to `liveness-fail-2-is-faulty.yml` in the above example
 
-Check that state of all nodes are changed to INIT
-and then send message
-```sh
-$ python ../../scripts/run-client-new.py http://localhost:54320
-```
-
-Check that state of all nodes are changed to ALL_CONFIRM
-and then send message again
-
-```sh
-$ python ../../scripts/run-client-new.py http://localhost:54320
-```
-
-> The `54320` is already assigned port by the design file for the node, 'n1'.
 
 ### Verifying In Logs
 
@@ -380,4 +369,4 @@ $ cat /tmp/metric_liveness.json | jq -S --indent 0 -r 'select(.liveness)' 2> /de
 {"liveness": "Failed", "minimum": 5, "validators": ["n0", "n1", "n2", "n3", "n4", "n5", "n6"], "faulties": "{'n6', 'n4', 'n5'}", "logger": "audit.faulty-node.no-voting", "node": "n0", "created": 1519348345.973644}
 ```
 
-This will show "n0" is liveness unsafe.
+This shows that node 'n0' does not guarantee liveness.
